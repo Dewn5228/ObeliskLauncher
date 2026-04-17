@@ -131,6 +131,9 @@ class Server
         buffer = UdpClient.Transact(_endpoint, buffer);
         if (buffer is null)
             return false;
+        if (buffer[4] != 0x45) {
+            return false;
+        }
         int numRules = BitConverter.ToInt16(buffer, 5);
         startIndex = 7;
         bool tekWrapperInstalled = false;
@@ -172,7 +175,8 @@ class Server
                             string[] ids = values[1].Split(',');
                             ModIds = new ulong[ids.Length];
                             for (int j = 0; j < ids.Length; j++)
-                                ModIds[j] = ulong.Parse(ids[j]);
+                                if (!ulong.TryParse(ids[j], out ModIds[j]))
+                                    return false;
                         }
                         if (values[2] != "0")
                             infoFileUrl = values[2];

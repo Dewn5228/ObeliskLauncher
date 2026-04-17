@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Controls;
@@ -331,7 +332,7 @@ partial class GameOptionsTab : ContentControl
     void Validate(object sender, RoutedEventArgs e) => RunTask(true);
     /// <summary>Runs Steam client tasks.</summary>
     /// <param name="validate">Indicates whether validation should be preferred over update.</param>
-    public void RunTask(bool validate)
+    public unsafe void RunTask(bool validate)
     {
         if (TEKSteamClient.Ctx == null)
         {
@@ -340,7 +341,28 @@ partial class GameOptionsTab : ContentControl
         }
         if (IsSteamTaskActive)
             return;
-        ExpandableBlock.IsExpanded = ExpandableBlock.IsEnabled = true;
+		var itemId = new TEKSteamClient.ItemId { AppId = 346110, DepotId = 346111, WorkshopItemId = 0 };
+		var desc = TEKSteamClient.AppMng!.GetItemDesc((TEKSteamClient.ItemId*)Unsafe.AsPointer(ref itemId));
+		if (desc != null)
+        {
+            if (Settings.PreAquatica)
+            {
+                if (desc->CurrentManifestId > 0 && desc->CurrentManifestId != 8075379529797638112 && DLC.List.Any(dlc => dlc.IsInstalled))
+                {
+                    if (!Messages.ShowOptions("Warning", "It appears that you are trying to downgrade to Pre-Aquatica version.\nDoing so directly is unsafe and will break game files, and there are 2 ways you can avoid that:\n1. Completely reinstalling the game, by deleting its entire folder while launcher is closed, and then using Validate option\n2. Uninstalling all DLC, disabling Pre-Aquatica mode, then using Validate option here to recover missing files,\n  then finally downgrade via enabling Pre-Aquatica mode back and using Update option here.\nOr do you want to accept the risk and proceed to downgrade right now anyway?"))
+                        return;
+                }
+            }
+            else
+			{
+				if (desc->CurrentManifestId == 8075379529797638112 && validate)
+				{
+					if (!Messages.ShowOptions("Warning", "It appears that you are trying to update from Pre-Aquatica version via validation.\nThis is unsafe and will likely break your game files, you should use Update option instead.\nOr do you want to accept the risk and proceed to validation now anyway?"))
+						return;
+				}
+			}
+        }
+		ExpandableBlock.IsExpanded = ExpandableBlock.IsEnabled = true;
         if (Game.IsRunning)
         {
             _eventHandlers.SetStatus?.Invoke(LocManager.GetString(LocCode.UpdateFailGameRunning), 2);

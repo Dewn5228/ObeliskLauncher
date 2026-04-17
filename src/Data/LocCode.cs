@@ -228,5 +228,8 @@ enum LocCode
     Yes,
     FetchingData,
     Patching,
-    Finalizing
+    Finalizing,
+    GameDirNotEmpty,
+    GameVer,
+    GameLatest
 }

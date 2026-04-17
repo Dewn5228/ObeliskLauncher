@@ -13,6 +13,8 @@ static partial class TEKSteamClient
 	#region Native Functions
 	[LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_version")]
 	public static partial nint GetVersion();
+	[LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_load_locale", StringMarshalling = StringMarshalling.Utf16)]
+	public static partial void LoadLocale(string path);
 	[LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_lib_init")]
 	private static partial nint LibInit([MarshalAs(UnmanagedType.I1)] bool useFileCache, [MarshalAs(UnmanagedType.I1)] bool disableLwsLogs);
 	[LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_lib_cleanup")]
@@ -73,6 +75,22 @@ static partial class TEKSteamClient
 				{
 					msg += $"\n{Marshal.PtrToStringUTF8(msgs.UriType)}: {Marshal.PtrToStringUTF8(Uri)}";
 				}
+				ReleaseMsgs(ref msgs);
+				return msg;
+			}
+		}
+		public readonly string AuxMessage
+		{
+			get
+			{
+				var msgs = GetErrorMsgs(in this);
+				string msg;
+				if (msgs.Auxiliary == 0)
+					msg = Marshal.PtrToStringUTF8(msgs.Primary)!;
+				else
+					msg = $"({Auxiliary}) {Marshal.PtrToStringUTF8(msgs.Auxiliary)}";
+				if (msgs.Extra != 0)
+					msg += $" ({Marshal.PtrToStringUTF8(msgs.Extra)})";
 				ReleaseMsgs(ref msgs);
 				return msg;
 			}

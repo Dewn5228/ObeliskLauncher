@@ -114,6 +114,7 @@ partial class MainWindow : TEKWindow
 				{
 					NativeLibrary.Free(handle);
 					NativeLibrary.Free(handle);
+					File.Delete($@"{System.IO.Path.GetDirectoryName(Environment.ProcessPath) ?? Environment.CurrentDirectory}\libtek-steamclient-2.dll");
 				}
 				catch { }
 				File.Delete(TEKSteamClient.DllPath);
@@ -122,10 +123,16 @@ partial class MainWindow : TEKWindow
 			}
 			break;
 		}
+		Directory.CreateDirectory($@"{App.AppDataFolder}\tsc-locale");
+		TEKSteamClient.LoadLocale($@"{App.AppDataFolder}\tsc-locale");
 		TEKSteamClient.Ctx = new();
 		TEKSteamClient.AppMng = new(TEKSteamClient.Ctx, Game.Path!);
 		if (TEKSteamClient.AppMng.IsInvalid)
+		{
+			Game.Path = null;
+			Settings.Save();
 			throw new TEKSteamClient.Exception(TEKSteamClient.AppMng.CreationError.Message);
+		}
 		var modsDir = $@"{Game.Path}\Mods";
 		try
 		{
@@ -134,16 +141,19 @@ partial class MainWindow : TEKWindow
 		} catch { }
 		var res = TEKSteamClient.AppMng.SetWorkshopDir($@"{Game.Path}\Mods");
 		if (!res.Success)
-			throw new TEKSteamClient.Exception(res.Message);
-		res = await Task.Run(() => TEKSteamClient.Ctx.SyncS3Manifest("https://api.teknology-hub.com/s3"));
-		if (!res.Success)
 		{
-			if (res.Uri != 0)
-				Marshal.FreeHGlobal(res.Uri);
-			res = await Task.Run(() => TEKSteamClient.Ctx.SyncS3Manifest("https://de.api.teknology-hub.com/s3"));
+			Game.Path = null;
+			Settings.Save();
+			throw new TEKSteamClient.Exception(res.Message);
 		}
-		if (!res.Success)
-			Notifications.Add("Failed to synchronize tek-s3 manifest", "NError");
+		res = await Task.Run(() => TEKSteamClient.Ctx.SyncS3Manifest("https://api.teknology-hub.com/s3"));
+		var deRes = await Task.Run(() => TEKSteamClient.Ctx.SyncS3Manifest("https://de.api.teknology-hub.com/s3"));
+		if (!res.Success && !deRes.Success)
+			Notifications.Add($"Failed to connect to tek-s3u servers: {res.AuxMessage}", "NError");
+		if (res.Uri != 0)
+			Marshal.FreeHGlobal(res.Uri);
+		if (deRes.Uri != 0)
+			Marshal.FreeHGlobal(deRes.Uri);
 		if (_beginInstallation)
 		{
 			if (TabFrame.Child is not GameOptionsTab)

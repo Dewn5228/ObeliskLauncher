@@ -74,7 +74,7 @@ static class ServerBrowser
         //Load steamclient64.dll module into process
         if (WinAPI.LoadLibraryExW(dllPath, IntPtr.Zero, 0x8) == IntPtr.Zero)
             return;
-        s_steamClient = CreateInterface("SteamClient020", 0); //Create ISteamClient interface
+        s_steamClient = CreateInterface("SteamClient023", 0); //Create ISteamClient interface
         var vfptr = Marshal.ReadIntPtr(s_steamClient); //, get its virtual function poiter table
         //and compute its function addresses
         s_pipe = Marshal.GetDelegateForFunctionPointer<CreateSteamPipe>(Marshal.ReadIntPtr(vfptr))(s_steamClient);
