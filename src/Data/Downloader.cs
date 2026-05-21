@@ -13,7 +13,7 @@ static class Downloader
         Timeout = TimeSpan.FromSeconds(10),
     };
     /// <summary>Initializes HTTP client.</summary>
-    static Downloader() => s_client.DefaultRequestHeaders.UserAgent.ParseAdd($"TEKLauncher {App.Version}"); //Valid User-Agent must be specified to access GitHub API
+    static Downloader() => s_client.DefaultRequestHeaders.UserAgent.ParseAdd($"TEKLauncher {LauncherBootstrap.Version}"); //Valid User-Agent must be specified to access GitHub API
     /// <summary>Asynchronously attempts to download a file.</summary>
     /// <param name="filePath">The path of the file to write downloaded content to.</param>
     /// <param name="eventHandlers">Handlers for PrepareProgress and UpdateProgress events.</param>
@@ -53,15 +53,15 @@ static class Downloader
             catch { }
         return false;
     }
-	/// <summary>Asynchronously attempts to download a byte array.</summary>
-	/// <param name="urls">List of URLs of the string to download. Each consecutive URL will be used as fallback if the download fails for the previous one.</param>
-	public static async Task<byte[]?> DownloadBytesAsync(params string[] urls)
+    /// <summary>Asynchronously attempts to download a byte array.</summary>
+    /// <param name="urls">List of URLs of the string to download. Each consecutive URL will be used as fallback if the download fails for the previous one.</param>
+    public static async Task<byte[]?> DownloadBytesAsync(params string[] urls)
     {
-		foreach (string address in urls)
-			try { return await s_client.GetByteArrayAsync(address).ConfigureAwait(false); }
-			catch { }
-		return null;
-	}
+        foreach (string address in urls)
+            try { return await s_client.GetByteArrayAsync(address).ConfigureAwait(false); }
+            catch { }
+        return null;
+    }
     /// <summary>Asynchronously attempts to download a string.</summary>
     /// <param name="urls">List of URLs of the string to download. Each consecutive URL will be used as fallback if the download fails for the previous one.</param>
     public static async Task<string?> DownloadStringAsync(params string[] urls)

@@ -1,7 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
-using TEKLauncher.Controls;
-using TEKLauncher.Tabs;
-using TEKLauncher.Windows;
 
 namespace TEKLauncher.ARK;
 
@@ -22,6 +19,9 @@ class Mod
     public readonly string Name;
     /// <summary>List of all mods recognized by the launcher.</summary>
     public static readonly List<Mod> List = new();
+    public static event Action? ListInitialized;
+    public static event Action? DetailsUpdated;
+    public static event Action? UpdatesAvailable;
     /// <summary>Gets or sets current status of the mod.</summary>
     public Status CurrentStatus
     {
@@ -29,14 +29,12 @@ class Mod
         set
         {
             _status = value;
-            Item?.Dispatcher.Invoke(Item.SetStatus);
+            StatusChanged?.Invoke(this);
         }
     }
     /// <summary>Gets or sets Steam workshop details of the mod.</summary>
     public ModDetails Details { get; set; }
-    /// <summary>Gets or sets control that represents the mod in GUI.</summary>
-    /// <remarks>This property only has a value if current tab of the main window is Mods tab, otherwise it's <see langword="null"/>.</remarks>
-    public ModItem? Item { get; set; }
+    public event Action<Mod>? StatusChanged;
     /// <summary>Path to the directory that stores compressed file fodlers for all mods.</summary>
     public static string? CompressedModsDirectory { get; private set; }
     /// <summary>Initializes a new mod object with specified ID.</summary>
@@ -44,68 +42,68 @@ class Mod
     public Mod(ulong id)
     {
         Id = id;
-        CompressedFolderPath = $@"{CompressedModsDirectory}\{id}";
-        string modInfoFile = $@"{CompressedFolderPath}\mod.info";
+        CompressedFolderPath = Path.Combine(CompressedModsDirectory!, id.ToString());
+        string modInfoFile = Path.Combine(CompressedFolderPath, "mod.info");
         if (File.Exists(modInfoFile))
         {
             using var stream = File.OpenRead(modInfoFile);
             Span<byte> buffer = stackalloc byte[4];
-            stream.Read(buffer);
+            stream.ReadExactly(buffer);
             int stringSize = BitConverter.ToInt32(buffer);
             if (stringSize == 0)
                 Name = string.Empty;
             byte[] stringBuffer = new byte[--stringSize];
-            stream.Read(stringBuffer);
+            stream.ReadExactly(stringBuffer);
             Name = Encoding.UTF8.GetString(stringBuffer);
         }
         else
             Name = string.Empty;
-        ModsFolderPath = $@"{Game.Path}\ShooterGame\Content\Mods\{Id}";
+        ModsFolderPath = Path.Combine(Game.Path!, "ShooterGame", "Content", "Mods", Id.ToString());
         ModFilePath = string.Concat(ModsFolderPath, ".mod");
     }
     /// <summary>Uninstalls the mod.</summary>
     public unsafe void Delete()
-	{
-		var itemId = new TEKSteamClient.ItemId { AppId = 346110, DepotId = 346110, WorkshopItemId = Id };
-		var desc = TEKSteamClient.AppMng!.GetItemDesc(&itemId);
+    {
+        var itemId = new TEKSteamClient.ItemId { AppId = 346110, DepotId = 346110, WorkshopItemId = Id };
+        var desc = LauncherServices.TekSteamClient.GetItemDesc(&itemId);
         var prevStatus = _status;
-		CurrentStatus = Status.Deleting;
-		if (Directory.Exists(ModsFolderPath))
-			Directory.Delete(ModsFolderPath, true);
-		if (File.Exists(ModFilePath))
-			File.Delete(ModFilePath);
-		if (desc != null)
-		{
-			if (desc->Status.HasFlag(TEKSteamClient.AmItemStatus.Job))
-			{
-				if (!TEKSteamClient.AppMng.CancelJob(ref Unsafe.AsRef<TEKSteamClient.AmItemDesc>(desc)).Success)
-				{
-					CurrentStatus = prevStatus;
-					return;
-				}
-			}
-			if (desc->CurrentManifestId != 0)
-			{
-				if (!TEKSteamClient.AppMng.RunJob(in itemId, ulong.MaxValue, false, null, out desc).Success)
-				{
-					CurrentStatus = prevStatus;
-					return;
-				}
-			}
-		}
-		if (Directory.Exists(CompressedFolderPath))
-			Directory.Delete(CompressedFolderPath, true);
-		lock (List)
+        CurrentStatus = Status.Deleting;
+        if (Directory.Exists(ModsFolderPath))
+            Directory.Delete(ModsFolderPath, true);
+        if (File.Exists(ModFilePath))
+            File.Delete(ModFilePath);
+        if (desc != null)
+        {
+            if (desc->Status.HasFlag(TEKSteamClient.AmItemStatus.Job))
+            {
+                if (!LauncherServices.TekSteamClient.CancelJob(ref Unsafe.AsRef<TEKSteamClient.AmItemDesc>(desc)).Success)
+                {
+                    CurrentStatus = prevStatus;
+                    return;
+                }
+            }
+            if (desc->CurrentManifestId != 0)
+            {
+                if (!LauncherServices.TekSteamClient.RunJob(in itemId, ulong.MaxValue, false, null, out desc).Success)
+                {
+                    CurrentStatus = prevStatus;
+                    return;
+                }
+            }
+        }
+        if (Directory.Exists(CompressedFolderPath))
+            Directory.Delete(CompressedFolderPath, true);
+        lock (List)
             List.Remove(this);
     }
     /// <summary>Finds all installed mods, gets their details, checks for updates and populates the <see cref="List"/>.</summary>
     public static unsafe void InitializeList()
     {
         //Set up Mods directory
-        CompressedModsDirectory = $@"{Game.Path}\Mods";
+        CompressedModsDirectory = Path.Combine(Game.Path!, "Mods");
         if (!Directory.Exists(CompressedModsDirectory))
         {
-            string workshopDirectory = Path.GetFullPath($@"{Game.Path}\..\..\workshop\content\346110");
+            string workshopDirectory = Path.GetFullPath(Path.Combine(Game.Path!, "..", "..", "workshop", "content", "346110"));
             if (Directory.Exists(workshopDirectory))
                 Directory.CreateSymbolicLink(CompressedModsDirectory, workshopDirectory);
             else
@@ -123,13 +121,7 @@ class Mod
             if (List.Count == 0)
                 return;
         }
-        //Update the GUI with created list if necessary
-        Application.Current.Dispatcher.InvokeAsync(delegate
-        {
-            var mainWindow = (MainWindow)Application.Current.MainWindow;
-            if (mainWindow.TabFrame.Child is ModsTab modsTab)
-                modsTab.ReloadList();
-        });
+        ListInitialized?.Invoke();
         //Try to get mod details from Steam
         ulong[] ids;
         lock (List)
@@ -145,32 +137,22 @@ class Mod
             foreach (var item in details)
                 if (item.Status == 1)
                     List.Find(m => m.Id == item.Id)!.Details = item;
-			//Check for updates
-			if (TEKSteamClient.AppMng != null)
-				foreach (var mod in List)
-				{
-                    var id = new TEKSteamClient.ItemId { AppId = 346110, DepotId = 346110, WorkshopItemId = mod.Id };
-					var desc = TEKSteamClient.AppMng.GetItemDesc(&id);
-                    if (desc != null && desc->Status.HasFlag(TEKSteamClient.AmItemStatus.UpdAvailable))
-					{
-						updatesAvailable = true;
-						mod.CurrentStatus = Status.UpdateAvailable;
-					}
-				}
-		}
-        //Update the GUI with the details
-        Application.Current.Dispatcher.InvokeAsync(delegate
-        {
-            var mainWindow = (MainWindow)Application.Current.MainWindow;
-            if (mainWindow.TabFrame.Child is ModsTab modsTab)
-                modsTab.UpdateDetails();
-            if (updatesAvailable)
-                Notifications.Add(LocManager.GetString(LocCode.ModUpdatesAvailable), LocManager.GetString(LocCode.Update), delegate
+            //Check for updates
+            if (LauncherServices.TekSteamClient.IsLoaded)
+                foreach (var mod in List)
                 {
-                    if (mainWindow.TabFrame.Child is not ModsTab)
-                        mainWindow.Navigate(new ModsTab());
-                });
-        });
+                    var id = new TEKSteamClient.ItemId { AppId = 346110, DepotId = 346110, WorkshopItemId = mod.Id };
+                    var desc = LauncherServices.TekSteamClient.GetItemDesc(&id);
+                    if (desc != null && desc->Status.HasFlag(TEKSteamClient.AmItemStatus.UpdAvailable))
+                    {
+                        updatesAvailable = true;
+                        mod.CurrentStatus = Status.UpdateAvailable;
+                    }
+                }
+        }
+        DetailsUpdated?.Invoke();
+        if (updatesAvailable)
+            UpdatesAvailable?.Invoke();
     }
     /// <summary>Defines mod status codes.</summary>
     public enum Status

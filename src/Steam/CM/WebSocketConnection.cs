@@ -92,7 +92,7 @@ static class WebSocketConnection
         if (s_steamId.HasValue)
             message.Header.SteamId = s_steamId.Value;
         try { return s_socket!.SendAsync(message.Serialize(), WebSocketMessageType.Binary, true, s_cts!.Token).Wait(5000); }
-        catch { return false;}
+        catch { return false; }
     }
     /// <summary>Initiates connection to a Steam CM server.</summary>
     /// <exception cref="SteamException">An error occured when connecting to CM server.</exception>
@@ -120,10 +120,12 @@ static class WebSocketConnection
             catch { }
             if (!connected)
             {
-                try {
+                try
+                {
                     s_cts.Cancel();
                     s_cts.Dispose();
-                } catch (ObjectDisposedException)
+                }
+                catch (ObjectDisposedException)
                 { }
                 s_socket.Dispose();
                 continue;
@@ -241,7 +243,7 @@ static class WebSocketConnection
                     while (stream.Read(buffer) == 4)
                     {
                         byte[] messageData = new byte[BitConverter.ToInt32(buffer)];
-                        stream.Read(messageData);
+                        stream.ReadExactly(messageData);
                         type = (MessageType)(BitConverter.ToUInt32(messageData) & 0x7FFFFFFF);
                         if (type == MessageType.ServerUnavailable)
                         {
@@ -274,7 +276,8 @@ static class WebSocketConnection
                     waitEvent.Set();
                 }
             }
-        };
+        }
+        ;
         MessageReceived += messageReceivedHandler;
         if (Send(message))
             waitEvent.WaitOne(5000);

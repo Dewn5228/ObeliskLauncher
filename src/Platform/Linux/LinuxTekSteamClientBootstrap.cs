@@ -1,0 +1,471 @@
+using System.Diagnostics;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+using System.Text.Json.Serialization;
+using TEKLauncher.Data;
+
+namespace TEKLauncher.Platform;
+
+sealed class LinuxTekSteamClientBootstrap : ITekSteamClientBootstrap
+{
+    const string LatestReleaseUrl = "https://api.github.com/repos/teknology-hub/tek-steamclient/releases/latest";
+
+    public async Task<TekSteamClientBootstrapResult> InitializeAsync(string gamePath)
+    {
+        string? libraryPath = TryFindTekSteamClientLibrary();
+        if (libraryPath is null)
+        {
+            var acquireResult = await TryAcquireTekSteamClientLibraryAsync();
+            libraryPath = acquireResult.LibraryPath;
+            if (libraryPath is null)
+            {
+                string message = acquireResult.ErrorMessage ?? TryFindTekSteamClientTool() switch
+                {
+                    null => "Linux tek-steamclient library was not found. Install the Linux `tek-steamclient` package or place the native library where the launcher can discover it.",
+                    string tool => $"Found Linux TEK Steam Client tool at '{tool}', but no native `tek-steamclient` library was found yet. Install the shared library package or copy it into the launcher data directory."
+                };
+                return new(false, false, message, acquireResult.DownloadName, acquireResult.DownloadUrl, null);
+            }
+        }
+
+        string loadedLibraryPath = libraryPath;
+        IntPtr loadedLibraryHandle;
+        try
+        {
+            loadedLibraryPath = PrepareLibraryForLoading(libraryPath);
+            ConfigureBundledLibrarySearchPath(loadedLibraryPath);
+            PreloadBundledLibraries(loadedLibraryPath);
+            loadedLibraryHandle = NativeLibrary.Load(loadedLibraryPath);
+            TEKSteamClient.RegisterLibrary(loadedLibraryPath, loadedLibraryHandle);
+        }
+        catch (Exception ex)
+        {
+            return new(false, false, $"Failed to load Linux tek-steamclient library from '{loadedLibraryPath}': {ex.Message}", null, null, null);
+        }
+
+        string localeDir = Path.Combine(LauncherBootstrap.AppDataFolder, "tsc-locale");
+        Directory.CreateDirectory(localeDir);
+        TEKSteamClient.LoadLocale(localeDir);
+
+        var ctx = new TEKSteamClient.LibCtx();
+        var appMng = new TEKSteamClient.AppManager(ctx, gamePath);
+        if (appMng.IsInvalid)
+        {
+            appMng.Dispose();
+            ctx.Dispose();
+            return new(false, false, appMng.CreationError.Message, null, null, null);
+        }
+
+        string modsDir = Path.Combine(gamePath, "Mods");
+        try
+        {
+            if (!Directory.Exists(modsDir))
+                Directory.CreateDirectory(modsDir);
+        }
+        catch { }
+
+        var workshopResult = appMng.SetWorkshopDir(modsDir);
+        if (!workshopResult.Success)
+        {
+            appMng.Dispose();
+            ctx.Dispose();
+            return new(false, false, workshopResult.Message, null, null, null);
+        }
+
+        var primaryS3Result = await Task.Run(() => ctx.SyncS3Manifest("https://api.teknology-hub.com/s3"));
+        var mirrorS3Result = await Task.Run(() => ctx.SyncS3Manifest("https://de.api.teknology-hub.com/s3"));
+
+        string? warningMessage = null;
+        if (!primaryS3Result.Success && !mirrorS3Result.Success)
+            warningMessage = $"Failed to connect to tek-s3u servers: {primaryS3Result.AuxMessage}";
+        if (primaryS3Result.Uri != 0)
+            Marshal.FreeHGlobal(primaryS3Result.Uri);
+        if (mirrorS3Result.Uri != 0)
+            Marshal.FreeHGlobal(mirrorS3Result.Uri);
+
+        LauncherServices.TekSteamClient.Initialize(ctx, appMng);
+        return new(true, false, null, null, null, warningMessage);
+    }
+
+    async Task<TekSteamClientAcquireResult> TryAcquireTekSteamClientLibraryAsync()
+    {
+        string cacheRoot = GetCacheRoot();
+        Directory.CreateDirectory(cacheRoot);
+
+        string? localToolPath = TryFindTekSteamClientTool();
+        if (localToolPath is not null)
+        {
+            var localExtractResult = await TryExtractLibraryFromAppImageAsync(localToolPath, Path.Combine(cacheRoot, "local"));
+            if (localExtractResult.LibraryPath is not null)
+                return localExtractResult;
+        }
+
+        GitHubRelease? release = await Downloader.DownloadJsonAsync<GitHubRelease>(LatestReleaseUrl);
+        if (release is not { TagName: not null, Assets: not null })
+            return new(null, null, null, "Failed to query latest Linux tek-steamclient release metadata.");
+        GitHubRelease releaseData = release.Value;
+
+        GitHubAsset? appImageAsset = Array.Find(releaseData.Assets, static asset =>
+          asset.Name?.EndsWith(".AppImage", StringComparison.OrdinalIgnoreCase) == true
+          && asset.Name.Contains("x86_64", StringComparison.OrdinalIgnoreCase)
+          && asset.BrowserDownloadUrl is not null);
+        if (appImageAsset is not { BrowserDownloadUrl: not null, Name: not null })
+            return new(null, "Linux tek-steamclient AppImage", releaseData.HtmlUrl, "Latest Linux tek-steamclient release does not expose an x86_64 AppImage asset.");
+        GitHubAsset appImage = appImageAsset.Value;
+
+        string releaseDir = Path.Combine(cacheRoot, SanitizePathSegment(releaseData.TagName));
+        string? existingLibraryPath = FindLibraryInDirectory(releaseDir);
+        if (existingLibraryPath is not null)
+            return new(existingLibraryPath, null, null, null);
+
+        string appImagePath = Path.Combine(cacheRoot, appImage.Name);
+        if (!File.Exists(appImagePath) && !await Downloader.DownloadFileAsync(appImagePath, new EventHandlers(), appImage.BrowserDownloadUrl))
+            return new(null, "Linux tek-steamclient AppImage", appImage.BrowserDownloadUrl, "Failed to download Linux tek-steamclient AppImage.");
+
+        return await TryExtractLibraryFromAppImageAsync(appImagePath, releaseDir, appImage.BrowserDownloadUrl);
+    }
+
+    static string? TryFindTekSteamClientTool()
+    {
+        string? path = Environment.GetEnvironmentVariable("PATH");
+        if (!string.IsNullOrWhiteSpace(path))
+            foreach (string directory in path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                string cliPath = Path.Combine(directory, "tek-sc-cli");
+                if (File.Exists(cliPath))
+                    return cliPath;
+            }
+
+        string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        string[] candidates =
+        {
+      Path.Combine(home, "Applications", "tek-sc-cli-x86_64.AppImage"),
+      Path.Combine(home, "Downloads", "tek-sc-cli-x86_64.AppImage"),
+      Path.Combine(LauncherPlatform.Current.AppDataFolder, "tek-sc-cli-x86_64.AppImage")
+    };
+        return Array.Find(candidates, File.Exists);
+    }
+
+    static string PrepareLibraryForLoading(string sourcePath)
+    {
+        string sourceFullPath = Path.GetFullPath(sourcePath);
+        string expectedLibraryPath = Path.GetFullPath(TEKSteamClient.DllPath);
+        if (sourceFullPath.Equals(expectedLibraryPath, StringComparison.Ordinal))
+            return expectedLibraryPath;
+
+        if (sourceFullPath.StartsWith(Path.GetFullPath(GetCacheRoot()), StringComparison.Ordinal))
+        {
+            string aliasPath = Path.Combine(Path.GetDirectoryName(sourceFullPath)!, Path.GetFileName(TEKSteamClient.DllPath));
+            if (!Path.GetFullPath(aliasPath).Equals(sourceFullPath, StringComparison.Ordinal))
+            {
+                if (!File.Exists(aliasPath))
+                {
+                    try
+                    {
+                        File.CreateSymbolicLink(aliasPath, Path.GetFileName(sourceFullPath));
+                    }
+                    catch
+                    {
+                        File.Copy(sourceFullPath, aliasPath, true);
+                    }
+                }
+
+                return aliasPath;
+            }
+
+            return sourceFullPath;
+        }
+
+        Directory.CreateDirectory(Path.GetDirectoryName(expectedLibraryPath)!);
+        File.Copy(sourceFullPath, expectedLibraryPath, true);
+        return expectedLibraryPath;
+    }
+
+    static string? TryFindTekSteamClientLibrary()
+    {
+        foreach (string candidate in GetLibraryCandidates())
+            if (File.Exists(candidate))
+                return candidate;
+        return null;
+    }
+
+    static IEnumerable<string> GetLibraryCandidates()
+    {
+        string cacheRoot = GetCacheRoot();
+        if (Directory.Exists(cacheRoot))
+            foreach (string libraryPath in EnumerateLibraryFiles(cacheRoot))
+                yield return libraryPath;
+
+        yield return Path.Combine(LauncherBootstrap.AppDataFolder, "libtek-steamclient.so.2");
+        yield return Path.Combine(LauncherBootstrap.AppDataFolder, "libtek-steamclient-2.so");
+        yield return TEKSteamClient.DllPath;
+
+        string? ldLibraryPath = Environment.GetEnvironmentVariable("LD_LIBRARY_PATH");
+        if (!string.IsNullOrWhiteSpace(ldLibraryPath))
+            foreach (string directory in ldLibraryPath.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                yield return Path.Combine(directory, "libtek-steamclient-2.dll");
+                yield return Path.Combine(directory, "libtek-steamclient-2.so");
+                yield return Path.Combine(directory, "libtek-steamclient.so.2");
+            }
+
+        string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        string[] directories =
+        [
+          Path.Combine(home, ".local", "lib"),
+      Path.Combine(home, ".steam", "root"),
+      "/usr/local/lib",
+      "/usr/lib",
+      "/usr/lib64",
+      "/lib",
+      "/lib64"
+        ];
+
+        foreach (string directory in directories)
+        {
+            yield return Path.Combine(directory, "libtek-steamclient-2.dll");
+            yield return Path.Combine(directory, "libtek-steamclient-2.so");
+            yield return Path.Combine(directory, "libtek-steamclient.so.2");
+        }
+    }
+
+    static IEnumerable<string> EnumerateLibraryFiles(string rootDirectory)
+    {
+        try
+        {
+            return Directory.EnumerateFiles(rootDirectory, "*", SearchOption.AllDirectories)
+              .Where(static path => path.EndsWith("libtek-steamclient.so.2", StringComparison.Ordinal)
+                || path.EndsWith("libtek-steamclient-2.so", StringComparison.Ordinal)
+                || path.EndsWith("libtek-steamclient-2.dll", StringComparison.Ordinal))
+              .OrderBy(GetLibraryCandidatePriority)
+              .ToArray();
+        }
+        catch
+        {
+            return [];
+        }
+    }
+
+    static string? FindLibraryInDirectory(string directory)
+    {
+        foreach (string libraryPath in EnumerateLibraryFiles(directory))
+            if (File.Exists(libraryPath))
+                return libraryPath;
+
+        return null;
+    }
+
+    static string GetCacheRoot() => Path.Combine(LauncherBootstrap.AppDataFolder, "tek-steamclient-linux");
+
+    static int GetLibraryCandidatePriority(string path)
+    {
+        string normalized = path.Replace('\\', '/');
+        return normalized switch
+        {
+            var candidate when candidate.Contains("/usr/lib/", StringComparison.Ordinal) && candidate.EndsWith("libtek-steamclient.so.2", StringComparison.Ordinal) => 0,
+            var candidate when candidate.Contains("/usr/lib/", StringComparison.Ordinal) && candidate.EndsWith("libtek-steamclient-2.so", StringComparison.Ordinal) => 1,
+            var candidate when candidate.Contains("/lib/", StringComparison.Ordinal) && candidate.EndsWith("libtek-steamclient.so.2", StringComparison.Ordinal) => 2,
+            var candidate when candidate.Contains("/lib/", StringComparison.Ordinal) && candidate.EndsWith("libtek-steamclient-2.dll", StringComparison.Ordinal) => 3,
+            var candidate when candidate.EndsWith("libtek-steamclient.so.2", StringComparison.Ordinal) => 4,
+            var candidate when candidate.EndsWith("libtek-steamclient-2.so", StringComparison.Ordinal) => 5,
+            _ => 6
+        };
+    }
+
+    static void ConfigureBundledLibrarySearchPath(string libraryPath)
+    {
+        string[] candidateDirectories = GetBundledLibraryDirectories(libraryPath);
+        if (candidateDirectories.Length == 0)
+            return;
+
+        string? existing = Environment.GetEnvironmentVariable("LD_LIBRARY_PATH");
+        var merged = new List<string>(candidateDirectories.Length + 4);
+        merged.AddRange(candidateDirectories);
+
+        if (!string.IsNullOrWhiteSpace(existing))
+            foreach (string directory in existing.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                if (!merged.Any(existingDirectory => string.Equals(existingDirectory, directory, StringComparison.Ordinal)))
+                    merged.Add(directory);
+
+        Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", string.Join(Path.PathSeparator, merged));
+    }
+
+    static void PreloadBundledLibraries(string libraryPath)
+    {
+        foreach (string directory in GetBundledLibraryDirectories(libraryPath))
+        {
+            string[] libraries;
+            try
+            {
+                libraries = Directory.EnumerateFiles(directory, "*.so*")
+                  .Where(static path => !Path.GetFileName(path).StartsWith("libtek-steamclient", StringComparison.Ordinal))
+                  .OrderBy(static path => Path.GetFileName(path), StringComparer.Ordinal)
+                  .ToArray();
+            }
+            catch
+            {
+                continue;
+            }
+
+            foreach (string dependencyPath in libraries)
+            {
+                try
+                {
+                    NativeLibrary.Load(dependencyPath);
+                }
+                catch
+                {
+                }
+            }
+        }
+    }
+
+    static string[] GetBundledLibraryDirectories(string libraryPath)
+    {
+        var directories = new List<string>();
+
+        void AddDirectory(string? directory)
+        {
+            if (!string.IsNullOrWhiteSpace(directory) && Directory.Exists(directory) && !directories.Any(existingDirectory => string.Equals(existingDirectory, directory, StringComparison.Ordinal)))
+                directories.Add(directory);
+        }
+
+        string? libraryDirectory = Path.GetDirectoryName(libraryPath);
+        AddDirectory(libraryDirectory);
+
+        if (libraryDirectory is null)
+            return directories.ToArray();
+
+        string[] segments = libraryDirectory.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
+        int squashfsRootIndex = Array.FindIndex(segments, static segment => segment == "squashfs-root");
+        if (squashfsRootIndex == -1)
+            return directories.ToArray();
+
+        string squashfsRoot = string.Join(Path.DirectorySeparatorChar, segments.Take(squashfsRootIndex + 1));
+        if (libraryPath.StartsWith(Path.DirectorySeparatorChar))
+            squashfsRoot = Path.DirectorySeparatorChar + squashfsRoot;
+
+        AddDirectory(Path.Combine(squashfsRoot, "usr", "lib", "x86_64-linux-gnu"));
+        AddDirectory(Path.Combine(squashfsRoot, "lib", "x86_64-linux-gnu"));
+        AddDirectory(Path.Combine(squashfsRoot, "usr", "lib"));
+        AddDirectory(Path.Combine(squashfsRoot, "lib"));
+
+        return directories.ToArray();
+    }
+
+    static string SanitizePathSegment(string value)
+    {
+        foreach (char invalidChar in Path.GetInvalidFileNameChars())
+            value = value.Replace(invalidChar, '_');
+        return value;
+    }
+
+    [SupportedOSPlatform("linux")]
+    static void TryEnsureExecutable(string appImagePath)
+    {
+        if (!OperatingSystem.IsLinux())
+            return;
+
+        try
+        {
+            File.SetUnixFileMode(appImagePath,
+              UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+              UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
+              UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+        }
+        catch { }
+    }
+
+    static async Task<TekSteamClientAcquireResult> TryExtractLibraryFromAppImageAsync(string appImagePath, string destinationDirectory, string? downloadUrl = null)
+    {
+        string? existingLibraryPath = FindLibraryInDirectory(destinationDirectory);
+        if (existingLibraryPath is not null)
+            return new(existingLibraryPath, null, null, null);
+
+        if (OperatingSystem.IsLinux())
+            TryEnsureExecutable(appImagePath);
+
+        string tempDirectory = destinationDirectory + ".tmp";
+        try
+        {
+            if (Directory.Exists(tempDirectory))
+                Directory.Delete(tempDirectory, true);
+            Directory.CreateDirectory(tempDirectory);
+
+            using var process = new Process();
+            process.StartInfo = new()
+            {
+                FileName = appImagePath,
+                Arguments = "--appimage-extract",
+                WorkingDirectory = tempDirectory,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+            };
+
+            if (!process.Start())
+                return new(null, "Linux tek-steamclient AppImage", downloadUrl, "Failed to start Linux tek-steamclient AppImage extraction.");
+
+            await process.WaitForExitAsync();
+            string output = (await process.StandardOutput.ReadToEndAsync()).Trim();
+            string error = (await process.StandardError.ReadToEndAsync()).Trim();
+            if (process.ExitCode != 0)
+            {
+                string details = string.IsNullOrWhiteSpace(error) ? output : error;
+                return new(null, "Linux tek-steamclient AppImage", downloadUrl, $"Failed to extract Linux tek-steamclient AppImage: {details}");
+            }
+
+            string extractedRoot = Path.Combine(tempDirectory, "squashfs-root");
+            string? extractedLibraryPath = FindLibraryInDirectory(extractedRoot);
+            if (extractedLibraryPath is null)
+                return new(null, "Linux tek-steamclient AppImage", downloadUrl, "Linux tek-steamclient AppImage did not contain a loadable shared library.");
+
+            if (Directory.Exists(destinationDirectory))
+                Directory.Delete(destinationDirectory, true);
+            Directory.Move(tempDirectory, destinationDirectory);
+            tempDirectory = string.Empty;
+
+            string? finalLibraryPath = FindLibraryInDirectory(destinationDirectory);
+            return finalLibraryPath is null
+              ? new(null, "Linux tek-steamclient AppImage", downloadUrl, "Linux tek-steamclient AppImage was extracted but the shared library could not be located afterward.")
+              : new(finalLibraryPath, null, null, null);
+        }
+        catch (Exception ex)
+        {
+            return new(null, "Linux tek-steamclient AppImage", downloadUrl, $"Failed to extract Linux tek-steamclient AppImage: {ex.Message}");
+        }
+        finally
+        {
+            if (!string.IsNullOrEmpty(tempDirectory) && Directory.Exists(tempDirectory))
+                try
+                {
+                    Directory.Delete(tempDirectory, true);
+                }
+                catch { }
+        }
+    }
+
+    readonly record struct TekSteamClientAcquireResult(string? LibraryPath, string? DownloadName, string? DownloadUrl, string? ErrorMessage);
+
+    readonly record struct GitHubAsset
+    {
+        [JsonPropertyName("browser_download_url")]
+        public string? BrowserDownloadUrl { get; init; }
+
+        [JsonPropertyName("name")]
+        public string? Name { get; init; }
+    }
+
+    readonly record struct GitHubRelease
+    {
+        [JsonPropertyName("assets")]
+        public GitHubAsset[]? Assets { get; init; }
+
+        [JsonPropertyName("html_url")]
+        public string? HtmlUrl { get; init; }
+
+        [JsonPropertyName("tag_name")]
+        public string? TagName { get; init; }
+    }
+}

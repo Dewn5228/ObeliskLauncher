@@ -1,7 +1,7 @@
 ﻿namespace TEKLauncher.Servers;
 
 /// <summary>Represents server/cluster information JSON object.</summary>
-record Info
+public record Info
 {
     /// <summary>Nickname of the server/cluster owner.</summary>
     public string? HosterName { get; init; }

@@ -1,6 +1,5 @@
 ﻿using System.Runtime.InteropServices;
 using System.Threading;
-using Microsoft.Win32;
 using TEKLauncher.Servers;
 
 namespace TEKLauncher.Steam;
@@ -51,7 +50,7 @@ static class ServerBrowser
     delegate bool BReleaseSteamPipe(IntPtr pThis, int hSteamPipe);
     delegate int ConnectToGlobalUser(IntPtr pThis, int hSteamPipe);
     delegate void ReleaseUser(IntPtr pThis, int hSteamPipe, int hUser);
-    delegate IntPtr GetISteamGenericInterface(IntPtr pThis, int hSteamUser, int hSteamPipe, [MarshalAs(UnmanagedType.LPStr)]string pchVersion);
+    delegate IntPtr GetISteamGenericInterface(IntPtr pThis, int hSteamUser, int hSteamPipe, [MarshalAs(UnmanagedType.LPStr)] string pchVersion);
     delegate bool BShutdownIfAllPipesClosed(IntPtr pThis);
     delegate int AddFavoriteGame(IntPtr pThis, uint nAppID, uint nIP, ushort nConnPort, ushort nQueryPort, uint unFlags, uint rTime32LastPlayedOnServer);
     delegate bool RemoveFavoriteGame(IntPtr pThis, uint nAppID, uint nIP, ushort nConnPort, ushort nQueryPort, uint unFlags);
@@ -68,11 +67,11 @@ static class ServerBrowser
     {
         if (!App.IsRunning)
             return;
-        string? dllPath = (string?)Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Valve\Steam\ActiveProcess")?.GetValue("SteamClientDll64");
+        string? dllPath = LauncherPlatform.Current.GetSteamClientDllPath();
         if (dllPath is null)
             return;
         //Load steamclient64.dll module into process
-        if (WinAPI.LoadLibraryExW(dllPath, IntPtr.Zero, 0x8) == IntPtr.Zero)
+        if (!LauncherPlatform.Current.TryLoadModule(dllPath))
             return;
         s_steamClient = CreateInterface("SteamClient023", 0); //Create ISteamClient interface
         var vfptr = Marshal.ReadIntPtr(s_steamClient); //, get its virtual function poiter table
@@ -184,12 +183,12 @@ static class ServerBrowser
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
         public string m_szValue;
     }
-    #pragma warning disable CS0649
+#pragma warning disable CS0649
     struct Servernetadr_t
     {
         public ushort m_usConnectionPort;
         public ushort m_usQueryPort;
         public int m_unIP;
     };
-    #pragma warning restore CS0649
+#pragma warning restore CS0649
 }

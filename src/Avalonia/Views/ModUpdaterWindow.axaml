@@ -1,0 +1,50 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:TEKLauncher.Avalonia.ViewModels"
+        x:Class="TEKLauncher.Avalonia.Views.ModUpdaterWindow"
+        x:DataType="vm:ModUpdaterWindowViewModel"
+        Width="900"
+        Height="450"
+        MinWidth="720"
+        MinHeight="380"
+        CanResize="False"
+        Title="{Binding Title}">
+  <Grid Margin="16" ColumnDefinitions="300,*">
+    <Border Padding="14" CornerRadius="12" Background="#132132" BorderBrush="#2A4C6D" BorderThickness="1">
+      <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <ItemsControl ItemsSource="{Binding Stages}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate DataType="vm:UpdaterStageViewModel">
+              <Border Margin="0,0,0,10" Padding="12" CornerRadius="10" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1">
+                <TextBlock Text="{Binding Label}" Foreground="{Binding AccentBrush}" TextWrapping="Wrap" />
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </Border>
+    <Border Grid.Column="1" Margin="16,0,0,0" Padding="18" CornerRadius="12" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1">
+      <Grid RowDefinitions="Auto,Auto,*,Auto">
+        <TextBlock Text="{Binding Title}" FontSize="24" FontWeight="SemiBold" />
+        <TextBlock Grid.Row="1" Margin="0,10,0,0" Text="{Binding StatusText}" Foreground="{Binding StatusBrush}" TextWrapping="Wrap" />
+        <StackPanel Grid.Row="2" Margin="0,18,0,0" Spacing="10" VerticalAlignment="Center">
+          <ProgressBar Height="18"
+                       Minimum="0"
+                       Maximum="{Binding ProgressMaximum}"
+                       Value="{Binding ProgressValue}"
+                       IsIndeterminate="{Binding IsProgressIndeterminate}" />
+          <TextBlock Text="{Binding ProgressText}"
+                     FontWeight="SemiBold"
+                     IsVisible="{Binding HasProgressText}" />
+          <TextBlock Text="Pause before closing if the job is still running, or wait for the task to finish before closing the window."
+                     Opacity="0.74"
+                     TextWrapping="Wrap" />
+        </StackPanel>
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+          <Button Content="{Binding ActionLabel}" Click="PauseOrRetry" IsEnabled="{Binding IsActionEnabled}" MinWidth="110" />
+          <Button Content="Close" Click="CloseWindow" MinWidth="110" />
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Grid>
+</Window>

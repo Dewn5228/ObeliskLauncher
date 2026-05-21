@@ -1,0 +1,13 @@
+global using System;
+global using System.Collections.Generic;
+global using System.Globalization;
+global using System.IO;
+global using System.Net;
+global using System.Text;
+global using System.Text.Json;
+global using System.Threading.Tasks;
+global using TEKLauncher.ARK;
+global using TEKLauncher.Data;
+global using TEKLauncher.Platform;
+global using TEKLauncher.UI;
+global using TEKLauncher.Utils;

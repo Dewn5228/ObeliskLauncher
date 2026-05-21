@@ -8,8 +8,8 @@ namespace TEKLauncher.Servers;
 /// <remarks>The purpose of this class is using only one socket to send and receive datagrams from all servers.</remarks>
 static class UdpClient
 {
-	/// <summary>Ongoing datagram transactions.</summary>
-	static readonly ConcurrentDictionary<IPEndPoint, TaskCompletionSource<byte[]>> s_transactions = new(5, 32);
+    /// <summary>Ongoing datagram transactions.</summary>
+    static readonly ConcurrentDictionary<IPEndPoint, TaskCompletionSource<byte[]>> s_transactions = new(5, 32);
     /// <summary>Underlying UDP socket.</summary>
     static readonly Socket s_socket = new(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp) { SendTimeout = 2000 };
     /// <summary>Starts receive loop thread.</summary>
@@ -25,7 +25,7 @@ static class UdpClient
         EndPoint remoteEndpoint = new IPEndPoint(0, 0);
         try
         {
-            for (;;)
+            for (; ; )
             {
                 int bytesRead = -1;
                 for (int i = 0; i < 5; i++)

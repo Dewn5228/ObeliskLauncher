@@ -1,13 +1,10 @@
-﻿using System.Collections.Concurrent;
-using System.Windows.Controls;
-using TEKLauncher.Controls;
-using TEKLauncher.Tabs;
-using TEKLauncher.Windows;
+using System.Collections.Concurrent;
+using System.Threading;
 
 namespace TEKLauncher.Servers;
 
 /// <summary>Represents a cluster of servers.</summary>
-class Cluster
+public class Cluster
 {
     /// <summary>Cluster's Discord server invite link.</summary>
     public readonly string? Discord;
@@ -42,12 +39,7 @@ class Cluster
         private set
         {
             _currentStatus = value;
-            Application.Current.Dispatcher.Invoke(delegate
-            {
-                var mainWindow = (MainWindow)Application.Current.MainWindow;
-                if (mainWindow.TabFrame.Child is ServersTab serversTab)
-                    serversTab.UpdateStatus();
-            });
+            LauncherServices.ServerUi.OnClusterStatusChanged();
         }
     }
     /// <summary>Initializes a new cluster object with specified information and list of servers.</summary>
@@ -71,156 +63,128 @@ class Cluster
     /// <summary>Reloads all cluster lists via Steam API.</summary>
     public static void ReloadLists()
     {
-        CurrentStatus = 0;
-        //Clean up all current lists
-        Favorites.Servers.Clear();
-        Lan.Servers.Clear();
-        Unclustered.Servers.Clear();
-        OnlineClusters.Clear();
-        var dispatcher = Application.Current.Dispatcher;
-        Border tabFrame = null!;
-        dispatcher.Invoke(delegate
+        try
         {
-            tabFrame = ((MainWindow)Application.Current.MainWindow).TabFrame;
-            if (tabFrame.Child is ServersTab serversTab)
-                serversTab.Clear();
-        });
-        if (!Steam.App.IsRunning)
-        {
-            CurrentStatus = 1;
-            return;
-        }
-        //Retrieve new server lists from Steam API
-        var lanServers = Steam.ServerBrowser.GetServers(Steam.ServerBrowser.ServerListType.LAN);
-        if (lanServers is null)
-        {
-            CurrentStatus = 2;
-            return;
-        }
-        var favoritesServers = Steam.ServerBrowser.GetServers(Steam.ServerBrowser.ServerListType.Favorites);
-        if (favoritesServers is null)
-        {
-            CurrentStatus = 2;
-            return;
-        }
-        var onlineServers = Steam.ServerBrowser.GetServers(Steam.ServerBrowser.ServerListType.Online);
-        if (onlineServers is null)
-        {
-            CurrentStatus = 2;
-            return;
-        }
-        //Query servers and sort them into clusters
-        var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 10 };
-        Parallel.ForEach(lanServers, server =>
-        {
-            if (!server.Query())
-                return;
-            lock (Lan.Servers)
-                Lan.Servers.Add(server);
-            dispatcher.Invoke(delegate
+            CurrentStatus = 0;
+            Favorites.Servers.Clear();
+            Lan.Servers.Clear();
+            Unclustered.Servers.Clear();
+            OnlineClusters.Clear();
+            LauncherServices.ServerUi.OnClusterListsCleared();
+            if (!Steam.App.IsRunning)
             {
-                if (tabFrame.Child is ServersTab serversTab)
-                    serversTab.GetItemForCluster(Lan).RefreshNumServers();
-                else if (tabFrame.Child is ClusterTab clusterTab && clusterTab.DataContext == Lan)
-                    clusterTab.AddServer(server);
-            });
-        });
-        Parallel.ForEach(favoritesServers, parallelOptions, server =>
-        {
-            var currentServer = server;
-            Server? lanServer;
-            lock (Lan.Servers)
-                lanServer = Lan.Servers.Find(s => s.Equals(currentServer));
-            if (lanServer is not null)
-                currentServer = lanServer;
-            else if (!currentServer.Query())
-                return;
-            lock (Favorites.Servers)
-                Favorites.Servers.Add(currentServer);
-            dispatcher.Invoke(delegate
-            {
-                if (tabFrame.Child is ServersTab serversTab)
-                    serversTab.GetItemForCluster(Favorites).RefreshNumServers();
-                else if (tabFrame.Child is ClusterTab clusterTab && clusterTab.DataContext == Favorites)
-                    clusterTab.AddServer(currentServer);
-            });
-        });
-        var clusterCandidateCache = new ConcurrentDictionary<string, Server>(); //Stores servers that have a cluster ID but yet there are no other servers clustered with it
-        int unknownClusterIndex = 0;
-        Parallel.ForEach(onlineServers, parallelOptions, server =>
-        {
-            var currentServer = server;
-            Server? favoriteServer;
-            lock (Favorites.Servers)
-                favoriteServer = Favorites.Servers.Find(s => s.Equals(currentServer));
-            if (favoriteServer is not null)
-                currentServer = favoriteServer;
-            else if (!currentServer.Query())
-                return;
-            if (currentServer.ClusterId is null)
-            {
-                lock (Unclustered.Servers)
-                    Unclustered.Servers.Add(currentServer);
-                dispatcher.Invoke(delegate
-                {
-                    if (tabFrame.Child is ServersTab serversTab)
-                        serversTab.GetItemForCluster(Unclustered).RefreshNumServers();
-                    else if (tabFrame.Child is ClusterTab clusterTab && clusterTab.DataContext == Unclustered)
-                        clusterTab.AddServer(currentServer);
-                });
+                CurrentStatus = 1;
                 return;
             }
-            Cluster? cluster;
-            lock (OnlineClusters)
-                cluster = OnlineClusters.Find(c => c.Id == currentServer.ClusterId);
-            if (cluster is null)
+            var lanServers = LauncherServices.ServerBrowser.GetServers(ServerBrowserListType.LAN);
+            if (lanServers is null)
             {
-                if (clusterCandidateCache.Remove(currentServer.ClusterId, out var candidate))
+                CurrentStatus = 2;
+                return;
+            }
+            var favoritesServers = LauncherServices.ServerBrowser.GetServers(ServerBrowserListType.Favorites);
+            if (favoritesServers is null)
+            {
+                CurrentStatus = 2;
+                return;
+            }
+            var onlineServers = LauncherServices.ServerBrowser.GetServers(ServerBrowserListType.Online);
+            if (onlineServers is null)
+            {
+                CurrentStatus = 2;
+                return;
+            }
+            var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 10 };
+            int lanSuccess = 0;
+            Parallel.ForEach(lanServers, server =>
+            {
+                if (!server.Query())
+                    return;
+                Interlocked.Increment(ref lanSuccess);
+                lock (Lan.Servers)
+                    Lan.Servers.Add(server);
+                LauncherServices.ServerUi.OnClusterServerCountChanged(Lan);
+                LauncherServices.ServerUi.OnServerAdded(Lan, server);
+            });
+            int favoritesSuccess = 0;
+            Parallel.ForEach(favoritesServers, parallelOptions, server =>
+            {
+                var currentServer = server;
+                Server? lanServer;
+                lock (Lan.Servers)
+                    lanServer = Lan.Servers.Find(s => s.Equals(currentServer));
+                if (lanServer is not null)
+                    currentServer = lanServer;
+                else if (!currentServer.Query())
+                    return;
+                Interlocked.Increment(ref favoritesSuccess);
+                lock (Favorites.Servers)
+                    Favorites.Servers.Add(currentServer);
+                LauncherServices.ServerUi.OnClusterServerCountChanged(Favorites);
+                LauncherServices.ServerUi.OnServerAdded(Favorites, currentServer);
+            });
+            var clusterCandidateCache = new ConcurrentDictionary<string, Server>();
+            int unknownClusterIndex = 0;
+            int onlineSuccess = 0;
+            Parallel.ForEach(onlineServers, parallelOptions, server =>
+            {
+                var currentServer = server;
+                Server? favoriteServer;
+                lock (Favorites.Servers)
+                    favoriteServer = Favorites.Servers.Find(s => s.Equals(currentServer));
+                if (favoriteServer is not null)
+                    currentServer = favoriteServer;
+                else if (!currentServer.Query())
+                    return;
+                Interlocked.Increment(ref onlineSuccess);
+                if (currentServer.ClusterId is null)
                 {
-                    cluster = new(currentServer.ClusterId, currentServer.Info?.ClusterName ?? string.Format(LocManager.GetString(LocCode.UnknownCluster), ++unknownClusterIndex), currentServer.Info?.HosterName, currentServer.Info?.IconUrl, currentServer.Info?.Discord, currentServer.Info?.ClusterDescription, new() { candidate, currentServer });
                     lock (Unclustered.Servers)
-                        Unclustered.Servers.Remove(candidate);
-                    lock (OnlineClusters)
-                        OnlineClusters.Add(cluster);
-                    dispatcher.Invoke(delegate
+                        Unclustered.Servers.Add(currentServer);
+                    LauncherServices.ServerUi.OnClusterServerCountChanged(Unclustered);
+                    LauncherServices.ServerUi.OnServerAdded(Unclustered, currentServer);
+                    return;
+                }
+                Cluster? cluster;
+                lock (OnlineClusters)
+                    cluster = OnlineClusters.Find(c => c.Id == currentServer.ClusterId);
+                if (cluster is null)
+                {
+                    if (clusterCandidateCache.Remove(currentServer.ClusterId, out var candidate))
                     {
-                        if (tabFrame.Child is ServersTab serversTab)
-                        {
-                            serversTab.GetItemForCluster(Unclustered).RefreshNumServers();
-                            serversTab.AddItem(new ClusterItem(cluster));
-                        }
-                        else if (tabFrame.Child is ClusterTab clusterTab && clusterTab.DataContext == Unclustered)
-                            clusterTab.RemoveServer(candidate);
-                    });
+                        cluster = new(currentServer.ClusterId, currentServer.Info?.ClusterName ?? string.Format(LocManager.GetString(LocCode.UnknownCluster), ++unknownClusterIndex), currentServer.Info?.HosterName, currentServer.Info?.IconUrl, currentServer.Info?.Discord, currentServer.Info?.ClusterDescription, new() { candidate, currentServer });
+                        lock (Unclustered.Servers)
+                            Unclustered.Servers.Remove(candidate);
+                        lock (OnlineClusters)
+                            OnlineClusters.Add(cluster);
+                        LauncherServices.ServerUi.OnClusterServerCountChanged(Unclustered);
+                        LauncherServices.ServerUi.OnServerRemoved(Unclustered, candidate);
+                        LauncherServices.ServerUi.OnClusterAdded(cluster);
+                    }
+                    else
+                    {
+                        clusterCandidateCache[currentServer.ClusterId] = currentServer;
+                        lock (Unclustered.Servers)
+                            Unclustered.Servers.Add(currentServer);
+                        LauncherServices.ServerUi.OnClusterServerCountChanged(Unclustered);
+                        LauncherServices.ServerUi.OnServerAdded(Unclustered, currentServer);
+                    }
                 }
                 else
                 {
-                    clusterCandidateCache[currentServer.ClusterId] = currentServer;
-                    lock (Unclustered.Servers)
-                        Unclustered.Servers.Add(currentServer);
-                    dispatcher.Invoke(delegate
-                    {
-                        if (tabFrame.Child is ServersTab serversTab)
-                            serversTab.GetItemForCluster(Unclustered).RefreshNumServers();
-                        else if (tabFrame.Child is ClusterTab clusterTab && clusterTab.DataContext == Unclustered)
-                            clusterTab.AddServer(currentServer);
-                    });
+                    lock (cluster.Servers)
+                        cluster.Servers.Add(currentServer);
+                    LauncherServices.ServerUi.OnClusterServerCountChanged(cluster);
+                    LauncherServices.ServerUi.OnServerAdded(cluster, currentServer);
                 }
-            }
-            else
-            {
-                lock (cluster.Servers)
-                    cluster.Servers.Add(currentServer);
-                dispatcher.Invoke(delegate
-                {
-                    if (tabFrame.Child is ServersTab serversTab)
-                        serversTab.GetItemForCluster(cluster).RefreshNumServers();
-                    else if (tabFrame.Child is ClusterTab clusterTab && clusterTab.DataContext == cluster)
-                        clusterTab.AddServer(currentServer);
-                });
-            }
-        });
-        clusterCandidateCache.Clear();
-        CurrentStatus = 3;
+            });
+            clusterCandidateCache.Clear();
+            CurrentStatus = 3;
+        }
+        catch (Exception)
+        {
+            CurrentStatus = 2;
+            throw;
+        }
     }
 }

@@ -1,0 +1,14 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="TEKLauncher.Avalonia.Views.WhatsNewWindow"
+        Width="820"
+        Height="620"
+        MinWidth="420"
+        MinHeight="280"
+        Title="What's New">
+  <Border Margin="16" Padding="12" CornerRadius="12" Background="#10233A" BorderBrush="#2E5E8C" BorderThickness="1">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <StackPanel x:Name="Root" Spacing="10" />
+    </ScrollViewer>
+  </Border>
+</Window>

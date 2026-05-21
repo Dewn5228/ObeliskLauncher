@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using Microsoft.Win32;
 using TEKLauncher.Steam.CM;
 
 namespace TEKLauncher.Steam;
@@ -14,7 +13,7 @@ static class App
     {
         get
         {
-            int? pid = (int?)Registry.LocalMachine.OpenSubKey(@"SOFTWARE\WOW6432Node\Valve\Steam")?.GetValue("SteamPID");
+            int? pid = LauncherPlatform.Current.GetSteamProcessId();
             if (!pid.HasValue || pid.Value == 0)
                 return false;
             Process? steamProcess;
@@ -29,17 +28,14 @@ static class App
     /// <summary>Gets or sets current Steam user status.</summary>
     public static UserStatus CurrentUserStatus { get; private set; }
     /// <summary>Retrieves primary data from Steam config files.</summary>
-    public static void Initialize()
+    public static bool Initialize()
     {
-        string? path = (string?)Registry.LocalMachine.OpenSubKey(@"SOFTWARE\WOW6432Node\Valve\Steam")?.GetValue("InstallPath");
+        string? path = LauncherPlatform.Current.GetSteamInstallPath();
         if (path is null)
-        {
-            Messages.Show("Error", LocManager.GetString(LocCode.SteamMissing));
-            Application.Current.Shutdown();
-            return;
-        }
+            return false;
         s_path = path;
-        string configFile = $@"{path}\config\config.vdf";
+        GamePath = null;
+        string configFile = Path.Combine(path, "config", "config.vdf");
         if (File.Exists(configFile))
         {
             using var reader = new StreamReader(configFile);
@@ -53,17 +49,18 @@ static class App
                 {
                     var urls = new Uri[cmList.Children.Count];
                     for (int i = 0; i < urls.Length; i++)
-                        urls[i] =  new($"wss://{cmList.Children[i].Key}/cmsocket/");
+                        urls[i] = new($"wss://{cmList.Children[i].Key}/cmsocket/");
                     WebSocketConnection.ServerList = new(urls);
                 }
             }
         }
         UpdateUserStatus();
+        return true;
     }
     public static void UpdateUserStatus()
     {
         ulong steamId64 = 0;
-        string loginUsersFile = $@"{s_path}\config\loginusers.vdf";
+        string loginUsersFile = Path.Combine(s_path, "config", "loginusers.vdf");
         if (File.Exists(loginUsersFile))
         {
             using var reader = new StreamReader(loginUsersFile);
@@ -82,7 +79,7 @@ static class App
             return;
         }
         Game.Status status = Game.Status.NotOwned;
-        string configFile = $@"{s_path}\userdata\{(uint)steamId64}\config\localconfig.vdf";
+        string configFile = Path.Combine(s_path, "userdata", ((uint)steamId64).ToString(), "config", "localconfig.vdf");
         if (File.Exists(configFile))
         {
             using var reader = new StreamReader(configFile);
@@ -92,7 +89,7 @@ static class App
         }
         if (status == Game.Status.Owned)
         {
-            string libraryFoldersFile = $@"{s_path}\config\libraryfolders.vdf";
+            string libraryFoldersFile = Path.Combine(s_path, "config", "libraryfolders.vdf");
             if (File.Exists(libraryFoldersFile))
             {
                 using var reader = new StreamReader(libraryFoldersFile);
@@ -101,14 +98,14 @@ static class App
                     foreach (var library in vdf.Children)
                     {
                         bool gameInstallationFound = false;
-                        string? path = library["path"]?.Value;
+                        string? libraryPath = library["path"]?.Value;
                         var apps = library["apps"]?.Children;
-                        if (path is not null && apps is not null)
+                        if (libraryPath is not null && apps is not null)
                             foreach (var app in apps)
                                 if (app.Key == "346110")
                                 {
                                     gameInstallationFound = true;
-                                    GamePath = $@"{path.Replace(@"\\", @"\")}\steamapps\common\ARK";
+                                    GamePath = Path.Combine(NormalizeVdfPath(libraryPath), "steamapps", "common", "ARK");
                                     if (Game.Path == GamePath)
                                         status = Game.Status.OwnedAndInstalled;
                                     break;
@@ -120,6 +117,9 @@ static class App
         }
         CurrentUserStatus = new(steamId64, status);
     }
+
+    static string NormalizeVdfPath(string path) => path.Replace("\\\\", "\\").Replace('\\', Path.DirectorySeparatorChar);
+
     /// <summary>Contains user's Steam ID in 64-bit format and their game ownership status.</summary>
     public readonly record struct UserStatus(ulong SteamId64, Game.Status GameStatus);
 }

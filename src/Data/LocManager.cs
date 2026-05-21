@@ -7,10 +7,19 @@ static class LocManager
     static readonly string[] s_list = new string[229];
     /// <summary>List of ISO 639-1 codes of all currently supported languages.</summary>
     static readonly string[] s_supportedLangs = { "en", "es", "fr", "nl", "pt", "el", "ru", "zh" };
+    static readonly bool[] s_availableLangs = BuildAvailableLanguageList();
     /// <summary>Gets the index of current launcher language in the list of all supported languages.</summary>
-    public static int CurrentLanguageIndex => Array.IndexOf(s_supportedLangs, CurrentLanguage);
+    public static int CurrentLanguageIndex
+    {
+        get
+        {
+            int index = Array.IndexOf(s_supportedLangs, CurrentLanguage);
+            return index >= 0 && IsLanguageAvailable(index) ? index : 0;
+        }
+    }
     /// <summary>Gets or sets the ISO 639-1 code of current display language of the launcher.</summary>
     public static string? CurrentLanguage { get; set; }
+    public static bool HasAdditionalLauncherLanguages => Array.IndexOf(s_availableLangs, true) != Array.LastIndexOf(s_availableLangs, true);
     /// <summary>Selects launcher display language based on setting value and OS language, and loads localized strings.</summary>
     /// <param name="cultureCode">Culture code of Windows' UI.</param>
     public static void Initialize(string cultureCode)
@@ -30,15 +39,25 @@ static class LocManager
                     CurrentLanguage = cultureCode; //OS language is supported, use its loc
             }
         }
-        //Load localized strings
-        using var resourceStream = Application.GetResourceStream(new($"pack://application:,,,/res/loc/{CurrentLanguage}.txt")).Stream;
-        using var reader = new StreamReader(resourceStream);
-        for (int i = 0; i < s_list.Length; i++)
-            s_list[i] = reader.ReadLine()!.Replace(@"\n", "\n");
+
+        if (TryLoadLocalization(CurrentLanguage!) || (CurrentLanguage != "en" && TryLoadLocalization("en")))
+            return;
+
+        PopulateFallbackStrings();
     }
     /// <summary>Sets new current language by its index.</summary>
     /// <param name="index">Index of the new language in supported languages list.</param>
-    public static void SetCurrentLanguage(int index) => CurrentLanguage = s_supportedLangs[index];
+    public static void SetCurrentLanguage(int index)
+    {
+        if (!IsLanguageAvailable(index))
+        {
+            CurrentLanguage = "en";
+            return;
+        }
+
+        CurrentLanguage = s_supportedLangs[index];
+    }
+    public static bool IsLanguageAvailable(int index) => index == 0 || index >= 0 && index < s_availableLangs.Length && s_availableLangs[index];
     /// <summary>Converts an amount of bytes into its string representation.</summary>
     /// <param name="bytes">Amount of bytes.</param>
     /// <returns>The string representation of size.</returns>
@@ -95,5 +114,88 @@ static class LocManager
         }
         int offset = resultBuilder[0] == ' ' ? 1 : 0;
         return resultBuilder.ToString(offset, resultBuilder.Length - offset);
+    }
+
+    static bool TryLoadLocalization(string languageCode)
+    {
+        try
+        {
+            using var resourceStream = LauncherResources.OpenRead($"res/loc/{languageCode}.txt");
+            using var reader = new StreamReader(resourceStream);
+
+            for (int i = 0; i < s_list.Length; i++)
+            {
+                string? line = reader.ReadLine();
+                if (line is null)
+                    return false;
+
+                s_list[i] = line.Replace(@"\n", "\n");
+            }
+
+            return true;
+        }
+        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException or IOException or InvalidOperationException)
+        {
+            return false;
+        }
+    }
+
+    static bool[] BuildAvailableLanguageList()
+    {
+        var available = new bool[s_supportedLangs.Length];
+        available[0] = true;
+        for (int i = 1; i < s_supportedLangs.Length; i++)
+            available[i] = HasLocalizationResource(s_supportedLangs[i]);
+
+        return available;
+    }
+
+    static bool HasLocalizationResource(string languageCode)
+    {
+        try
+        {
+            using var resourceStream = LauncherResources.OpenRead($"res/loc/{languageCode}.txt");
+            return resourceStream.CanRead;
+        }
+        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException or IOException or InvalidOperationException)
+        {
+            return false;
+        }
+    }
+
+    static void PopulateFallbackStrings()
+    {
+        foreach (LocCode code in Enum.GetValues<LocCode>())
+            s_list[(int)code] = CreateFallbackString(code);
+    }
+
+    static string CreateFallbackString(LocCode code)
+    {
+        string name = Enum.GetName(code) ?? code.ToString();
+        var builder = new StringBuilder(name.Length + 8);
+
+        for (int i = 0; i < name.Length; i++)
+        {
+            char current = name[i];
+            if (i > 0 && char.IsUpper(current) && (char.IsLower(name[i - 1]) || i + 1 < name.Length && char.IsLower(name[i + 1])))
+                builder.Append(' ');
+
+            builder.Append(current);
+        }
+
+        return code switch
+        {
+            LocCode.NA => "N/A",
+            LocCode.OK => "OK",
+            LocCode.PlayTab => "Play",
+            LocCode.ServersTab => "Servers",
+            LocCode.GameOptionsTab => "Game Options",
+            LocCode.DLCTab => "DLC",
+            LocCode.ModsTab => "Mods",
+            LocCode.LauncherSettingsTab => "Launcher Settings",
+            LocCode.AboutTab => "About",
+            LocCode.LanguageChangeInfo => "Restart the launcher to fully apply the language change.",
+            _ => builder.ToString()
+        };
     }
 }

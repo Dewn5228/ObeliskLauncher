@@ -1,7 +1,7 @@
 ﻿namespace TEKLauncher.Servers;
 
 /// <summary>Server/cluster description container.</summary>
-record Description
+public record Description
 {
     /// <summary>Max level of wild creatures.</summary>
     public int? MaxDinoLvl { get; init; }

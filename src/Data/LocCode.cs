@@ -1,7 +1,7 @@
 ﻿namespace TEKLauncher.Data;
 
 /// <summary>Defines localized string identifiers.</summary>
-enum LocCode
+public enum LocCode
 {
     AboutTab,
     AboutTabDescription,

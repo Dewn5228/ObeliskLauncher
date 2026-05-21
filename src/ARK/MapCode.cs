@@ -1,7 +1,7 @@
 ﻿namespace TEKLauncher.ARK;
 
 /// <summary>Defines ARK maps.</summary>
-enum MapCode
+public enum MapCode
 {
     TheIsland,
     TheCenter,
