@@ -17,8 +17,9 @@ dotnet publish TEKLauncher.csproj \
   -r "${RID}" \
   /p:UiFramework=Avalonia \
   -p:SignAssembly="${SIGN_ASSEMBLY}" \
-  --self-contained false \
+  --self-contained true \
   -p:PublishSingleFile=true \
+  -p:IncludeNativeLibrariesForSelfExtract=true \
   -o "${OUTPUT_DIR}"
 
 printf 'Linux publish completed: %s\n' "${OUTPUT_DIR}"
