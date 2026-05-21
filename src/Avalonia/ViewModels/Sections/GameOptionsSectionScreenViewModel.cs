@@ -14,7 +14,7 @@ public sealed class GameOptionsLaunchParameterViewModel : INotifyPropertyChanged
         Refresh();
     }
 
-    public string Description => LocManager.GetString(_definition.DescriptionCode);
+    public string Description => Locale.Get(_definition.DescriptionCode);
 
     public bool IsEnabled
     {
@@ -30,7 +30,7 @@ public sealed class GameOptionsLaunchParameterViewModel : INotifyPropertyChanged
         }
     }
 
-    public string Title => LocManager.GetString(_definition.TitleCode);
+    public string Title => Locale.Get(_definition.TitleCode);
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -58,7 +58,7 @@ public sealed class GameOptionsSectionScreenViewModel : LauncherSectionScreenVie
         Activate();
     }
 
-    public string CurrentGamePath => Game.Path ?? LocManager.GetString(LocCode.NoPathSelected);
+    public string CurrentGamePath => Game.Path ?? Locale.Get("errors.noPathSelected");
 
     public bool DirectXStatusVisible => Game.CanRunAsAdmin || Game.CanUseHighProcessPriority;
 
@@ -92,7 +92,7 @@ public sealed class GameOptionsSectionScreenViewModel : LauncherSectionScreenVie
         }
     }
 
-    public string HighProcessPriorityDescription => LocManager.GetString(LocCode.HighProcessPriorityDesc);
+    public string HighProcessPriorityDescription => Locale.Get("playTab.highProcessPriorityDesc");
 
     public bool HighProcessPriorityVisible => Game.CanUseHighProcessPriority;
 
@@ -115,8 +115,8 @@ public sealed class GameOptionsSectionScreenViewModel : LauncherSectionScreenVie
     public GameOptionsLaunchParameterViewModel[] LaunchParameters { get; }
 
     public string MaintenanceNote => OperatingSystem.IsLinux()
-      ? "Game maintenance actions run natively on Linux, while game launch goes through Steam/Proton. Windows-only priority and DirectX checks are hidden on this platform."
-      : "Game update, validation, and file maintenance run directly from the current launcher shell.";
+      ? Locale.Get("gameOptionsTab.maintenanceNoteLinux")
+      : Locale.Get("gameOptionsTab.maintenanceNoteWindows");
 
     public string StatusColor
     {
@@ -173,7 +173,7 @@ public sealed class GameOptionsSectionScreenViewModel : LauncherSectionScreenVie
             return;
 
         IsBusy = true;
-        SetStatus(LocManager.GetString(LocCode.Downloading), 0);
+        SetStatus(Locale.Get("common.downloading"), 0);
         try
         {
             var result = await GameOptionsWorkflow.UnlockSkinsAsync();

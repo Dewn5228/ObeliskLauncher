@@ -9,15 +9,15 @@ sealed class AvaloniaLauncherDialogService : ILauncherDialogService
 {
     public void Show(string type, string message)
     {
-        ShowDialog(new AvaloniaDialogWindow(LocManager.GetString(Enum.Parse<LocCode>(type)), message, false));
+        ShowDialog(new AvaloniaDialogWindow(Locale.Get(type), message, false));
     }
 
-    public bool ShowOptions(string type, string message) => ShowDialog(new AvaloniaDialogWindow(LocManager.GetString(Enum.Parse<LocCode>(type)), message, true)) ?? false;
+    public bool ShowOptions(string type, string message) => ShowDialog(new AvaloniaDialogWindow(Locale.Get(type), message, true)) ?? false;
 
     public void ShowDownloadErr(string name, string url)
     {
         string message = $"The launcher was unable to download {name}. Open the download page and place the file into the launcher data folder before restarting the launcher.";
-        ShowDialog(new AvaloniaDialogWindow(LocManager.GetString(LocCode.Error), message, false, "Open download page", url));
+        ShowDialog(new AvaloniaDialogWindow(Locale.Get("common.error"), message, false, "Open download page", url));
     }
 
     static bool? ShowDialog(AvaloniaDialogWindow dialog)

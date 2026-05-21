@@ -210,7 +210,7 @@ public sealed class ServersSectionScreenViewModel : LauncherSectionScreenViewMod
     ServerRowViewModel[] _selectedClusterServers = [];
     bool _isRefreshing;
     ServersClusterRowViewModel[] _rows = [];
-    string _statusText = LocManager.GetString(LocCode.Loading);
+    string _statusText = Locale.Get("common.loading");
     volatile bool _snapshotUpdatePending;
 
     public ServersSectionScreenViewModel()
@@ -303,11 +303,11 @@ public sealed class ServersSectionScreenViewModel : LauncherSectionScreenViewMod
     {
         StatusText = Servers.Cluster.CurrentStatus switch
         {
-            0 => LocManager.GetString(LocCode.Loading),
-            1 => LocManager.GetString(LocCode.ClustersReloadSteamNotRunning),
-            2 => LocManager.GetString(LocCode.ClustersReloadFail),
-            3 => LocManager.GetString(LocCode.ClustersReloadSuccess),
-            _ => LocManager.GetString(LocCode.Loading)
+            0 => Locale.Get("common.loading"),
+            1 => Locale.Get("errors.clustersReloadSteamNotRunning"),
+            2 => Locale.Get("errors.clustersReloadFail"),
+            3 => Locale.Get("errors.clustersReloadSuccess"),
+            _ => Locale.Get("common.loading")
         };
 
         var rows = new List<ServersClusterRowViewModel>();
@@ -377,7 +377,7 @@ public sealed class ServersSectionScreenViewModel : LauncherSectionScreenViewMod
             DescriptionText = FormatDescription(cluster.Description),
             Detail = cluster.Hoster ?? cluster.Id,
             DiscordUrl = cluster.Discord,
-            HosterText = cluster.Hoster is null ? null : string.Format(LocManager.GetString(LocCode.HostedBy), cluster.Hoster),
+            HosterText = cluster.Hoster is null ? null : string.Format(Locale.Get("serversTab.hostedBy"), cluster.Hoster),
             IsSpecialCluster = cluster.IsSpecialCluster,
             Name = cluster.Name,
             ServerCount = count
@@ -402,7 +402,7 @@ public sealed class ServersSectionScreenViewModel : LauncherSectionScreenViewMod
         DisplayName = SelectedCluster.Cluster.IsSpecialCluster ? server.Name : server.DisplayName,
         DiscordUrl = SelectedCluster.Cluster.IsSpecialCluster ? server.Info?.Discord : null,
         HosterText = SelectedCluster.Cluster.IsSpecialCluster && !string.IsNullOrWhiteSpace(server.Info?.HosterName)
-          ? string.Format(LocManager.GetString(LocCode.HostedBy), server.Info!.HosterName)
+          ? string.Format(Locale.Get("serversTab.hostedBy"), server.Info!.HosterName)
           : null,
         IsFavorite = Servers.Cluster.Favorites.Servers.Contains(server),
         IsPvE = server.IsPvE,
@@ -410,7 +410,7 @@ public sealed class ServersSectionScreenViewModel : LauncherSectionScreenViewMod
         ModIds = server.ModIds,
         NumPlayers = server.NumPlayers,
         Server = server,
-        Version = server.Version ?? LocManager.GetString(LocCode.NA)
+        Version = server.Version ?? Locale.Get("common.na")
       })];
 
         SelectedClusterServers = [.. servers.OrderBy(server => server.DisplayName, StringComparer.CurrentCultureIgnoreCase)];
@@ -423,26 +423,26 @@ public sealed class ServersSectionScreenViewModel : LauncherSectionScreenViewMod
 
         var builder = new StringBuilder();
 
-        void AppendMultiplier<T>(T? multiplier, LocCode nameCode) where T : struct
+        void AppendMultiplier<T>(T? multiplier, string nameCode) where T : struct
         {
             if (!multiplier.HasValue)
                 return;
 
             if (builder.Length > 0)
                 builder.AppendLine();
-            builder.Append(LocManager.GetString(nameCode));
+            builder.Append(Locale.Get(nameCode));
             builder.Append(' ');
             builder.Append(multiplier.Value);
-            if (nameCode != LocCode.MaxWildDinoLevel)
+            if (nameCode != "serversTab.maxWildDinoLevel")
                 builder.Append('x');
         }
 
-        AppendMultiplier(description.MaxDinoLvl, LocCode.MaxWildDinoLevel);
-        AppendMultiplier(description.Taming, LocCode.Taming);
-        AppendMultiplier(description.Experience, LocCode.Experience);
-        AppendMultiplier(description.Harvesting, LocCode.Harvesting);
-        AppendMultiplier(description.Breeding, LocCode.Breeding);
-        AppendMultiplier(description.Stacks, LocCode.Stacks);
+        AppendMultiplier(description.MaxDinoLvl, "serversTab.maxWildDinoLevel");
+        AppendMultiplier(description.Taming, "serversTab.taming");
+        AppendMultiplier(description.Experience, "serversTab.experience");
+        AppendMultiplier(description.Harvesting, "serversTab.harvesting");
+        AppendMultiplier(description.Breeding, "serversTab.breeding");
+        AppendMultiplier(description.Stacks, "serversTab.stacks");
 
         if (description.Other is not null)
             foreach (string line in description.Other.Where(line => !string.IsNullOrWhiteSpace(line)))

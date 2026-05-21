@@ -6,7 +6,7 @@ internal sealed class DlcUpdaterWindowViewModel : SteamTaskUpdaterWindowViewMode
     readonly int _lastStatus;
 
     internal DlcUpdaterWindowViewModel(DLC dlc, bool validate)
-      : base(string.Format(LocManager.GetString(LocCode.SteamUpdater), dlc.Name), validate)
+      : base(string.Format(Locale.Get("gameOptionsTab.steamUpdater"), dlc.Name), validate)
     {
         _dlc = dlc;
         _lastStatus = (int)dlc.CurrentStatus;
@@ -25,8 +25,8 @@ internal sealed class DlcUpdaterWindowViewModel : SteamTaskUpdaterWindowViewMode
           ? (int)DLC.Status.UpdateAvailable
           : (int)DLC.Status.Installed;
         SetStatus(result.Primary == 85
-          ? string.Format(LocManager.GetString(LocCode.AlreadyUpToDate), _dlc.Name)
-          : LocManager.GetString(LocCode.UpdateFinished), global::Avalonia.Media.Brushes.LimeGreen);
+          ? string.Format(Locale.Get("common.alreadyUpToDate"), _dlc.Name)
+          : Locale.Get("updateFinished"), global::Avalonia.Media.Brushes.LimeGreen);
     }
 
     protected override bool TryCloseCore()

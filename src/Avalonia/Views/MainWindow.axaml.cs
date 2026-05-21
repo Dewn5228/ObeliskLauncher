@@ -21,7 +21,7 @@ public partial class MainWindow : Window
 
     void ClosingHandler(object? sender, WindowClosingEventArgs e)
     {
-        if (SteamTaskUpdaterWindowViewModelBase.IsAnySteamTaskActive && !Messages.ShowOptions("Warning", LocManager.GetString(LocCode.LauncherClosePrompt)))
+        if (SteamTaskUpdaterWindowViewModelBase.IsAnySteamTaskActive && !Messages.ShowOptions("common.warning", Locale.Get("errors.launcherClosePrompt")))
             e.Cancel = true;
     }
 
@@ -42,7 +42,7 @@ public partial class MainWindow : Window
 
             if (viewModel.ShouldRestartAfterInitialization)
             {
-                Messages.Show("Info", "Launcher has to be restarted to load new version of tek-steamclient");
+                Messages.Show("common.info", Locale.Get("status.restartRequiredForSteamClient"));
                 LauncherServices.Lifetime.Shutdown();
                 return;
             }
@@ -74,7 +74,7 @@ public partial class MainWindow : Window
             return;
 
         if (!viewModel.TrySelectSection(section, out string? warningMessage) && !string.IsNullOrWhiteSpace(warningMessage))
-            Messages.Show("Warning", warningMessage);
+            Messages.Show("common.warning", warningMessage);
     }
 
     void GameLanguageChanged(object? sender, SelectionChangedEventArgs e)
@@ -94,7 +94,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            Messages.Show("Error", ex.Message);
+            Messages.Show("common.error", ex.Message);
         }
     }
 
@@ -105,8 +105,16 @@ public partial class MainWindow : Window
             if (!playScreen.LauncherLanguageSelectionEnabled)
                 return;
 
+            int previousIndex = playScreen.LauncherLanguageIndex;
+            if (previousIndex == comboBox.SelectedIndex)
+                return;
+
             playScreen.LauncherLanguageIndex = comboBox.SelectedIndex;
-            Messages.Show("Info", LocManager.GetString(LocCode.LanguageChangeInfo));
+            if (DataContext is MainWindowViewModel viewModel)
+            {
+                viewModel.RefreshLocale();
+                UpdateNavigationLabels(viewModel);
+            }
         }
     }
 
@@ -126,7 +134,7 @@ public partial class MainWindow : Window
 
         var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
-            Title = LocManager.GetString(LocCode.GamePath),
+            Title = Locale.Get("gameOptionsTab.gamePath"),
             AllowMultiple = false
         });
 
@@ -144,7 +152,7 @@ public partial class MainWindow : Window
 
         var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
-            Title = "Select custom compatdata folder",
+            Title = Locale.Get("mainWindow.customPrefix"),
             AllowMultiple = false
         });
 
@@ -152,9 +160,9 @@ public partial class MainWindow : Window
             screen.LinuxCustomPrefixPath = folders[0].TryGetLocalPath() ?? screen.LinuxCustomPrefixPath;
     }
 
-    async void ImportLinuxProtonTool(object? sender, RoutedEventArgs e) => await ImportLinuxLaunchToolAsync(LinuxLaunchToolKind.Proton, "Select Proton or GE executable");
+    async void ImportLinuxProtonTool(object? sender, RoutedEventArgs e) => await ImportLinuxLaunchToolAsync(LinuxLaunchToolKind.Proton, Locale.Get("mainWindow.importProtonPath"));
 
-    async void ImportLinuxWineTool(object? sender, RoutedEventArgs e) => await ImportLinuxLaunchToolAsync(LinuxLaunchToolKind.Wine, "Select Wine executable");
+    async void ImportLinuxWineTool(object? sender, RoutedEventArgs e) => await ImportLinuxLaunchToolAsync(LinuxLaunchToolKind.Wine, Locale.Get("mainWindow.importWinePath"));
 
     async Task ImportLinuxLaunchToolAsync(LinuxLaunchToolKind kind, string title)
     {
@@ -188,12 +196,12 @@ public partial class MainWindow : Window
         string newPath = screen.GamePath.Trim();
         if (string.IsNullOrWhiteSpace(newPath))
         {
-            Messages.Show("Warning", LocManager.GetString(LocCode.NoPathSelected));
+            Messages.Show("common.warning", Locale.Get("errors.noPathSelected"));
             return;
         }
 
-        LocCode code = LauncherSettingsWorkflow.GetGamePathChangePromptCode(newPath);
-        if (!Messages.ShowOptions("Warning", LocManager.GetString(code)))
+        string code = LauncherSettingsWorkflow.GetGamePathChangePromptCode(newPath);
+        if (!Messages.ShowOptions("common.warning", Locale.Get(code)))
             return;
 
         Game.Path = newPath;
@@ -204,21 +212,21 @@ public partial class MainWindow : Window
     {
         if (!LauncherServices.TekSteamClient.IsLoaded)
         {
-            Messages.Show("Error", "tek-steamclient library is not loaded");
+            ShowSteamClientUnavailable();
             return;
         }
 
-        if (!Messages.ShowOptions("Warning", LocManager.GetString(LocCode.CleanDownloadCachePrompt)))
+        if (!Messages.ShowOptions("common.warning", Locale.Get("gameOptionsTab.cleanDownloadCachePrompt")))
             return;
 
         await LauncherSettingsWorkflow.CleanDownloadCacheAsync();
 
-        Messages.Show("Info", LocManager.GetString(LocCode.CleanDownloadCacheSuccess));
+        Messages.Show("common.info", Locale.Get("gameOptionsTab.cleanDownloadCacheSuccess"));
     }
 
     void DeleteLauncherSettings(object? sender, RoutedEventArgs e)
     {
-        if (!Messages.ShowOptions("Warning", LocManager.GetString(LocCode.DeleteLauncherSettingsPrompt)))
+        if (!Messages.ShowOptions("common.warning", Locale.Get("errors.deleteLauncherSettingsPrompt")))
             return;
 
         Settings.Delete = true;
@@ -231,10 +239,7 @@ public partial class MainWindow : Window
             return;
 
         if (string.IsNullOrWhiteSpace(screen.LinuxLaunchPresetName))
-        {
-            Messages.Show("Warning", "Preset name cannot be empty.");
             return;
-        }
 
         screen.SaveLinuxLaunchPreset();
     }
@@ -253,7 +258,7 @@ public partial class MainWindow : Window
         if (screen.SelectedLinuxLaunchPreset is null)
             return;
 
-        if (!Messages.ShowOptions("Warning", $"Delete Linux launch preset '{screen.SelectedLinuxLaunchPreset.Name}'?"))
+        if (!Messages.ShowOptions("common.warning", string.Format(Locale.Get("errors.dlcDeletePrompt"), screen.SelectedLinuxLaunchPreset.Name)))
             return;
 
         screen.DeleteSelectedLinuxPreset();
@@ -269,7 +274,7 @@ public partial class MainWindow : Window
         if (!LauncherSettingsWorkflow.ShouldWarnCloseOnLaunch(enabled))
             return;
 
-        if (Messages.ShowOptions("Warning", LocManager.GetString(LocCode.LauncherCloseWarning)))
+        if (Messages.ShowOptions("common.warning", Locale.Get("errors.launcherCloseWarning")))
             return;
 
         screen.CloseOnGameLaunch = false;
@@ -304,7 +309,7 @@ public partial class MainWindow : Window
         if (DataContext is not MainWindowViewModel { CurrentScreen: DlcSectionScreenViewModel screen } || sender is not Control { DataContext: DlcRowViewModel row })
             return;
 
-        if (!Messages.ShowOptions("Warning", string.Format(LocManager.GetString(LocCode.DLCDeletePrompt), row.Name)))
+        if (!Messages.ShowOptions("common.warning", string.Format(Locale.Get("errors.dlcDeletePrompt"), row.Name)))
             return;
 
         await screen.DeleteAsync(row);
@@ -333,7 +338,7 @@ public partial class MainWindow : Window
 
         if (!LauncherServices.TekSteamClient.IsLoaded)
         {
-            Messages.Show("Error", "tek-steamclient library is not loaded");
+            ShowSteamClientUnavailable();
             return;
         }
 
@@ -354,7 +359,7 @@ public partial class MainWindow : Window
 
         if (!LauncherServices.TekSteamClient.IsLoaded)
         {
-            Messages.Show("Error", "tek-steamclient library is not loaded");
+            ShowSteamClientUnavailable();
             return;
         }
 
@@ -378,7 +383,7 @@ public partial class MainWindow : Window
             return;
 
         await clipboard.SetTextAsync(row.IdText);
-        Messages.Show("Info", LocManager.GetString(LocCode.ModIdCopied));
+        Messages.Show("common.info", Locale.Get("errors.modIdCopied"));
     }
 
     async void DeleteInstalledMod(object? sender, RoutedEventArgs e)
@@ -386,7 +391,7 @@ public partial class MainWindow : Window
         if (DataContext is not MainWindowViewModel { CurrentScreen: ModsSectionScreenViewModel screen } || sender is not Control { DataContext: ModRowViewModel row })
             return;
 
-        if (!Messages.ShowOptions("Info", LocManager.GetString(LocCode.ModDeletePrompt)))
+        if (!Messages.ShowOptions("common.info", Locale.Get("modsTab.modDeletePrompt")))
             return;
 
         await screen.DeleteAsync(row);
@@ -405,7 +410,7 @@ public partial class MainWindow : Window
 
         if (!LauncherServices.TekSteamClient.IsLoaded)
         {
-            Messages.Show("Error", "tek-steamclient library is not loaded");
+            ShowSteamClientUnavailable();
             return;
         }
 
@@ -476,7 +481,7 @@ public partial class MainWindow : Window
 
         if (!LauncherServices.TekSteamClient.IsLoaded)
         {
-            Messages.Show("Error", "tek-steamclient library is not loaded");
+            ShowSteamClientUnavailable();
             return;
         }
 
@@ -493,7 +498,7 @@ public partial class MainWindow : Window
 
         if (!LauncherServices.TekSteamClient.IsLoaded)
         {
-            Messages.Show("Error", "tek-steamclient library is not loaded");
+            ShowSteamClientUnavailable();
             return;
         }
 
@@ -522,15 +527,15 @@ public partial class MainWindow : Window
 
         if (!LauncherServices.TekSteamClient.IsLoaded)
         {
-            Messages.Show("Error", "tek-steamclient library is not loaded");
+            ShowSteamClientUnavailable();
             return;
         }
 
-        if (!validate && Steam.App.CurrentUserStatus.GameStatus == Game.Status.OwnedAndInstalled && !Messages.ShowOptions("Warning", LocManager.GetString(LocCode.UpdateSteamGameWarning)))
+        if (!validate && Steam.App.CurrentUserStatus.GameStatus == Game.Status.OwnedAndInstalled && !Messages.ShowOptions("common.warning", Locale.Get("errors.updateSteamGameWarning")))
             return;
 
         string? prompt = GameUpdateWorkflow.GetSafetyPrompt(validate);
-        if (!string.IsNullOrWhiteSpace(prompt) && !Messages.ShowOptions("Warning", prompt))
+        if (!string.IsNullOrWhiteSpace(prompt) && !Messages.ShowOptions("common.warning", prompt))
             return;
 
         var window = new GameUpdaterWindow(validate);
@@ -579,7 +584,7 @@ public partial class MainWindow : Window
 
         if (!LauncherServices.TekSteamClient.IsLoaded)
         {
-            Messages.Show("Error", "tek-steamclient library is not loaded");
+            ShowSteamClientUnavailable();
             return;
         }
 
@@ -599,7 +604,7 @@ public partial class MainWindow : Window
 
         if (!LauncherServices.TekSteamClient.IsLoaded)
         {
-            Messages.Show("Error", "tek-steamclient library is not loaded");
+            ShowSteamClientUnavailable();
             return;
         }
 
@@ -652,16 +657,18 @@ public partial class MainWindow : Window
             screen.ToggleFavorite(row);
     }
 
+    static void ShowSteamClientUnavailable() => Messages.Show("common.error", Locale.Get("errors.steamClientBootstrapFailed"));
+
     static void OpenUrl(string url) => Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
 
     void UpdateNavigationLabels(MainWindowViewModel viewModel)
     {
-        PlayButton.Content = viewModel.Sections[(int)LauncherSection.Play].TitleCode is var playCode ? LocManager.GetString(playCode) : PlayButton.Content;
-        ServersButton.Content = viewModel.Sections[(int)LauncherSection.Servers].TitleCode is var serversCode ? LocManager.GetString(serversCode) : ServersButton.Content;
-        GameOptionsButton.Content = viewModel.Sections[(int)LauncherSection.GameOptions].TitleCode is var gameOptionsCode ? LocManager.GetString(gameOptionsCode) : GameOptionsButton.Content;
-        DlcButton.Content = viewModel.Sections[(int)LauncherSection.DLC].TitleCode is var dlcCode ? LocManager.GetString(dlcCode) : DlcButton.Content;
-        ModsButton.Content = viewModel.Sections[(int)LauncherSection.Mods].TitleCode is var modsCode ? LocManager.GetString(modsCode) : ModsButton.Content;
-        LauncherSettingsButton.Content = viewModel.Sections[(int)LauncherSection.LauncherSettings].TitleCode is var settingsCode ? LocManager.GetString(settingsCode) : LauncherSettingsButton.Content;
-        AboutButton.Content = viewModel.Sections[(int)LauncherSection.About].TitleCode is var aboutCode ? LocManager.GetString(aboutCode) : AboutButton.Content;
+        PlayButton.Content = viewModel.Sections[(int)LauncherSection.Play].TitleCode is var playCode ? Locale.Get(playCode) : PlayButton.Content;
+        ServersButton.Content = viewModel.Sections[(int)LauncherSection.Servers].TitleCode is var serversCode ? Locale.Get(serversCode) : ServersButton.Content;
+        GameOptionsButton.Content = viewModel.Sections[(int)LauncherSection.GameOptions].TitleCode is var gameOptionsCode ? Locale.Get(gameOptionsCode) : GameOptionsButton.Content;
+        DlcButton.Content = viewModel.Sections[(int)LauncherSection.DLC].TitleCode is var dlcCode ? Locale.Get(dlcCode) : DlcButton.Content;
+        ModsButton.Content = viewModel.Sections[(int)LauncherSection.Mods].TitleCode is var modsCode ? Locale.Get(modsCode) : ModsButton.Content;
+        LauncherSettingsButton.Content = viewModel.Sections[(int)LauncherSection.LauncherSettings].TitleCode is var settingsCode ? Locale.Get(settingsCode) : LauncherSettingsButton.Content;
+        AboutButton.Content = viewModel.Sections[(int)LauncherSection.About].TitleCode is var aboutCode ? Locale.Get(aboutCode) : AboutButton.Content;
     }
 }

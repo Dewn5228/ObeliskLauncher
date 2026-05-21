@@ -6,7 +6,8 @@ namespace TEKLauncher.Avalonia.ViewModels;
 
 public sealed class MainWindowViewModel : INotifyPropertyChanged
 {
-    readonly string _defaultSubtitle;
+    string _defaultSubtitle;
+    readonly string? _startupMessage;
     public MainWindowViewModel()
       : this(false, null)
     {
@@ -14,9 +15,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
     public MainWindowViewModel(bool beginInstallation = false, string? startupMessage = null)
     {
-        _defaultSubtitle = startupMessage ?? (beginInstallation
-          ? "Preparing first-launch installation tasks for ARK."
-          : "Manage ARK installs, DLC, mods, servers, and launch behavior from the native launcher shell.");
+        _startupMessage = startupMessage;
+        _defaultSubtitle = _startupMessage ?? (beginInstallation
+  ? Locale.Get("status.preparingInstallation")
+  : Locale.Get("status.manageArkInstalls"));
         _subtitle = _defaultSubtitle;
 
         _beginInstallation = beginInstallation;
@@ -39,11 +41,19 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     readonly Dictionary<LauncherSection, LauncherSectionScreenViewModel> _screens;
     ShellNoticeViewModel[] _baseNotices = [];
     bool _canRefreshShellStatus;
+    bool _bootstrapSuccess;
+    bool _bootstrapRestartRequired;
+    bool _launcherUpdateAvailable;
+    bool _gameUpdateAvailable;
+    bool _dlcUpdatesAvailable;
+    string? _bootstrapWarningMessage;
+    string? _bootstrapDownloadName;
+    string? _bootstrapErrorMessage;
     LauncherSectionScreenViewModel _currentScreen;
     string? _downloadFailureName;
     string? _downloadFailureUrl;
     bool _isBusy;
-    string _gameVersion = LocManager.GetString(LocCode.Loading);
+    string _gameVersion = Locale.Get("common.loading");
     string _gameVersionColor = "#FFFFFF";
     ShellNoticeViewModel[] _notices = [];
     LauncherSection _selectedSection;
@@ -99,9 +109,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
     public LauncherSectionInfo[] Sections => LauncherShellNavigation.Sections;
 
-    public string SelectedSectionDescription => LauncherShellNavigation.GetInfo(_selectedSection).Description;
+    public string SelectedSectionDescription => Locale.Get(LauncherShellNavigation.GetInfo(_selectedSection).Description);
 
-    public string SelectedSectionTitle => LocManager.GetString(LauncherShellNavigation.GetInfo(_selectedSection).TitleCode);
+    public string SelectedSectionTitle => Locale.Get(LauncherShellNavigation.GetInfo(_selectedSection).TitleCode);
 
     public LauncherSection SelectedSection
     {
@@ -122,6 +132,19 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    public void RefreshLocale()
+    {
+        _defaultSubtitle = _startupMessage ?? (_beginInstallation
+          ? Locale.Get("status.preparingInstallation")
+          : Locale.Get("status.manageArkInstalls"));
+
+        RebuildNotices();
+
+        CurrentScreen.Activate();
+        OnPropertyChanged(nameof(SelectedSectionTitle));
+        OnPropertyChanged(nameof(SelectedSectionDescription));
+    }
+
     public async Task InitializeAsync()
     {
         if (IsBusy)
@@ -141,8 +164,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
               && !startup.BootstrapResult.RestartRequired
               && startup.BootstrapResult.DownloadName is null;
 
-            (_baseNotices, _canRefreshShellStatus) = BuildBaseNotices(startup);
-            ApplyNotices(BuildDynamicNotices(startup.GameUpdateAvailable, startup.DlcUpdatesAvailable));
+            _launcherUpdateAvailable = startup.LauncherUpdateAvailable;
+            _bootstrapSuccess = startup.BootstrapResult.Success;
+            _bootstrapRestartRequired = startup.BootstrapResult.RestartRequired;
+            _bootstrapWarningMessage = startup.BootstrapResult.WarningMessage;
+            _bootstrapDownloadName = startup.BootstrapResult.DownloadName;
+            _bootstrapErrorMessage = startup.BootstrapResult.ErrorMessage;
+            _gameUpdateAvailable = startup.GameUpdateAvailable;
+            _dlcUpdatesAvailable = startup.DlcUpdatesAvailable;
+            RebuildNotices();
         }
         finally
         {
@@ -155,7 +185,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         warningMessage = null;
         if (LauncherShellNavigation.RequiresSpacewarWarning(section) && Steam.App.CurrentUserStatus.GameStatus == Game.Status.OwnedAndInstalled && !Game.UseSpacewar)
         {
-            warningMessage = LocManager.GetString(LocCode.ModsOnSteamWarning);
+            warningMessage = Locale.Get("modsTab.modsOnSteamWarning");
             return false;
         }
 
@@ -170,58 +200,59 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
         var status = await LauncherShellStartup.GetStatusSummaryAsync(_beginInstallation);
         ApplyGameVersionStatus(status.GameVersionText, status.GameVersionTone);
-        ApplyNotices(BuildDynamicNotices(status.GameUpdateAvailable, status.DlcUpdatesAvailable));
+        _gameUpdateAvailable = status.GameUpdateAvailable;
+        _dlcUpdatesAvailable = status.DlcUpdatesAvailable;
+        ApplyNotices(BuildDynamicNotices(_gameUpdateAvailable, _dlcUpdatesAvailable));
     }
 
     public T? GetScreen<T>(LauncherSection section)
       where T : LauncherSectionScreenViewModel => _screens.TryGetValue(section, out LauncherSectionScreenViewModel? screen) ? screen as T : null;
 
-    (ShellNoticeViewModel[] Notices, bool CanRefreshShellStatus) BuildBaseNotices(LauncherShellStartupResult startup)
+    (ShellNoticeViewModel[] Notices, bool CanRefreshShellStatus) BuildBaseNotices()
     {
         var notices = new List<ShellNoticeViewModel>();
-        var launchCapabilities = LauncherServices.GameLauncher.Capabilities;
 
-        if (startup.LauncherUpdateAvailable)
+        if (_launcherUpdateAvailable)
             notices.Add(new ShellNoticeViewModel
             {
                 ActionKind = ShellNoticeActionKind.OpenLauncherReleasePage,
-                ActionLabel = LocManager.GetString(LocCode.Update),
-                Message = LocManager.GetString(LocCode.LauncherUpdateAvailable)
+                ActionLabel = Locale.Get("common.update"),
+                Message = Locale.Get("show.whatsNew")
             });
 
-        if (startup.BootstrapResult.WarningMessage is not null)
+        if (_bootstrapWarningMessage is not null)
             notices.Add(new ShellNoticeViewModel
             {
                 ActionKind = ShellNoticeActionKind.None,
-                Message = startup.BootstrapResult.WarningMessage
+                Message = _bootstrapWarningMessage
             });
 
-        if (startup.BootstrapResult.DownloadName is not null)
+        if (_bootstrapDownloadName is not null)
         {
             notices.Add(new ShellNoticeViewModel
             {
                 ActionKind = ShellNoticeActionKind.None,
-                Message = $"Download failed: {startup.BootstrapResult.DownloadName}"
+                Message = Locale.Get("errors.downloadFailed") + _bootstrapDownloadName
             });
             return (notices.ToArray(), false);
         }
 
-        if (startup.BootstrapResult.RestartRequired)
+        if (_bootstrapRestartRequired)
         {
             notices.Add(new ShellNoticeViewModel
             {
                 ActionKind = ShellNoticeActionKind.None,
-                Message = "Launcher has to be restarted to load new version of tek-steamclient"
+                Message = Locale.Get("status.restartRequiredForSteamClient")
             });
             return (notices.ToArray(), false);
         }
 
-        if (!startup.BootstrapResult.Success)
+        if (!_bootstrapSuccess)
         {
             notices.Add(new ShellNoticeViewModel
             {
                 ActionKind = ShellNoticeActionKind.None,
-                Message = startup.BootstrapResult.ErrorMessage ?? "tek-steamclient bootstrap failed"
+                Message = _bootstrapErrorMessage ?? Locale.Get("errors.steamClientBootstrapFailed")
             });
             return (notices.ToArray(), false);
         }
@@ -236,16 +267,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             notices.Add(new ShellNoticeViewModel
             {
                 ActionKind = ShellNoticeActionKind.OpenGameUpdater,
-                ActionLabel = LocManager.GetString(LocCode.Update),
-                Message = LocManager.GetString(LocCode.GameUpdateAvailable)
+                ActionLabel = Locale.Get("common.update"),
+                Message = Locale.Get("gameUpdateAvailable")
             });
 
         if (dlcUpdatesAvailable)
             notices.Add(new ShellNoticeViewModel
             {
                 ActionKind = ShellNoticeActionKind.OpenDlcSection,
-                ActionLabel = LocManager.GetString(LocCode.Update),
-                Message = LocManager.GetString(LocCode.DLCUpdatesAvailable)
+                ActionLabel = Locale.Get("common.update"),
+                Message = Locale.Get("dlcUpdatesAvailable")
             });
 
         return notices.ToArray();
@@ -256,6 +287,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         ShellNoticeViewModel[] notices = [.. _baseNotices, .. dynamicNotices];
         Notices = notices;
         Subtitle = notices.Length > 0 ? notices[0].Message : _defaultSubtitle;
+    }
+
+    void RebuildNotices()
+    {
+        (_baseNotices, _canRefreshShellStatus) = BuildBaseNotices();
+        ApplyNotices(BuildDynamicNotices(_gameUpdateAvailable, _dlcUpdatesAvailable));
     }
 
     void ApplyGameVersionStatus(string text, LauncherShellTone tone)

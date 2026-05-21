@@ -60,7 +60,7 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
     double _progressMaximum = 1;
     string _progressText = "Waiting for job data...";
     double _progressValue;
-    string _actionLabel = LocManager.GetString(LocCode.Pause);
+    string _actionLabel = Locale.Get("common.pause");
     string? _spaceMessage;
     IBrush _statusBrush = Brushes.Goldenrod;
     string _statusText = string.Empty;
@@ -177,7 +177,7 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
 
     public unsafe void PauseOrRetry()
     {
-        if (ActionLabel == LocManager.GetString(LocCode.Pause))
+        if (ActionLabel == Locale.Get("common.pause"))
         {
             if (_desc is null)
                 return;
@@ -189,7 +189,7 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
 
         if (Game.IsRunning)
         {
-            SetStatus(LocManager.GetString(LocCode.UpdateFailGameRunning), Brushes.IndianRed);
+            SetStatus(Locale.Get("errors.updateFailGameRunning"), Brushes.IndianRed);
             return;
         }
 
@@ -201,7 +201,7 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
         if (Game.IsRunning)
         {
             SetRetryState();
-            SetStatus(LocManager.GetString(LocCode.UpdateFailGameRunning), Brushes.IndianRed);
+            SetStatus(Locale.Get("errors.updateFailGameRunning"), Brushes.IndianRed);
             return;
         }
 
@@ -212,7 +212,7 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
     {
         if (IsSteamTaskActive)
         {
-            Messages.Show("Warning", LocManager.GetString(LocCode.PauseRequired));
+            Messages.Show("common.warning", Locale.Get("pauseRequired"));
             return false;
         }
 
@@ -235,7 +235,7 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
     protected virtual void OnTaskStarting()
     {
         SetPauseState();
-        SetStatus(LocManager.GetString(LocCode.FetchingData), Brushes.Goldenrod);
+        SetStatus(Locale.Get("modsTab.fetchingData"), Brushes.Goldenrod);
     }
 
     protected void PostFailureResult(TEKSteamClient.Error result)
@@ -262,7 +262,7 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
                 ProgressMaximum = 1;
                 ProgressValue = 1;
                 IsProgressIndeterminate = false;
-                SetStatus(LocManager.GetString(LocCode.OperationPaused), Brushes.LimeGreen);
+                SetStatus(Locale.Get("operationPaused"), Brushes.LimeGreen);
             }
             else
             {
@@ -295,13 +295,13 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
 
     protected void SetPauseState()
     {
-        ActionLabel = LocManager.GetString(LocCode.Pause);
+        ActionLabel = Locale.Get("common.pause");
         IsActionEnabled = true;
     }
 
     protected void SetRetryState()
     {
-        ActionLabel = LocManager.GetString(LocCode.Retry);
+        ActionLabel = Locale.Get("common.retry");
         IsActionEnabled = true;
     }
 
@@ -366,9 +366,9 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
         }
     }
 
-    void AddStage(LocCode code)
+    void AddStage(string code)
     {
-        var stage = new UpdaterStageViewModel(LocManager.GetString(code));
+        var stage = new UpdaterStageViewModel(Locale.Get(code));
         _currentStage?.Finish(true);
         _currentStage = stage;
         Stages.Add(stage);
@@ -382,7 +382,7 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
             long requiredSpace = LauncherServices.TekSteamClient.EstimateDeltaDiskSpace(desc.Job.Delta);
             if (diskFreeSpace < requiredSpace)
             {
-                _spaceMessage = string.Format(LocManager.GetString(LocCode.NotEnoughSpace), LocManager.BytesToString(requiredSpace));
+                _spaceMessage = string.Format(Locale.Get("modsTab.notEnoughSpace"), Locale.BytesToString(requiredSpace));
                 LauncherServices.TekSteamClient.PauseJob(ref desc);
             }
         }
@@ -397,50 +397,50 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
                     case TEKSteamClient.AmJobStage.FetchingData:
                         _progressMode = UpdaterProgressMode.None;
                         ResetProgress(true);
-                        AddStage(LocCode.FetchingData);
+                        AddStage("modsTab.fetchingData");
                         break;
                     case TEKSteamClient.AmJobStage.DwManifest:
                         _progressMode = UpdaterProgressMode.Binary;
                         ResetProgress(false);
-                        AddStage(LocCode.DownloadingManifest);
+                        AddStage("modsTab.downloadingManifest");
                         break;
                     case TEKSteamClient.AmJobStage.DwPatch:
                         _progressMode = UpdaterProgressMode.Binary;
                         ResetProgress(false);
-                        AddStage(LocCode.DownloadingPatch);
+                        AddStage("modsTab.downloadingPatch");
                         break;
                     case TEKSteamClient.AmJobStage.Verifying:
                         _progressMode = UpdaterProgressMode.Percentage;
                         ResetProgress(false);
-                        AddStage(LocCode.Validating);
+                        AddStage("modsTab.validating");
                         break;
                     case TEKSteamClient.AmJobStage.Downloading:
                         _progressMode = UpdaterProgressMode.Binary;
                         ResetProgress(false);
-                        AddStage(LocCode.DownloadingFiles);
+                        AddStage("modsTab.downloadingFiles");
                         break;
                     case TEKSteamClient.AmJobStage.Pathcing:
                         _progressMode = UpdaterProgressMode.Percentage;
                         ResetProgress(false);
-                        AddStage(LocCode.Patching);
+                        AddStage("modsTab.patching");
                         break;
                     case TEKSteamClient.AmJobStage.Installing:
                         _progressMode = UpdaterProgressMode.Numbers;
                         ResetProgress(false);
-                        AddStage(LocCode.InstallingFiles);
+                        AddStage("modsTab.installingFiles");
                         break;
                     case TEKSteamClient.AmJobStage.Deleting:
                         _progressMode = UpdaterProgressMode.Numbers;
                         ResetProgress(false);
-                        AddStage(LocCode.Deleting);
+                        AddStage("common.deleting");
                         break;
                     case TEKSteamClient.AmJobStage.Finalizing:
                         _progressMode = UpdaterProgressMode.None;
                         ResetProgress(true);
-                        AddStage(LocCode.Finalizing);
+                        AddStage("modsTab.finalizing");
                         break;
                 }
-                SetStatus(_currentStage?.Label ?? LocManager.GetString(LocCode.NA), Brushes.Goldenrod);
+                SetStatus(_currentStage?.Label ?? Locale.Get("common.na"), Brushes.Goldenrod);
             });
         }
 
@@ -465,7 +465,7 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
 
     string GetDeterminateProgressText(long current, long total) => _progressMode switch
     {
-        UpdaterProgressMode.Binary => $"{LocManager.BytesToString(current)} / {LocManager.BytesToString(total)}",
+        UpdaterProgressMode.Binary => $"{Locale.BytesToString(current)} / {Locale.BytesToString(total)}",
         UpdaterProgressMode.Numbers => $"{current:N0} / {total:N0}",
         _ => $"{Math.Clamp(total == 0 ? 0 : current * 100.0 / total, 0, 100):0.#}%"
     };

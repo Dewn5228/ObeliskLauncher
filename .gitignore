@@ -5,5 +5,6 @@ obj/
 out/
 Properties/
 res/
+local/
 *.snk
 *.g.cs

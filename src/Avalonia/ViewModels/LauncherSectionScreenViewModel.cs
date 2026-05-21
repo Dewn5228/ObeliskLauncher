@@ -12,7 +12,7 @@ public abstract class LauncherSectionScreenViewModel : INotifyPropertyChanged
 
     public LauncherSection Section { get; }
 
-    public string Title => LocManager.GetString(LauncherShellNavigation.GetInfo(Section).TitleCode);
+    public string Title => Locale.Get(LauncherShellNavigation.GetInfo(Section).TitleCode);
 
     public string Description => LauncherShellNavigation.GetInfo(Section).Description;
 

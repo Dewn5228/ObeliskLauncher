@@ -34,7 +34,7 @@ sealed class AvaloniaDialogWindow : Window
 
         if (twoOptions)
         {
-            var noButton = new Button { Content = LocManager.GetString(LocCode.No), MinWidth = 90 };
+            var noButton = new Button { Content = Locale.Get("common.no"), MinWidth = 90 };
             noButton.Click += (_, _) =>
             {
                 DialogResultValue = false;
@@ -43,7 +43,7 @@ sealed class AvaloniaDialogWindow : Window
             actions.Children.Add(noButton);
         }
 
-        var okLabel = twoOptions ? LocManager.GetString(LocCode.Yes) : LocManager.GetString(LocCode.OK);
+        var okLabel = twoOptions ? Locale.Get("common.yes") : Locale.Get("common.ok");
         var okButton = new Button { Content = okLabel, MinWidth = 90 };
         okButton.Click += (_, _) =>
         {

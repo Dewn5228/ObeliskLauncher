@@ -30,19 +30,19 @@ static class ModWorkflow
         _ => "#D49B38"
     };
 
-    public static string GetStatusText(Mod.Status status) => LocManager.GetString(status switch
+    public static string GetStatusText(Mod.Status status) => Locale.Get(status switch
     {
-        Mod.Status.Installed => LocCode.Installed,
-        Mod.Status.UpdateAvailable => LocCode.UpdateAvailable,
-        Mod.Status.Updating => LocCode.Updating,
-        Mod.Status.Deleting => LocCode.Deleting,
-        _ => LocCode.NA
+        Mod.Status.Installed => "common.installed",
+        Mod.Status.UpdateAvailable => "common.updateAvailable",
+        Mod.Status.Updating => "common.updating",
+        Mod.Status.Deleting => "common.deleting",
+        _ => "common.na"
     });
 
     public static async Task<ModActionResult> DeleteAsync(Mod mod)
     {
         if (Game.IsRunning)
-            return new(LocManager.GetString(LocCode.ModDeleteFail), 2);
+            return new(Locale.Get("modsTab.modDeleteFail"), 2);
 
         string description = Describe(mod);
         await Task.Run(mod.Delete);

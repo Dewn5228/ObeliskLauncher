@@ -6,7 +6,7 @@ internal sealed class ModUpdaterWindowViewModel : SteamTaskUpdaterWindowViewMode
     readonly int _lastStatus;
 
     internal ModUpdaterWindowViewModel(Mod.ModDetails details, bool validate)
-      : base(string.Format(LocManager.GetString(LocCode.SteamUpdater), details.Name), validate)
+      : base(string.Format(Locale.Get("gameOptionsTab.steamUpdater"), details.Name), validate)
     {
         _details = details;
 
@@ -50,8 +50,8 @@ internal sealed class ModUpdaterWindowViewModel : SteamTaskUpdaterWindowViewMode
         NewStatus = (int)Mod.Status.Installed;
         EnsureModPresent();
         SetStatus(result.Primary == 85
-          ? string.Format(LocManager.GetString(LocCode.AlreadyUpToDate), _details.Name)
-          : string.Format(LocManager.GetString(LocCode.ModInstallSuccess), _details.Name), global::Avalonia.Media.Brushes.LimeGreen);
+          ? string.Format(Locale.Get("common.alreadyUpToDate"), _details.Name)
+          : string.Format(Locale.Get("modsTab.modInstallSuccess"), _details.Name), global::Avalonia.Media.Brushes.LimeGreen);
     }
 
     protected override bool TryCloseCore()

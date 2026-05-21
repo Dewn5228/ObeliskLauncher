@@ -1,67 +1,68 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="TEKLauncher.Avalonia.Views.FirstLaunchWindow"
+        xmlns:u="clr-namespace:TEKLauncher.UI"
         Width="860"
         Height="560"
         MinWidth="760"
         MinHeight="520"
         CanResize="False"
         WindowStartupLocation="CenterScreen"
-        Title="TEK Launcher Setup">
+        Title="{u:Tr firstLaunchWindow.title}">
   <Border Background="#0F1722">
     <Grid Margin="28" RowDefinitions="Auto,*">
-      <TextBlock Text="First Launch" FontSize="30" FontWeight="SemiBold" />
+      <TextBlock Text="{u:Tr firstLaunchWindow.firstLaunch}" FontSize="30" FontWeight="SemiBold" />
       <Grid Grid.Row="1">
         <Border x:Name="StartPanel" IsVisible="True" Padding="28" CornerRadius="20" Background="#132132" BorderBrush="#2A4C6D" BorderThickness="1">
           <StackPanel VerticalAlignment="Center" Spacing="18">
-            <TextBlock Text="Choose how TEK Launcher should start." FontSize="18" />
-            <Button Classes="accent" Height="54" FontSize="18" Content="Use an existing ARK installation" Click="ShowExistingInstallFlow" />
-            <Button Height="54" FontSize="18" Content="Install ARK into a new folder" Click="ShowInstallFlow" />
+            <TextBlock Text="{u:Tr firstLaunchWindow.chooseHowToStart}" FontSize="18" />
+            <Button Classes="accent" Height="54" FontSize="18" Content="{u:Tr firstLaunchWindow.useExistingArk}" Click="ShowExistingInstallFlow" />
+            <Button Height="54" FontSize="18" Content="{u:Tr firstLaunchWindow.installNewFolder}" Click="ShowInstallFlow" />
           </StackPanel>
         </Border>
         <Border x:Name="ExistingInstallPanel" IsVisible="False" Padding="28" CornerRadius="20" Background="#132132" BorderBrush="#2A4C6D" BorderThickness="1">
           <StackPanel Spacing="16">
-            <TextBlock Text="Select an existing ARK folder" FontSize="24" FontWeight="SemiBold" />
-            <TextBlock Text="The selected folder must contain ShooterGame/Binaries/Win64/ShooterGame.exe." Opacity="0.8" TextWrapping="Wrap" />
+            <TextBlock Text="{u:Tr firstLaunchWindow.selectExistingFolder}" FontSize="24" FontWeight="SemiBold" />
+            <TextBlock Text="{u:Tr firstLaunchWindow.selectFolderDescription}" Opacity="0.8" TextWrapping="Wrap" />
             <Grid ColumnDefinitions="*,Auto">
-              <TextBox x:Name="ExistingPathBox" PlaceholderText="/path/to/ARK" TextChanged="ExistingPathChanged" />
-              <Button Grid.Column="1" Margin="12,0,0,0" Content="Browse" Click="BrowseExistingInstallPath" />
+              <TextBox x:Name="ExistingPathBox" PlaceholderText="{u:Tr firstLaunchWindow.placeholderPathToArk}" TextChanged="ExistingPathChanged" />
+              <Button Grid.Column="1" Margin="12,0,0,0" Content="{u:Tr mainWindow.browse}" Click="BrowseExistingInstallPath" />
             </Grid>
             <Border Padding="10" CornerRadius="10" Background="#0E1B2C">
-              <TextBlock x:Name="ExistingStatusText" Text="Select a folder to continue." Foreground="#D49B38" />
+              <TextBlock x:Name="ExistingStatusText" Text="{u:Tr firstLaunchWindow.selectFolderToContinue}" Foreground="#D49B38" />
             </Border>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
-              <Button Content="Back" Click="ShowStartFlow" />
-              <Button x:Name="ContinueExistingButton" Content="Continue" IsEnabled="False" Click="ContinueWithExistingInstall" />
+              <Button Content="{u:Tr mainWindow.back}" Click="ShowStartFlow" />
+              <Button x:Name="ContinueExistingButton" Content="{u:Tr firstLaunchWindow.continue}" IsEnabled="False" Click="ContinueWithExistingInstall" />
             </StackPanel>
           </StackPanel>
         </Border>
         <Border x:Name="InstallPanel" IsVisible="False" Padding="28" CornerRadius="20" Background="#132132" BorderBrush="#2A4C6D" BorderThickness="1">
           <StackPanel Spacing="16">
-            <TextBlock Text="Choose an installation folder" FontSize="24" FontWeight="SemiBold" />
-            <TextBlock Text="TEK Launcher will use this folder for a managed game installation." Opacity="0.8" TextWrapping="Wrap" />
+            <TextBlock Text="{u:Tr firstLaunchWindow.chooseInstallFolder}" FontSize="24" FontWeight="SemiBold" />
+            <TextBlock Text="{u:Tr firstLaunchWindow.chooseInstallDescription}" Opacity="0.8" TextWrapping="Wrap" />
             <Grid ColumnDefinitions="*,Auto">
-              <TextBox x:Name="InstallPathBox" PlaceholderText="/path/to/install/ARK" TextChanged="InstallPathChanged" />
-              <Button Grid.Column="1" Margin="12,0,0,0" Content="Browse" Click="BrowseInstallPath" />
+              <TextBox x:Name="InstallPathBox" PlaceholderText="{u:Tr firstLaunchWindow.placeholderInstallPath}" TextChanged="InstallPathChanged" />
+              <Button Grid.Column="1" Margin="12,0,0,0" Content="{u:Tr mainWindow.browse}" Click="BrowseInstallPath" />
             </Grid>
             <StackPanel Orientation="Horizontal" Spacing="18">
-              <RadioButton x:Name="PreAquaticaRadio" IsChecked="True" GroupName="GameVersion" Content="Pre-Aquatica (129 GB)" IsCheckedChanged="VersionChanged" />
-              <RadioButton x:Name="LatestRadio" GroupName="GameVersion" Content="Latest (166 GB)" IsCheckedChanged="VersionChanged" />
+              <RadioButton x:Name="PreAquaticaRadio" IsChecked="True" GroupName="GameVersion" Content="{u:Tr firstLaunchWindow.preAquatica}" IsCheckedChanged="VersionChanged" />
+              <RadioButton x:Name="LatestRadio" GroupName="GameVersion" Content="{u:Tr firstLaunchWindow.latest}" IsCheckedChanged="VersionChanged" />
             </StackPanel>
             <Grid ColumnDefinitions="*,*">
               <Border Padding="10" CornerRadius="10" Background="#0E1B2C">
-                <TextBlock x:Name="FreeSpaceText" Text="Free disk space: unknown" />
+                <TextBlock x:Name="FreeSpaceText" Text="{u:Tr firstLaunchWindow.freeDiskSpace}" />
               </Border>
               <Border Grid.Column="1" Margin="12,0,0,0" Padding="10" CornerRadius="10" Background="#0E1B2C">
-                <TextBlock x:Name="RequiredSpaceText" Text="Required disk space: 129 GB" />
+                <TextBlock x:Name="RequiredSpaceText" Text="{u:Tr firstLaunchWindow.requiredDiskSpace}" />
               </Border>
             </Grid>
             <Border Padding="10" CornerRadius="10" Background="#0E1B2C">
-              <TextBlock x:Name="InstallStatusText" Text="Select a folder to continue." Foreground="#D49B38" />
+              <TextBlock x:Name="InstallStatusText" Text="{u:Tr firstLaunchWindow.selectFolderToContinue}" Foreground="#D49B38" />
             </Border>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
-              <Button Content="Back" Click="ShowStartFlow" />
-              <Button x:Name="BeginInstallButton" Content="Begin installation" IsEnabled="False" Click="ContinueWithInstall" />
+              <Button Content="{u:Tr mainWindow.back}" Click="ShowStartFlow" />
+              <Button x:Name="BeginInstallButton" Content="{u:Tr firstLaunchWindow.beginInstallation}" IsEnabled="False" Click="ContinueWithInstall" />
             </StackPanel>
           </StackPanel>
         </Border>

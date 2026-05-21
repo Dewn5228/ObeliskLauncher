@@ -80,7 +80,8 @@ static class Settings
         if (!capabilities.SupportsSpoofAppId)
             Game.UseSpacewar = false;
 
-        LocManager.CurrentLanguage = json.LauncherLanguage;
+        if (!string.IsNullOrWhiteSpace(json.LauncherLanguage))
+            Locale.CurrentLanguage = json.LauncherLanguage;
     }
     /// <summary>Saves settings into the JSON file.</summary>
     public static void Save()
@@ -102,7 +103,7 @@ static class Settings
             Game.Language,
             Game.Path,
             LinuxLaunchTool,
-            LocManager.CurrentLanguage,
+            Locale.CurrentLanguage,
             Game.LaunchParameters,
             [.. s_customLinuxLaunchToolIds],
             LinuxCompatDataPath,

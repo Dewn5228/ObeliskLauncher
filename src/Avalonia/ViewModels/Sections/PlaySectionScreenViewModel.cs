@@ -52,7 +52,7 @@ public sealed class PlaySectionScreenViewModel : LauncherSectionScreenViewModel
         (_launcherLanguages, _launcherLanguageMap) = BuildLauncherLanguageOptions();
     }
 
-    public string CurrentGamePath => Game.Path ?? LocManager.GetString(LocCode.NoPathSelected);
+    public string CurrentGamePath => Game.Path ?? Locale.Get("errors.noPathSelected");
 
     public string? HeroImagePath => UI.CommunismModeWorkflow.GetPlayImagePath();
 
@@ -70,7 +70,7 @@ public sealed class PlaySectionScreenViewModel : LauncherSectionScreenViewModel
     {
         get
         {
-            int currentIndex = LocManager.CurrentLanguageIndex;
+            int currentIndex = Locale.CurrentIndex;
             int uiIndex = Array.IndexOf(_launcherLanguageMap, currentIndex);
             return uiIndex >= 0 ? uiIndex : 0;
         }
@@ -79,7 +79,7 @@ public sealed class PlaySectionScreenViewModel : LauncherSectionScreenViewModel
             if (value < 0 || value >= _launcherLanguageMap.Length)
                 return;
 
-            LocManager.SetCurrentLanguage(_launcherLanguageMap[value]);
+            Locale.SetLanguage(_launcherLanguageMap[value]);
         }
     }
 
@@ -89,10 +89,10 @@ public sealed class PlaySectionScreenViewModel : LauncherSectionScreenViewModel
 
     public bool LauncherLanguageAvailabilityNoteVisible => !LauncherLanguageSelectionEnabled;
 
-    public string LauncherLanguageAvailabilityNote => "Additional launcher translations are unavailable in this build because the localization files are missing.";
+    public string LauncherLanguageAvailabilityNote => Locale.Get("playTab.launcherLanguageAvailabilityNote");
 
     public string LaunchBehaviorNote => OperatingSystem.IsLinux()
-      ? "Linux launches ARK through Steam/Proton. Windows-only elevation behavior is not used on this platform."
+      ? Locale.Get("playTab.launchBehaviorNoteLinux")
       : string.Empty;
 
     public bool LaunchBehaviorNoteVisible => !RunAsAdminVisible;
@@ -140,7 +140,7 @@ public sealed class PlaySectionScreenViewModel : LauncherSectionScreenViewModel
         var indexMap = new List<int>(s_launcherLanguages.Length);
         for (int i = 0; i < s_launcherLanguages.Length; i++)
         {
-            if (!LocManager.IsLanguageAvailable(i))
+            if (!Locale.IsLanguageAvailable(i))
                 continue;
 
             labels.Add(s_launcherLanguages[i]);

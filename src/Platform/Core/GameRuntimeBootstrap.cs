@@ -3,30 +3,35 @@ using TEKLauncher.Data;
 
 namespace TEKLauncher.Platform;
 
-static class LinuxGameRuntimeBootstrap
+static class GameRuntimeBootstrap
 {
     const string LatestInjectorReleaseUrl = "https://api.github.com/repos/teknology-hub/tek-injector/releases/latest";
     const string LatestRuntimeReleaseUrl = "https://api.github.com/repos/teknology-hub/tek-game-runtime/releases/latest";
 
-    public static LinuxGameRuntimeAcquireResult Acquire()
+    static string CacheRoot => Path.Combine(LauncherBootstrap.AppDataFolder,
+        OperatingSystem.IsWindows() ? "tek-game-runtime-windows" : "tek-game-runtime-linux");
+
+    static string InjectorAssetName => OperatingSystem.IsWindows() ? "libtek-injector.dll" : "tek-injector.exe";
+
+    public static GameRuntimeAcquireResult Acquire()
     {
         try
         {
-            Directory.CreateDirectory(GetCacheRoot());
+            Directory.CreateDirectory(CacheRoot);
 
-            var injectorResult = AcquireAssetAsync(LatestInjectorReleaseUrl, "tek-injector.exe", "TEK Injector").GetAwaiter().GetResult();
+            var injectorResult = AcquireAssetAsync(LatestInjectorReleaseUrl, InjectorAssetName, "TEK Injector").GetAwaiter().GetResult();
             if (injectorResult.AssetPath is null)
-                return new(null, injectorResult.ErrorMessage ?? "Failed to acquire TEK Injector for Linux Proton launches.");
+                return new(null, injectorResult.ErrorMessage ?? "Failed to acquire TEK Injector.");
 
             var runtimeResult = AcquireAssetAsync(LatestRuntimeReleaseUrl, "libtek-game-runtime.dll", "TEK Game Runtime").GetAwaiter().GetResult();
             if (runtimeResult.AssetPath is null)
-                return new(null, runtimeResult.ErrorMessage ?? "Failed to acquire TEK Game Runtime for Linux Proton launches.");
+                return new(null, runtimeResult.ErrorMessage ?? "Failed to acquire TEK Game Runtime.");
 
             return new(new(injectorResult.AssetPath, runtimeResult.AssetPath), null);
         }
         catch (Exception ex)
         {
-            return new(null, $"Failed to prepare Proton launch assets: {ex.Message}");
+            return new(null, $"Failed to prepare launch assets: {ex.Message}");
         }
     }
 
@@ -42,13 +47,13 @@ static class LinuxGameRuntimeBootstrap
         GitHubRelease releaseData = release.Value;
 
         GitHubAsset? assetData = Array.Find(releaseData.Assets, asset =>
-          asset.Name?.Equals(assetFileName, StringComparison.OrdinalIgnoreCase) == true
-          && asset.BrowserDownloadUrl is not null);
+            asset.Name?.Equals(assetFileName, StringComparison.OrdinalIgnoreCase) == true
+            && asset.BrowserDownloadUrl is not null);
         if (assetData is not { Name: not null, BrowserDownloadUrl: not null })
             return new(null, $"Latest {displayName} release does not expose '{assetFileName}'.");
         GitHubAsset asset = assetData.Value;
 
-        string releaseDir = Path.Combine(GetCacheRoot(), SanitizePathSegment(releaseData.TagName));
+        string releaseDir = Path.Combine(CacheRoot, SanitizePathSegment(releaseData.TagName));
         Directory.CreateDirectory(releaseDir);
 
         string assetPath = Path.Combine(releaseDir, asset.Name);
@@ -66,7 +71,7 @@ static class LinuxGameRuntimeBootstrap
         IEnumerator<string>? enumerator = null;
         try
         {
-            enumerator = Directory.EnumerateFiles(GetCacheRoot(), fileName, SearchOption.AllDirectories).GetEnumerator();
+            enumerator = Directory.EnumerateFiles(CacheRoot, fileName, SearchOption.AllDirectories).GetEnumerator();
         }
         catch
         {
@@ -87,8 +92,6 @@ static class LinuxGameRuntimeBootstrap
                     return null;
                 }
     }
-
-    static string GetCacheRoot() => Path.Combine(LauncherBootstrap.AppDataFolder, "tek-game-runtime-linux");
 
     static string SanitizePathSegment(string value)
     {
@@ -118,6 +121,6 @@ static class LinuxGameRuntimeBootstrap
     }
 }
 
-readonly record struct LinuxGameRuntimeAssets(string InjectorExecutablePath, string RuntimeLibraryPath);
+readonly record struct GameRuntimeAssets(string InjectorExecutablePath, string RuntimeLibraryPath);
 
-readonly record struct LinuxGameRuntimeAcquireResult(LinuxGameRuntimeAssets? Assets, string? ErrorMessage);
+readonly record struct GameRuntimeAcquireResult(GameRuntimeAssets? Assets, string? ErrorMessage);

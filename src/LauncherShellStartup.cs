@@ -29,7 +29,7 @@ static class LauncherShellStartup
 {
     public static async Task<LauncherShellStartupResult> InitializeAsync(bool beginInstallation)
     {
-        string gameVersionText = LocManager.GetString(Game.IsCorrupted ? LocCode.None : LocCode.NA);
+        string gameVersionText = Locale.Get(Game.IsCorrupted ? "?None?" : "common.na");
         var gameVersionTone = Game.IsCorrupted ? LauncherShellTone.Error : LauncherShellTone.Neutral;
 
         bool launcherUpdateAvailable = await CheckLauncherUpdateAsync();
@@ -47,7 +47,7 @@ static class LauncherShellStartup
 
     public static async Task<LauncherShellStatusSummary> GetStatusSummaryAsync(bool beginInstallation)
     {
-        string gameVersionText = LocManager.GetString(Game.IsCorrupted ? LocCode.None : LocCode.NA);
+        string gameVersionText = Locale.Get(Game.IsCorrupted ? "?None?" : "common.na");
         var gameVersionTone = Game.IsCorrupted ? LauncherShellTone.Error : LauncherShellTone.Neutral;
         bool gameUpdateAvailable = false;
         bool dlcUpdatesAvailable = false;
@@ -68,7 +68,7 @@ static class LauncherShellStartup
                       ? desc->CurrentManifestId != UI.GameUpdateWorkflow.PreAquaticaManifestId
                       : desc->Status.HasFlag(TEKSteamClient.AmItemStatus.UpdAvailable);
 
-                    gameVersionText = LocManager.GetString(gameUpdateAvailable ? LocCode.Outdated : LocCode.Latest);
+                    gameVersionText = Locale.Get(gameUpdateAvailable ? "common.outdated" : "common.latest");
                     gameVersionTone = gameUpdateAvailable ? LauncherShellTone.Warning : LauncherShellTone.Success;
                 }
 

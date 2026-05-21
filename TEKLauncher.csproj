@@ -12,7 +12,7 @@
     <Nullable>Enable</Nullable>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <DefineConstants>$(DefineConstants);UI_AVALONIA</DefineConstants>
-    <ApplicationIcon Condition="Exists('res/Icon.ico')">res\Icon.ico</ApplicationIcon>
+    <ApplicationIcon Condition="Exists('assets/icon.ico')">assets\icon.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <ProtoRoot>$(ProjectDir)protos/</ProtoRoot>
@@ -38,7 +38,8 @@
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.3" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="res\**" Condition="Exists('res')" />
+    <AvaloniaResource Include="res\**" Condition="Exists('res')" />
+    <AvaloniaResource Include="locales\**" />
   </ItemGroup>
   <ItemGroup>
     <Protos Include="protos\**" />

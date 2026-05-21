@@ -22,7 +22,7 @@ sealed class LinuxGameLauncher : IGameLauncher
 
         if (TryCreateLaunchContext(request, out var context, out string? errorMessage))
         {
-            var acquireResult = LinuxGameRuntimeBootstrap.Acquire();
+            var acquireResult = GameRuntimeBootstrap.Acquire();
             if (acquireResult.Assets is not { } assets)
                 return new(false, acquireResult.ErrorMessage ?? "Failed to prepare Proton launch assets.");
 
@@ -94,7 +94,7 @@ sealed class LinuxGameLauncher : IGameLauncher
         return true;
     }
 
-    static ProcessStartInfo CreateProtonStartInfo(in LinuxLaunchContext context, in LinuxGameRuntimeAssets assets, in GameLaunchRequest request, string settingsPath)
+    static ProcessStartInfo CreateProtonStartInfo(in LinuxLaunchContext context, in GameRuntimeAssets assets, in GameLaunchRequest request, string settingsPath)
     {
         string gameDirectory = Path.GetDirectoryName(request.ExecutablePath)!;
 
@@ -131,7 +131,7 @@ sealed class LinuxGameLauncher : IGameLauncher
         return startInfo;
     }
 
-    static ProcessStartInfo CreateWineStartInfo(in LinuxLaunchContext context, in LinuxGameRuntimeAssets assets, in GameLaunchRequest request, string settingsPath)
+    static ProcessStartInfo CreateWineStartInfo(in LinuxLaunchContext context, in GameRuntimeAssets assets, in GameLaunchRequest request, string settingsPath)
     {
         var startInfo = new ProcessStartInfo(context.LaunchTool.ExecutablePath)
         {
@@ -409,7 +409,7 @@ sealed class LinuxGameLauncher : IGameLauncher
         return mapping?["name"]?.Value ?? mapping?["config"]?.Value;
     }
 
-    static void WriteLaunchDebugInfo(in LinuxLaunchContext context, in LinuxGameRuntimeAssets assets, in GameLaunchRequest request, string settingsPath, ProcessStartInfo startInfo)
+    static void WriteLaunchDebugInfo(in LinuxLaunchContext context, in GameRuntimeAssets assets, in GameLaunchRequest request, string settingsPath, ProcessStartInfo startInfo)
     {
         try
         {

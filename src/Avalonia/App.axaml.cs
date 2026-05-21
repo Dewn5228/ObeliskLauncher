@@ -32,7 +32,7 @@ public partial class App : Application
             var bootstrapResult = LauncherBootstrap.InitializeCore();
             if (!bootstrapResult.Success)
             {
-                desktop.MainWindow = CreateMainWindow(false, LocManager.GetString(bootstrapResult.ErrorCode!.Value));
+                desktop.MainWindow = CreateMainWindow(false, Locale.Get(bootstrapResult.ErrorCode!));
                 base.OnFrameworkInitializationCompleted();
                 return;
             }

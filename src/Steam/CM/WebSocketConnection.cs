@@ -109,7 +109,7 @@ static class WebSocketConnection
                 {
                     Client.RefreshServerList();
                     if (ServerList.Count == 0)
-                        throw new SteamException(LocManager.GetString(LocCode.CMConnectionFailed));
+                        throw new SteamException(Locale.Get("errors.cmConnectionFailed"));
                 }
                 endpointUrl = ServerList.Pop();
             }
@@ -177,7 +177,7 @@ static class WebSocketConnection
             else
                 Disconnect();
         }
-        throw new SteamException(LocManager.GetString(LocCode.CMConnectionFailed));
+        throw new SteamException(Locale.Get("errors.cmConnectionFailed"));
     }
     /// <summary>Initiates disconnection from Steam CM server.</summary>
     public static void Disconnect()

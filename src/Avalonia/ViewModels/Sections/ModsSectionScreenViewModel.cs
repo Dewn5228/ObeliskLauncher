@@ -252,7 +252,7 @@ public sealed class ModsSectionScreenViewModel : LauncherSectionScreenViewModel
         if (!ulong.TryParse(InstallIdInput.Trim(), out ulong id))
         {
             ClearCandidate();
-            SetStatus(new(LocManager.GetString(LocCode.ModWithThisIdDoesntExist), 2));
+            SetStatus(new(Locale.Get("modsTab.modWithThisIdDoesntExist"), 2));
             return;
         }
 
@@ -321,7 +321,7 @@ public sealed class ModsSectionScreenViewModel : LauncherSectionScreenViewModel
         if (details.Status != 1)
         {
             ClearCandidate();
-            SetStatus(new(LocManager.GetString(details.Status == 0 ? LocCode.FailedToLoadPreview : LocCode.ModWithThisIdDoesntExist), 2));
+            SetStatus(new(Locale.Get(details.Status == 0 ? "modsTab.failedToLoadPreview" : "modsTab.modWithThisIdDoesntExist"), 2));
             CanOpenSelectedWorkshop = requestedId > 0;
             return;
         }
@@ -329,7 +329,7 @@ public sealed class ModsSectionScreenViewModel : LauncherSectionScreenViewModel
         if (details.AppId != 346110)
         {
             ClearCandidate();
-            SetStatus(new(LocManager.GetString(LocCode.NotAnARKMod), 2));
+            SetStatus(new(Locale.Get("modsTab.notAnARKMod"), 2));
             CanOpenSelectedWorkshop = true;
             return;
         }
@@ -339,7 +339,7 @@ public sealed class ModsSectionScreenViewModel : LauncherSectionScreenViewModel
         CandidateSubtitle = $"{details.Id}";
         CanOpenSelectedWorkshop = true;
         CanInstallSelected = !IsAlreadyInstalled(details.Id);
-        SetStatus(new(CanInstallSelected ? $"{details.Name} ready to install." : $"{details.Name} is already installed.", CanInstallSelected ? 1 : 0));
+        SetStatus(new(CanInstallSelected ? string.Format(Locale.Get("modsTab.readyToInstall"), details.Name) : string.Format(Locale.Get("modsTab.alreadyInstalled"), details.Name), CanInstallSelected ? 1 : 0));
     }
 
     async Task LoadWorkshopPageAsync(uint page)
@@ -374,7 +374,7 @@ public sealed class ModsSectionScreenViewModel : LauncherSectionScreenViewModel
             _currentWorkshopPage = 0;
             _totalWorkshopPages = 0;
             WorkshopPageText = string.Empty;
-            WorkshopStatusText = LocManager.GetString(LocCode.FailedToLoadWorkshopModList);
+            WorkshopStatusText = Locale.Get("modsTab.failedToLoadWorkshopModList");
             HasWorkshopStatus = true;
             OnPropertyChanged(nameof(HasWorkshopResults));
             OnPropertyChanged(nameof(CanLoadNextWorkshopPage));
@@ -384,7 +384,7 @@ public sealed class ModsSectionScreenViewModel : LauncherSectionScreenViewModel
 
         _currentWorkshopPage = page;
         _totalWorkshopPages = totalItems / 20 + (totalItems % 20 == 0 ? 0u : 1u);
-        WorkshopPageText = string.Format(LocManager.GetString(LocCode.WorkshopPage), _currentWorkshopPage, _totalWorkshopPages);
+        WorkshopPageText = string.Format(Locale.Get("modsTab.workshopPage"), _currentWorkshopPage, _totalWorkshopPages);
         WorkshopStatusText = string.Empty;
         HasWorkshopStatus = false;
 

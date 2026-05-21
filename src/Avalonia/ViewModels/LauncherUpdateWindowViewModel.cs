@@ -16,7 +16,7 @@ public sealed class LauncherUpdateWindowViewModel : INotifyPropertyChanged
     double _progressMaximum = 100;
     double _progressValue;
     string _statusBrush = "Yellow";
-    string _statusText = LocManager.GetString(LocCode.Downloading);
+    string _statusText = Locale.Get("common.downloading");
 
     public bool CanClose => !IsBusy;
 
@@ -66,7 +66,7 @@ public sealed class LauncherUpdateWindowViewModel : INotifyPropertyChanged
         private set => SetProperty(ref _statusText, value);
     }
 
-    public string Title => LocManager.GetString(LocCode.Update);
+    public string Title => Locale.Get("common.update");
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -92,7 +92,7 @@ public sealed class LauncherUpdateWindowViewModel : INotifyPropertyChanged
             string path = currentProcess.MainModule?.FileName ?? Environment.ProcessPath ?? string.Empty;
             if (string.IsNullOrWhiteSpace(path))
             {
-                StatusText = LocManager.GetString(LocCode.LauncherUpdateFail);
+                StatusText = Locale.Get("launcherUpdateWindow.launcherUpdateFail");
                 StatusBrush = "#9E2313";
                 CanOpenReleasePage = true;
                 return;
@@ -123,7 +123,7 @@ public sealed class LauncherUpdateWindowViewModel : INotifyPropertyChanged
 
             if (!success)
             {
-                StatusText = LocManager.GetString(LocCode.LauncherUpdateFail);
+                StatusText = Locale.Get("launcherUpdateWindow.launcherUpdateFail");
                 StatusBrush = "#9E2313";
                 CanOpenReleasePage = true;
                 return;
@@ -137,7 +137,7 @@ public sealed class LauncherUpdateWindowViewModel : INotifyPropertyChanged
         }
         catch
         {
-            StatusText = LocManager.GetString(LocCode.LauncherUpdateFail);
+            StatusText = Locale.Get("launcherUpdateWindow.launcherUpdateFail");
             StatusBrush = "#9E2313";
             CanOpenReleasePage = true;
         }

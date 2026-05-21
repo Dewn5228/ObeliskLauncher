@@ -28,9 +28,9 @@ static class LauncherSettingsWorkflow
         return true;
     }
 
-    public static LocCode GetGamePathChangePromptCode(string newPath) => File.Exists(Path.Combine(newPath, "ShooterGame", "Binaries", "Win64", "ShooterGame.exe"))
-      ? LocCode.GamePathChangePrompt
-      : LocCode.GamePathChangeFilesMissing;
+    public static string GetGamePathChangePromptCode(string newPath) => File.Exists(Path.Combine(newPath, "ShooterGame", "Binaries", "Win64", "ShooterGame.exe"))
+      ? "errors.gamePathChangePrompt"
+      : "errors.gamePathChangeFilesMissing";
 
     public static bool ShouldWarnCloseOnLaunch(bool enabled) => enabled && (Steam.App.CurrentUserStatus.GameStatus != Game.Status.OwnedAndInstalled || Game.CanUseSpacewar && Game.UseSpacewar);
 }

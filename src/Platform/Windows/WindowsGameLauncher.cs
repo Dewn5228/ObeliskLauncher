@@ -1,11 +1,10 @@
-using System.IO.Compression;
 using System.Runtime.InteropServices;
 
 namespace TEKLauncher.Platform;
 
 sealed class WindowsGameLauncher : IGameLauncher
 {
-    static bool s_dllsDeployed;
+    GameRuntimeAssets? _assets;
 
     public GameLaunchCapabilities Capabilities { get; } = new(true, true, true);
 
@@ -92,26 +91,19 @@ sealed class WindowsGameLauncher : IGameLauncher
         }
     }
 
-    static void EnsureRuntimeLibraries()
+    void EnsureRuntimeLibraries()
     {
-        if (s_dllsDeployed)
+        if (_assets is not null)
             return;
 
-        using (var resourceStream = LauncherResources.OpenRead("res/libtek-game-runtime.br"))
-        using (var decoderStream = new BrotliStream(resourceStream, CompressionMode.Decompress))
-        using (var fs = File.Create(RuntimePath))
-        {
-            decoderStream.CopyTo(fs);
-        }
+        var result = GameRuntimeBootstrap.Acquire();
+        if (result.Assets is not { } assets)
+            throw new InvalidOperationException(result.ErrorMessage ?? "Failed to acquire TEK Game Runtime binaries.");
 
-        using (var resourceStream = LauncherResources.OpenRead("res/libtek-injector.br"))
-        using (var decoderStream = new BrotliStream(resourceStream, CompressionMode.Decompress))
-        using (var fs = File.Create(InjectorPath))
-        {
-            decoderStream.CopyTo(fs);
-        }
+        File.Copy(assets.InjectorExecutablePath, InjectorPath, overwrite: true);
+        File.Copy(assets.RuntimeLibraryPath, RuntimePath, overwrite: true);
 
         NativeLibrary.Load(InjectorPath);
-        s_dllsDeployed = true;
+        _assets = assets;
     }
 }

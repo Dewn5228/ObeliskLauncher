@@ -8,7 +8,7 @@ internal sealed class ServerModsUpdaterWindowViewModel : SteamTaskUpdaterWindowV
     readonly ulong[] _modIds;
 
     internal ServerModsUpdaterWindowViewModel(ulong[] modIds)
-      : base(string.Format(LocManager.GetString(LocCode.SteamUpdater), LocManager.GetString(LocCode.Mods)), true)
+      : base(string.Format(Locale.Get("gameOptionsTab.steamUpdater"), Locale.Get("common.mods")), true)
     {
         _modIds = modIds;
     }
@@ -30,7 +30,7 @@ internal sealed class ServerModsUpdaterWindowViewModel : SteamTaskUpdaterWindowV
             PostToUi(() =>
             {
                 ResetTaskVisuals();
-                SetStatus(LocManager.GetString(LocCode.NA), Brushes.IndianRed);
+                SetStatus(Locale.Get("common.na"), Brushes.IndianRed);
                 SetRetryState();
             });
             return;
@@ -39,7 +39,7 @@ internal sealed class ServerModsUpdaterWindowViewModel : SteamTaskUpdaterWindowV
         PostToUi(() =>
         {
             ResetTaskVisuals();
-            SetStatus(LocManager.GetString(LocCode.RequestingModDetails), Brushes.Goldenrod);
+            SetStatus(Locale.Get("modsTab.requestingModDetails"), Brushes.Goldenrod);
         });
 
         var details = ResolveDetails();
@@ -48,7 +48,7 @@ internal sealed class ServerModsUpdaterWindowViewModel : SteamTaskUpdaterWindowV
             PostToUi(() =>
             {
                 ResetTaskVisuals();
-                SetStatus(LocManager.GetString(LocCode.RequestingModDetailsFail), Brushes.IndianRed);
+                SetStatus(Locale.Get("modsTab.requestingModDetailsFail"), Brushes.IndianRed);
                 SetRetryState();
             });
             return;
@@ -59,7 +59,7 @@ internal sealed class ServerModsUpdaterWindowViewModel : SteamTaskUpdaterWindowV
             Mod.ModDetails detail = details[index];
             PostToUi(() =>
             {
-                SetTitle(string.Format(LocManager.GetString(LocCode.SteamUpdater), $"{detail.Name} [{index + 1}/{details.Length}]"));
+                SetTitle(string.Format(Locale.Get("gameOptionsTab.steamUpdater"), $"{detail.Name} [{index + 1}/{details.Length}]"));
                 ResetTaskVisuals();
                 OnTaskStarting();
             });
@@ -82,8 +82,8 @@ internal sealed class ServerModsUpdaterWindowViewModel : SteamTaskUpdaterWindowV
                     IsProgressIndeterminate = false;
                     ProgressText = "100%";
                     SetStatus(result.Primary == 85
-              ? string.Format(LocManager.GetString(LocCode.AlreadyUpToDate), detail.Name)
-              : string.Format(LocManager.GetString(LocCode.ModInstallSuccess), detail.Name), Brushes.LimeGreen);
+              ? string.Format(Locale.Get("common.alreadyUpToDate"), detail.Name)
+              : string.Format(Locale.Get("modsTab.modInstallSuccess"), detail.Name), Brushes.LimeGreen);
                     FinishCurrentStage(true);
                 });
                 continue;

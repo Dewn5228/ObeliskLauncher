@@ -74,7 +74,7 @@ public sealed class DlcSectionScreenViewModel : LauncherSectionScreenViewModel
         }
     }
 
-    public string SectionNote => "Install, update, validate, and delete DLC content from the native launcher. Operations use the shared Steam task backend and refresh launcher status when they finish.";
+    public string SectionNote => Locale.Get("dlcTab.sectionNote");
 
     public DlcRowViewModel[] Rows { get; }
 

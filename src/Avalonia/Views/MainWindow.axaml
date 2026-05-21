@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="TEKLauncher.Avalonia.Views.MainWindow"
         xmlns:vm="clr-namespace:TEKLauncher.Avalonia.ViewModels"
+        xmlns:u="clr-namespace:TEKLauncher.UI"
         x:DataType="vm:MainWindowViewModel"
         x:CompileBindings="False"
         Width="1100"
@@ -17,29 +18,29 @@
         </Border>
         <Border Padding="16" CornerRadius="12" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1">
           <StackPanel Spacing="10">
-            <TextBlock Text="Current Game Path" FontWeight="SemiBold" />
+            <TextBlock Text="{u:Tr playTab.currentGamePath}" FontWeight="SemiBold" />
             <TextBlock Text="{Binding CurrentGamePath}" TextWrapping="Wrap" />
             <TextBlock Text="{Binding LaunchBehaviorNote}" IsVisible="{Binding LaunchBehaviorNoteVisible}" Opacity="0.78" TextWrapping="Wrap" />
-            <CheckBox Content="Run game as admin" IsChecked="{Binding RunAsAdmin}" IsVisible="{Binding RunAsAdminVisible}" />
-            <CheckBox Content="Use Spacewar" IsChecked="{Binding UseSpacewar}" IsVisible="{Binding UseSpacewarVisible}" />
+            <CheckBox Content="{u:Tr mainWindow.runGameAsAdmin}" IsChecked="{Binding RunAsAdmin}" IsVisible="{Binding RunAsAdminVisible}" />
+            <CheckBox Content="{u:Tr mainWindow.useSpacewar}" IsChecked="{Binding UseSpacewar}" IsVisible="{Binding UseSpacewarVisible}" />
           </StackPanel>
         </Border>
         <Grid ColumnDefinitions="*,*">
           <Border Padding="16" CornerRadius="12" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1">
             <StackPanel Spacing="10">
-              <TextBlock Text="Game Language" FontWeight="SemiBold" />
+              <TextBlock Text="{u:Tr playTab.gameLanguage}" FontWeight="SemiBold" />
               <ComboBox SelectedIndex="{Binding GameLanguageIndex}" SelectionChanged="GameLanguageChanged" ItemsSource="{Binding GameLanguages}" />
             </StackPanel>
           </Border>
           <Border Grid.Column="1" Margin="16,0,0,0" Padding="16" CornerRadius="12" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1">
             <StackPanel Spacing="10">
-              <TextBlock Text="Launcher Language" FontWeight="SemiBold" />
+              <TextBlock Text="{u:Tr playTab.launcherLanguage}" FontWeight="SemiBold" />
               <ComboBox SelectedIndex="{Binding LauncherLanguageIndex}" SelectionChanged="LauncherLanguageChanged" ItemsSource="{Binding LauncherLanguages}" IsEnabled="{Binding LauncherLanguageSelectionEnabled}" />
               <TextBlock Text="{Binding LauncherLanguageAvailabilityNote}" IsVisible="{Binding LauncherLanguageAvailabilityNoteVisible}" Opacity="0.78" TextWrapping="Wrap" />
             </StackPanel>
           </Border>
         </Grid>
-        <Button HorizontalAlignment="Left" MinWidth="180" Content="Play" Click="LaunchGame" />
+        <Button HorizontalAlignment="Left" MinWidth="180" Content="{u:Tr mainWindow.play}" Click="LaunchGame" />
       </StackPanel>
     </DataTemplate>
     <DataTemplate DataType="vm:AboutSectionScreenViewModel">
@@ -63,9 +64,9 @@
           <StackPanel Spacing="10">
             <TextBlock Text="{Binding LinksHeader}" FontSize="18" FontWeight="SemiBold" />
             <WrapPanel>
-              <Button Content="License" Click="OpenLicenseLink" />
-              <Button Margin="10,0,0,0" Content="Discord" Click="OpenDiscordLink" />
-              <Button Margin="10,0,0,0" Content="GitHub Repo" Click="OpenRepoLink" />
+              <Button Content="{u:Tr mainWindow.license}" Click="OpenLicenseLink" />
+              <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.discord}" Click="OpenDiscordLink" />
+              <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.githubRepo}" Click="OpenRepoLink" />
             </WrapPanel>
           </StackPanel>
         </Border>
@@ -75,14 +76,14 @@
       <StackPanel Spacing="16">
         <Border Padding="16" CornerRadius="12" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1">
           <StackPanel Spacing="8">
-            <TextBlock Text="Current Game Path" FontWeight="SemiBold" />
+            <TextBlock Text="{u:Tr playTab.currentGamePath}" FontWeight="SemiBold" />
             <TextBlock Text="{Binding CurrentGamePath}" TextWrapping="Wrap" />
             <TextBlock Text="{Binding MaintenanceNote}" Opacity="0.78" TextWrapping="Wrap" />
             <Border Padding="12" CornerRadius="10" Background="#132132" BorderBrush="#2A4C6D" BorderThickness="1">
               <StackPanel Spacing="8">
-                <TextBlock Text="Install location" FontWeight="SemiBold" />
-                <TextBlock Text="To install ARK, open Launcher Settings, choose an empty or existing target folder as the Game Path, apply it, then return here and use Update." Opacity="0.78" TextWrapping="Wrap" />
-                <Button HorizontalAlignment="Left" Content="Open Launcher Settings" Click="OpenLauncherSettingsSection" />
+                <TextBlock Text="{u:Tr mainWindow.installLocation}" FontWeight="SemiBold" />
+                <TextBlock Text="{u:Tr mainWindow.toInstallArkOpenSettings}" Opacity="0.78" TextWrapping="Wrap" />
+                <Button HorizontalAlignment="Left" Content="{u:Tr mainWindow.openLauncherSettings}" Click="OpenLauncherSettingsSection" />
               </StackPanel>
             </Border>
           </StackPanel>
@@ -92,26 +93,26 @@
         </Border>
         <Border Padding="16" CornerRadius="12" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1">
           <StackPanel Spacing="12">
-            <TextBlock Text="Maintenance" FontSize="18" FontWeight="SemiBold" />
+            <TextBlock Text="{u:Tr mainWindow.maintenance}" FontSize="18" FontWeight="SemiBold" />
             <WrapPanel>
-              <Button Content="Update" Click="UpdateBaseGame" IsEnabled="{Binding CanRunMaintenance}" />
-              <Button Margin="10,0,0,0" Content="Validate" Click="ValidateBaseGame" IsEnabled="{Binding CanRunMaintenance}" />
-              <Button Margin="10,0,0,0" Content="Fix Bloom" Click="FixGameBloom" />
-              <Button Margin="10,0,0,0" Content="Unlock Skins" Click="UnlockGameSkins" IsEnabled="{Binding CanRunMaintenance}" />
+              <Button Content="{u:Tr mainWindow.update}" Click="UpdateBaseGame" IsEnabled="{Binding CanRunMaintenance}" />
+              <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.validate}" Click="ValidateBaseGame" IsEnabled="{Binding CanRunMaintenance}" />
+              <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.fixBloom}" Click="FixGameBloom" />
+              <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.unlockSkins}" Click="UnlockGameSkins" IsEnabled="{Binding CanRunMaintenance}" />
             </WrapPanel>
           </StackPanel>
         </Border>
         <Border Padding="16" CornerRadius="12" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1">
           <StackPanel Spacing="10">
-            <CheckBox Content="High process priority" IsChecked="{Binding HighProcessPriority}" IsVisible="{Binding HighProcessPriorityVisible}" />
+            <CheckBox Content="{u:Tr mainWindow.highProcessPriority}" IsChecked="{Binding HighProcessPriority}" IsVisible="{Binding HighProcessPriorityVisible}" />
             <TextBlock Text="{Binding HighProcessPriorityDescription}" IsVisible="{Binding HighProcessPriorityVisible}" Opacity="0.78" TextWrapping="Wrap" />
-            <TextBlock Text="DirectX detected" IsVisible="{Binding DirectXInstalledVisible}" Foreground="#0AA63E" />
-            <TextBlock Text="DirectX missing" IsVisible="{Binding DirectXMissingVisible}" Foreground="#D4573B" />
+            <TextBlock Text="{u:Tr mainWindow.directXDetected}" IsVisible="{Binding DirectXInstalledVisible}" Foreground="#0AA63E" />
+            <TextBlock Text="{u:Tr mainWindow.directXMissing}" IsVisible="{Binding DirectXMissingVisible}" Foreground="#D4573B" />
           </StackPanel>
         </Border>
         <Border Padding="16" CornerRadius="12" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1">
           <StackPanel Spacing="12">
-            <TextBlock Text="Launch Parameters" FontSize="18" FontWeight="SemiBold" />
+            <TextBlock Text="{u:Tr launchOptimization.launchParameters}" FontSize="18" FontWeight="SemiBold" />
             <ItemsControl ItemsSource="{Binding LaunchParameters}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
@@ -124,10 +125,10 @@
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <TextBlock Text="Custom Launch Parameters" FontWeight="SemiBold" />
+            <TextBlock Text="{u:Tr playTab.customLaunchParameters}" FontWeight="SemiBold" />
             <Grid ColumnDefinitions="*,Auto">
-              <TextBox Text="{Binding CustomLaunchParameters}" PlaceholderText="-sm4 -example" />
-              <Button Grid.Column="1" Margin="12,0,0,0" Content="Apply" Click="ApplyGameOptionsCustomParameters" />
+              <TextBox Text="{Binding CustomLaunchParameters}" PlaceholderText="{u:Tr mainWindow.placeholderLaunchParams}" />
+              <Button Grid.Column="1" Margin="12,0,0,0" Content="{u:Tr mainWindow.apply}" Click="ApplyGameOptionsCustomParameters" />
             </Grid>
           </StackPanel>
         </Border>
@@ -151,9 +152,9 @@
                     <TextBlock Text="{Binding StatusText}" Foreground="{Binding StatusColor}" />
                   </StackPanel>
                   <WrapPanel>
-                    <Button Content="Install / Update" Click="OpenDlcInstallUpdater" IsEnabled="{Binding CanInstall}" />
-                    <Button Margin="10,0,0,0" Content="Validate" Click="OpenDlcValidator" IsEnabled="{Binding CanValidate}" />
-                    <Button Margin="10,0,0,0" Content="Delete" Click="DeleteDlc" IsEnabled="{Binding CanDelete}" />
+                    <Button Content="{u:Tr mainWindow.installUpdate}" Click="OpenDlcInstallUpdater" IsEnabled="{Binding CanInstall}" />
+                    <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.validate}" Click="OpenDlcValidator" IsEnabled="{Binding CanValidate}" />
+                    <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.delete}" Click="DeleteDlc" IsEnabled="{Binding CanDelete}" />
                   </WrapPanel>
                 </StackPanel>
               </Border>
@@ -166,17 +167,17 @@
       <StackPanel Spacing="16">
         <Border Padding="16" CornerRadius="12" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1">
           <StackPanel Spacing="10">
-            <TextBlock Text="Install Mod By Workshop ID" FontSize="18" FontWeight="SemiBold" />
+            <TextBlock Text="{u:Tr mainWindow.installModByWorkshopId}" FontSize="18" FontWeight="SemiBold" />
             <Grid ColumnDefinitions="*,Auto,Auto">
-              <TextBox Text="{Binding InstallIdInput}" PlaceholderText="Workshop ID" />
-              <Button Grid.Column="1" Margin="12,0,0,0" Content="Lookup" Click="LookupModInstallCandidate" />
-              <Button Grid.Column="2" Margin="12,0,0,0" Content="Install" Click="InstallSelectedMod" IsEnabled="{Binding CanInstallSelected}" />
+              <TextBox Text="{Binding InstallIdInput}" PlaceholderText="{u:Tr mainWindow.workshopId}" />
+              <Button Grid.Column="1" Margin="12,0,0,0" Content="{u:Tr mainWindow.lookup}" Click="LookupModInstallCandidate" />
+              <Button Grid.Column="2" Margin="12,0,0,0" Content="{u:Tr mainWindow.install}" Click="InstallSelectedMod" IsEnabled="{Binding CanInstallSelected}" />
             </Grid>
             <Border Padding="12" CornerRadius="10" Background="#132132" BorderBrush="#2A4C6D" BorderThickness="1" IsVisible="{Binding HasCandidate}">
               <StackPanel Spacing="6">
                 <TextBlock Text="{Binding CandidateTitle}" FontSize="16" FontWeight="SemiBold" />
                 <TextBlock Text="{Binding CandidateSubtitle}" Opacity="0.72" />
-                <Button HorizontalAlignment="Left" Content="Open Workshop" Click="OpenSelectedWorkshopPage" IsEnabled="{Binding CanOpenSelectedWorkshop}" />
+                <Button HorizontalAlignment="Left" Content="{u:Tr mainWindow.openWorkshop}" Click="OpenSelectedWorkshopPage" IsEnabled="{Binding CanOpenSelectedWorkshop}" />
               </StackPanel>
             </Border>
           </StackPanel>
@@ -184,9 +185,9 @@
         <Border Padding="16" CornerRadius="12" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1">
           <StackPanel Spacing="10">
             <Grid ColumnDefinitions="*,Auto,Auto,Auto">
-              <TextBox Text="{Binding WorkshopQuery}" PlaceholderText="Search workshop mods" />
-              <Button Grid.Column="1" Margin="12,0,0,0" Content="Search" Click="SearchWorkshopMods" />
-              <Button Grid.Column="2" Margin="12,0,0,0" Content="Reload" Click="ReloadWorkshopMods" />
+              <TextBox Text="{Binding WorkshopQuery}" PlaceholderText="{u:Tr mainWindow.searchWorkshopMods}" />
+              <Button Grid.Column="1" Margin="12,0,0,0" Content="{u:Tr mainWindow.search}" Click="SearchWorkshopMods" />
+              <Button Grid.Column="2" Margin="12,0,0,0" Content="{u:Tr mainWindow.reload}" Click="ReloadWorkshopMods" />
               <TextBlock Grid.Column="3" Margin="12,0,0,0" Text="{Binding WorkshopPageText}" VerticalAlignment="Center" />
             </Grid>
             <Border Padding="12" CornerRadius="10" Background="#132132" BorderBrush="#2A4C6D" BorderThickness="1" IsVisible="{Binding HasWorkshopStatus}">
@@ -200,11 +201,11 @@
                       <StackPanel>
                         <TextBlock Text="{Binding DisplayName}" FontSize="16" FontWeight="SemiBold" />
                         <TextBlock Text="{Binding DetailText}" Opacity="0.72" />
-                        <TextBlock Text="Installed" IsVisible="{Binding IsInstalled}" Foreground="#0AA63E" />
+                        <TextBlock Text="{u:Tr common.installed}" IsVisible="{Binding IsInstalled}" Foreground="#0AA63E" />
                       </StackPanel>
                       <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                        <Button Content="Workshop" Click="OpenWorkshopResultPage" />
-                        <Button Content="Select" Click="SelectWorkshopModResult" />
+                        <Button Content="{u:Tr mainWindow.workshop}" Click="OpenWorkshopResultPage" />
+                        <Button Content="{u:Tr mainWindow.select}" Click="SelectWorkshopModResult" />
                       </StackPanel>
                     </Grid>
                   </Border>
@@ -212,8 +213,8 @@
               </ItemsControl.ItemTemplate>
             </ItemsControl>
             <WrapPanel>
-              <Button Content="Previous" Click="LoadPreviousWorkshopModsPage" IsEnabled="{Binding CanLoadPreviousWorkshopPage}" />
-              <Button Margin="10,0,0,0" Content="Next" Click="LoadNextWorkshopModsPage" IsEnabled="{Binding CanLoadNextWorkshopPage}" />
+              <Button Content="{u:Tr mainWindow.previous}" Click="LoadPreviousWorkshopModsPage" IsEnabled="{Binding CanLoadPreviousWorkshopPage}" />
+              <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.next}" Click="LoadNextWorkshopModsPage" IsEnabled="{Binding CanLoadNextWorkshopPage}" />
             </WrapPanel>
           </StackPanel>
         </Border>
@@ -221,7 +222,7 @@
           <TextBlock Text="{Binding StatusMessage}" Foreground="{Binding StatusColor}" TextWrapping="Wrap" />
         </Border>
         <Border Padding="16" CornerRadius="12" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1" IsVisible="{Binding HasNoMods}">
-          <TextBlock Text="No installed mods were found yet. You can install one by ID above or from the workshop list in this section." TextWrapping="Wrap" Opacity="0.82" />
+          <TextBlock Text="{u:Tr mainWindow.noInstalledMods}" TextWrapping="Wrap" Opacity="0.82" />
         </Border>
         <ItemsControl ItemsSource="{Binding Rows}">
           <ItemsControl.ItemTemplate>
@@ -234,11 +235,11 @@
                     <TextBlock Text="{Binding StatusText}" Foreground="{Binding StatusColor}" />
                   </StackPanel>
                   <WrapPanel>
-                    <Button Content="Copy ID" Click="CopyInstalledModId" />
-                    <Button Margin="10,0,0,0" Content="Workshop" Click="OpenInstalledModWorkshopPage" />
-                    <Button Margin="10,0,0,0" Content="Update" Click="UpdateInstalledMod" IsEnabled="{Binding CanUpdate}" />
-                    <Button Margin="10,0,0,0" Content="Validate" Click="ValidateInstalledMod" IsEnabled="{Binding CanValidate}" />
-                    <Button Margin="10,0,0,0" Content="Delete" Click="DeleteInstalledMod" IsEnabled="{Binding CanDelete}" />
+                    <Button Content="{u:Tr mainWindow.copyId}" Click="CopyInstalledModId" />
+                    <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.workshop}" Click="OpenInstalledModWorkshopPage" />
+                    <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.update}" Click="UpdateInstalledMod" IsEnabled="{Binding CanUpdate}" />
+                    <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.validate}" Click="ValidateInstalledMod" IsEnabled="{Binding CanValidate}" />
+                    <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.delete}" Click="DeleteInstalledMod" IsEnabled="{Binding CanDelete}" />
                   </WrapPanel>
                 </StackPanel>
               </Border>
@@ -251,18 +252,18 @@
       <StackPanel Spacing="16">
         <Border Padding="16" CornerRadius="12" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1">
           <StackPanel Spacing="10">
-            <TextBlock Text="Game Path" FontWeight="SemiBold" />
+            <TextBlock Text="{u:Tr mainWindow.gamePath}" FontWeight="SemiBold" />
             <Grid ColumnDefinitions="*,Auto">
               <TextBox Text="{Binding GamePath}" />
-              <Button Grid.Column="1" Margin="12,0,0,0" Content="Browse" Click="BrowseSettingsGamePath" />
+              <Button Grid.Column="1" Margin="12,0,0,0" Content="{u:Tr mainWindow.browse}" Click="BrowseSettingsGamePath" />
             </Grid>
-            <TextBlock Text="Set this to your existing ARK folder, or to an empty folder where the launcher should install a managed copy of the game." Opacity="0.78" TextWrapping="Wrap" />
+            <TextBlock Text="{u:Tr mainWindow.gamePathDescription}" Opacity="0.78" TextWrapping="Wrap" />
           </StackPanel>
         </Border>
         <Border Padding="16" CornerRadius="12" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1">
           <StackPanel Spacing="10">
             <StackPanel Spacing="6" IsVisible="{Binding LinuxLaunchToolVisible}">
-              <TextBlock Text="Linux Compatibility Tool" FontWeight="SemiBold" />
+              <TextBlock Text="{u:Tr mainWindow.linuxCompatibilityTool}" FontWeight="SemiBold" />
               <ComboBox ItemsSource="{Binding LinuxLaunchTools}" SelectedItem="{Binding SelectedLinuxLaunchTool}">
                 <ComboBox.ItemTemplate>
                   <DataTemplate>
@@ -271,12 +272,12 @@
                 </ComboBox.ItemTemplate>
               </ComboBox>
               <WrapPanel>
-                <Button Content="Import Proton/GE Path" Click="ImportLinuxProtonTool" />
-                <Button Margin="10,0,0,0" Content="Import Wine Path" Click="ImportLinuxWineTool" />
+                <Button Content="{u:Tr mainWindow.importProtonPath}" Click="ImportLinuxProtonTool" />
+                <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.importWinePath}" Click="ImportLinuxWineTool" />
               </WrapPanel>
               <TextBlock Text="{Binding LinuxLaunchToolNote}" TextWrapping="Wrap" Foreground="#A7C4E3" />
 
-              <TextBlock Margin="0,10,0,0" Text="Linux Launch Presets" FontWeight="SemiBold" />
+              <TextBlock Margin="0,10,0,0" Text="{u:Tr mainWindow.linuxLaunchPresets}" FontWeight="SemiBold" />
               <ComboBox ItemsSource="{Binding LinuxLaunchPresets}" SelectedItem="{Binding SelectedLinuxLaunchPreset}">
                 <ComboBox.ItemTemplate>
                   <DataTemplate>
@@ -285,54 +286,54 @@
                 </ComboBox.ItemTemplate>
               </ComboBox>
               <Grid ColumnDefinitions="*,Auto,Auto,Auto">
-                <TextBox Text="{Binding LinuxLaunchPresetName, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Preset name" />
-                <Button Grid.Column="1" Margin="10,0,0,0" Content="Save Preset" Click="SaveLinuxLaunchPreset" />
-                <Button Grid.Column="2" Margin="10,0,0,0" Content="Apply Preset" Click="ApplyLinuxLaunchPreset" IsEnabled="{Binding CanApplyLinuxLaunchPreset}" />
-                <Button Grid.Column="3" Margin="10,0,0,0" Content="Delete Preset" Click="DeleteLinuxLaunchPreset" IsEnabled="{Binding CanDeleteLinuxLaunchPreset}" />
+                <TextBox Text="{Binding LinuxLaunchPresetName, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="{u:Tr mainWindow.presetName}" />
+                <Button Grid.Column="1" Margin="10,0,0,0" Content="{u:Tr mainWindow.savePreset}" Click="SaveLinuxLaunchPreset" />
+                <Button Grid.Column="2" Margin="10,0,0,0" Content="{u:Tr mainWindow.applyPreset}" Click="ApplyLinuxLaunchPreset" IsEnabled="{Binding CanApplyLinuxLaunchPreset}" />
+                <Button Grid.Column="3" Margin="10,0,0,0" Content="{u:Tr mainWindow.deletePreset}" Click="DeleteLinuxLaunchPreset" IsEnabled="{Binding CanDeleteLinuxLaunchPreset}" />
               </Grid>
 
-              <TextBlock Margin="0,10,0,0" Text="Custom Prefix" FontWeight="SemiBold" />
+              <TextBlock Margin="0,10,0,0" Text="{u:Tr mainWindow.customPrefix}" FontWeight="SemiBold" />
               <Grid ColumnDefinitions="*,Auto">
-                <TextBox Text="{Binding LinuxCustomPrefixPath, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Leave blank to use launcher-managed or Steam compatdata" />
-                <Button Grid.Column="1" Margin="12,0,0,0" Content="Browse" Click="BrowseLinuxCompatPrefix" />
+                <TextBox Text="{Binding LinuxCustomPrefixPath, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="{u:Tr mainWindow.placeholderCustomPrefix}" />
+                <Button Grid.Column="1" Margin="12,0,0,0" Content="{u:Tr mainWindow.browse}" Click="BrowseLinuxCompatPrefix" />
               </Grid>
-              <TextBlock Text="Use a custom compatdata root for this ARK setup. Point it at the folder that should contain the Proton/Wine prefix state, not directly at pfx." Opacity="0.78" TextWrapping="Wrap" />
+              <TextBlock Text="{u:Tr mainWindow.customPrefixDescription}" Opacity="0.78" TextWrapping="Wrap" />
 
               <WrapPanel Margin="0,10,0,0">
-                <CheckBox Content="gamemoderun" IsChecked="{Binding LinuxUseGameMode}" />
-                <CheckBox Margin="14,0,0,0" Content="gamescope" IsChecked="{Binding LinuxUseGamescope}" />
-                <CheckBox Margin="14,0,0,0" Content="MangoHud" IsChecked="{Binding LinuxUseMangoHud}" />
-                <CheckBox Margin="14,0,0,0" Content="vkBasalt" IsChecked="{Binding LinuxUseVkBasalt}" />
-                <CheckBox Margin="14,0,0,0" Content="Wine FSR" IsChecked="{Binding LinuxUseWineFullscreenFsr}" />
+                <CheckBox Content="{u:Tr mainWindow.gamemoderun}" IsChecked="{Binding LinuxUseGameMode}" />
+                <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.gamescope}" IsChecked="{Binding LinuxUseGamescope}" />
+                <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.mangohud}" IsChecked="{Binding LinuxUseMangoHud}" />
+                <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.vkbasalt}" IsChecked="{Binding LinuxUseVkBasalt}" />
+                <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.wineFsr}" IsChecked="{Binding LinuxUseWineFullscreenFsr}" />
               </WrapPanel>
 
               <StackPanel Spacing="6" IsVisible="{Binding LinuxGamescopeOptionsVisible}">
-                <TextBlock Text="Gamescope Arguments" FontWeight="SemiBold" />
-                <TextBox Text="{Binding LinuxGamescopeArguments, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="-W 1920 -H 1080 -r 60" />
-                <CheckBox Content="Enable gamescope FSR" IsChecked="{Binding LinuxUseGamescopeFsr}" />
-                <TextBox Text="{Binding LinuxGamescopeSharpness, UpdateSourceTrigger=PropertyChanged}" IsVisible="{Binding LinuxGamescopeFsrOptionsVisible}" PlaceholderText="Gamescope FSR sharpness (optional)" />
+                <TextBlock Text="{u:Tr mainWindow.gamescopeArguments}" FontWeight="SemiBold" />
+                <TextBox Text="{Binding LinuxGamescopeArguments, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="{u:Tr mainWindow.placeholderGamescopeArgs}" />
+                <CheckBox Content="{u:Tr mainWindow.enableGamescopeFsr}" IsChecked="{Binding LinuxUseGamescopeFsr}" />
+                <TextBox Text="{Binding LinuxGamescopeSharpness, UpdateSourceTrigger=PropertyChanged}" IsVisible="{Binding LinuxGamescopeFsrOptionsVisible}" PlaceholderText="{u:Tr mainWindow.gamescopeFsrSharpness}" />
               </StackPanel>
 
               <StackPanel Spacing="6" IsVisible="{Binding LinuxWineFsrOptionsVisible}">
-                <TextBlock Text="Wine FSR Strength" FontWeight="SemiBold" />
-                <TextBox Text="{Binding LinuxWineFullscreenFsrStrength, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="0-5, optional" />
+                <TextBlock Text="{u:Tr mainWindow.wineFsrStrength}" FontWeight="SemiBold" />
+                <TextBox Text="{Binding LinuxWineFullscreenFsrStrength, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="{u:Tr mainWindow.placeholderWineFsrStrength}" />
               </StackPanel>
 
-              <TextBlock Margin="0,10,0,0" Text="Extra Environment Variables" FontWeight="SemiBold" />
-              <TextBox Text="{Binding LinuxExtraEnvironmentVariables, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="90" PlaceholderText="KEY=value&#10;ANOTHER_KEY=value" />
+              <TextBlock Margin="0,10,0,0" Text="{u:Tr mainWindow.extraEnvVars}" FontWeight="SemiBold" />
+              <TextBox Text="{Binding LinuxExtraEnvironmentVariables, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="90" PlaceholderText="{u:Tr mainWindow.placeholderExtraEnv}" />
 
-              <TextBlock Margin="0,10,0,0" Text="Launch Wrappers" FontWeight="SemiBold" />
-              <TextBox Text="{Binding LinuxLaunchWrappers, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="90" PlaceholderText="One wrapper command per line&#10;obs-gamecapture mangohud" />
+              <TextBlock Margin="0,10,0,0" Text="{u:Tr mainWindow.launchWrappers}" FontWeight="SemiBold" />
+              <TextBox Text="{Binding LinuxLaunchWrappers, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="90" PlaceholderText="{u:Tr mainWindow.placeholderLaunchWrappers}" />
             </StackPanel>
-            <CheckBox Content="Close on game launch" IsChecked="{Binding CloseOnGameLaunch}" IsCheckedChanged="SettingsCloseOnLaunchChanged" />
-            <CheckBox Content="Communism mode" IsChecked="{Binding CommunismMode}" IsCheckedChanged="SettingsCommunismModeChanged" />
-            <CheckBox Content="Pre-Aquatica mode" IsChecked="{Binding PreAquatica}" IsCheckedChanged="SettingsPreAquaticaChanged" />
+            <CheckBox Content="{u:Tr mainWindow.closeOnGameLaunch}" IsChecked="{Binding CloseOnGameLaunch}" IsCheckedChanged="SettingsCloseOnLaunchChanged" />
+            <CheckBox Content="{u:Tr mainWindow.communismMode}" IsChecked="{Binding CommunismMode}" IsCheckedChanged="SettingsCommunismModeChanged" />
+            <CheckBox Content="{u:Tr mainWindow.preAquaticaMode}" IsChecked="{Binding PreAquatica}" IsCheckedChanged="SettingsPreAquaticaChanged" />
           </StackPanel>
         </Border>
         <WrapPanel>
-          <Button Content="Apply Game Path" Click="ApplySettingsGamePath" />
-          <Button Margin="10,0,0,0" Content="Clean Download Cache" Click="CleanDownloadCache" />
-          <Button Margin="10,0,0,0" Content="Delete Launcher Settings" Click="DeleteLauncherSettings" />
+          <Button Content="{u:Tr mainWindow.applyGamePath}" Click="ApplySettingsGamePath" />
+          <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.cleanDownloadCache}" Click="CleanDownloadCache" />
+          <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.deleteLauncherSettings}" Click="DeleteLauncherSettings" />
         </WrapPanel>
       </StackPanel>
     </DataTemplate>
@@ -341,11 +342,11 @@
         <Border Padding="16" CornerRadius="12" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1">
           <Grid ColumnDefinitions="*,Auto">
             <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center" TextWrapping="Wrap" />
-            <Button Grid.Column="1" Margin="12,0,0,0" Content="Refresh" Click="RefreshServers" />
+            <Button Grid.Column="1" Margin="12,0,0,0" Content="{u:Tr mainWindow.refresh}" Click="RefreshServers" />
           </Grid>
         </Border>
         <Border Padding="16" CornerRadius="12" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1" IsVisible="{Binding IsRefreshing}">
-          <TextBlock Text="Refreshing cluster lists..." />
+          <TextBlock Text="{u:Tr mainWindow.refreshingClusters}" />
         </Border>
         <ItemsControl ItemsSource="{Binding Rows}">
           <ItemsControl.ItemsPanel>
@@ -517,7 +518,7 @@
                   BorderBrush="#274665"
                   BorderThickness="1">
             <Grid ColumnDefinitions="Auto,*">
-              <TextBlock Text="Game Version" FontSize="14" Opacity="0.72" />
+              <TextBlock Text="{u:Tr playTab.gameVersion}" FontSize="14" Opacity="0.72" />
               <TextBlock Grid.Column="1" Margin="12,0,0,0" Text="{Binding GameVersion}" Foreground="{Binding GameVersionColor}" FontSize="16" FontWeight="SemiBold" />
             </Grid>
           </Border>
@@ -527,7 +528,7 @@
                   BorderBrush="#274665"
                   BorderThickness="1"
                   IsVisible="{Binding IsBusy}">
-            <TextBlock Text="Loading launcher state..." />
+            <TextBlock Text="{u:Tr common.loading}" />
           </Border>
         </StackPanel>
         <ScrollViewer Grid.Row="1" Margin="0,16,0,0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">

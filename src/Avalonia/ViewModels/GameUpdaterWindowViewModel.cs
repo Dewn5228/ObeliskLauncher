@@ -3,7 +3,7 @@ namespace TEKLauncher.Avalonia.ViewModels;
 internal sealed class GameUpdaterWindowViewModel : SteamTaskUpdaterWindowViewModelBase
 {
     internal GameUpdaterWindowViewModel(bool validate)
-      : base(string.Format(LocManager.GetString(LocCode.SteamUpdater), "ARK"), validate)
+      : base(string.Format(Locale.Get("gameOptionsTab.steamUpdater"), "ARK"), validate)
     {
     }
 
@@ -16,8 +16,8 @@ internal sealed class GameUpdaterWindowViewModel : SteamTaskUpdaterWindowViewMod
     protected override unsafe void HandleSuccessfulResult(TEKSteamClient.Error result)
     {
         SetStatus(result.Primary == 85
-          ? string.Format(LocManager.GetString(LocCode.AlreadyUpToDate), "ARK")
-          : LocManager.GetString(LocCode.UpdateFinished), global::Avalonia.Media.Brushes.LimeGreen);
+          ? string.Format(Locale.Get("common.alreadyUpToDate"), "ARK")
+          : Locale.Get("updateFinished"), global::Avalonia.Media.Brushes.LimeGreen);
     }
 
     protected override bool TryCloseCore() => true;

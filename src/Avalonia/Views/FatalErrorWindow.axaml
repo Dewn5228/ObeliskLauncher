@@ -1,11 +1,12 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="TEKLauncher.Avalonia.Views.FatalErrorWindow"
+        xmlns:u="clr-namespace:TEKLauncher.UI"
         Width="760"
         Height="720"
         MinWidth="560"
         MinHeight="420"
-        Title="Fatal Error">
+        Title="{u:Tr fatalErrorWindow.title}">
   <Border Margin="16" Padding="18" CornerRadius="12" Background="#10233A" BorderBrush="#2E5E8C" BorderThickness="1">
     <Grid RowDefinitions="Auto,*">
       <Grid ColumnDefinitions="Auto,*">
@@ -15,8 +16,8 @@
         <StackPanel Grid.Column="1" Margin="18,0,0,0" Spacing="10" VerticalAlignment="Center">
           <TextBlock x:Name="FatalMessageText" TextWrapping="Wrap" />
           <StackPanel Orientation="Horizontal" Spacing="10">
-            <Button Content="Open Discord" Click="OpenDiscord" HorizontalAlignment="Left" />
-            <Button x:Name="CopyErrorButton" Content="Copy Error" Click="CopyError" HorizontalAlignment="Left" />
+            <Button Content="{u:Tr mainWindow.openDiscord}" Click="OpenDiscord" HorizontalAlignment="Left" />
+            <Button x:Name="CopyErrorButton" Content="{u:Tr mainWindow.copyError}" Click="CopyError" HorizontalAlignment="Left" />
           </StackPanel>
         </StackPanel>
       </Grid>

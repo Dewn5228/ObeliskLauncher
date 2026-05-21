@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:TEKLauncher.Avalonia.ViewModels"
+        xmlns:u="clr-namespace:TEKLauncher.UI"
         x:Class="TEKLauncher.Avalonia.Views.LauncherUpdateWindow"
         x:DataType="vm:LauncherUpdateWindowViewModel"
         Width="820"
@@ -19,13 +20,13 @@
                      Maximum="{Binding ProgressMaximum}"
                      Value="{Binding ProgressValue}"
                      IsIndeterminate="{Binding IsProgressIndeterminate}" />
-        <TextBlock Text="Windows builds can replace the launcher binary in place. Linux builds currently fall back to manual release-page updates until Linux artifacts are published."
+          <TextBlock Text="{u:Tr launcherUpdateWindow.linuxFallbackNote}"
                    Opacity="0.74"
                    TextWrapping="Wrap" />
       </StackPanel>
       <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-        <Button Content="Open Release Page" Click="OpenReleasePage" IsVisible="{Binding CanOpenReleasePage}" MinWidth="140" />
-        <Button Content="Close" Click="CloseWindow" IsEnabled="{Binding CanClose}" MinWidth="110" />
+        <Button Content="{u:Tr mainWindow.openReleasePage}" Click="OpenReleasePage" IsVisible="{Binding CanOpenReleasePage}" MinWidth="140" />
+        <Button Content="{u:Tr mainWindow.close}" Click="CloseWindow" IsEnabled="{Binding CanClose}" MinWidth="110" />
       </StackPanel>
     </Grid>
   </Border>

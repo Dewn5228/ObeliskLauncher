@@ -42,7 +42,7 @@ Terminal=false
 EOF
 cp "${APPDIR}/TEKLauncher.desktop" "${APPDIR}/usr/share/applications/"
 
-ICON_FILE="Assets/icon.png"
+ICON_FILE="assets/icon.png"
 if [ -f "$ICON_FILE" ]; then
     cp "$ICON_FILE" "${APPDIR}/usr/share/icons/hicolor/256x256/apps/teklauncher.png"
     cp "$ICON_FILE" "${APPDIR}/teklauncher.png"

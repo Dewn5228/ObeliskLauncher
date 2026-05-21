@@ -2,18 +2,26 @@ namespace TEKLauncher.Avalonia.ViewModels;
 
 public sealed class AboutSectionScreenViewModel : LauncherSectionScreenViewModel
 {
-    public AboutSectionScreenViewModel()
-      : base(LauncherSection.About)
-    {
-    }
+  public AboutSectionScreenViewModel()
+    : base(LauncherSection.About)
+  {
+  }
 
-    public string AppVersion => LauncherBootstrap.Version;
+  public string AppVersion => LauncherBootstrap.Version;
 
-    public string DescriptionBody => LocManager.GetString(LocCode.AboutTabDescription);
+  public string DescriptionBody => Locale.Get("tabsDescriptions.about");
 
-    public string KeyFeaturesHeader => LocManager.GetString(LocCode.KeyFeaturesHeader);
+  public string KeyFeaturesHeader => Locale.Get("launcherSettingsTab.keyFeaturesHeader");
 
-    public string KeyFeaturesText => LocManager.GetString(LocCode.KeyFeatures);
+  public string KeyFeaturesText => Locale.Get("launcherSettingsTab.keyFeatures");
 
-    public string LinksHeader => LocManager.GetString(LocCode.Links);
+  public string LinksHeader => Locale.Get("common.links");
+
+  public override void Activate()
+  {
+    OnPropertyChanged(nameof(DescriptionBody));
+    OnPropertyChanged(nameof(KeyFeaturesHeader));
+    OnPropertyChanged(nameof(KeyFeaturesText));
+    OnPropertyChanged(nameof(LinksHeader));
+  }
 }

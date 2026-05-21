@@ -11,8 +11,8 @@ public partial class FatalErrorWindow : Window
     public FatalErrorWindow()
     {
         InitializeComponent();
-        Title = LocManager.GetString(LocCode.FatalError);
-        FatalMessageText.Text = string.Concat(LocManager.GetString(LocCode.FatalErrorMessage), " ", LocManager.GetString(LocCode.FatalErrorMessageLink));
+        Title = Locale.Get("errors.fatalError");
+        FatalMessageText.Text = string.Concat(Locale.Get("errors.fatalErrorMessagePrefix"), " ", Locale.Get("errors.fatalErrorMessageLink"));
     }
 
     public FatalErrorWindow(Exception exception)

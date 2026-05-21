@@ -76,12 +76,12 @@ public partial class FirstLaunchWindow : Window
         {
             _existingInstallPath = path;
             _preAquatica = validation.IsPreAquatica;
-            SetStatus(ExistingStatusText, LocManager.GetString(LocCode.GameFilesFound), "#0AA63E");
+            SetStatus(ExistingStatusText, Locale.Get("gameFilesFound"), "#0AA63E");
         }
         else
         {
             _existingInstallPath = null;
-            SetStatus(ExistingStatusText, LocManager.GetString(LocCode.GameFilesNotFound), "#D4573B");
+            SetStatus(ExistingStatusText, Locale.Get("gameFilesNotFound"), "#D4573B");
         }
     }
 
@@ -142,7 +142,7 @@ public partial class FirstLaunchWindow : Window
         bool enoughSpace = validation.EnoughSpace;
 
         BeginInstallButton.IsEnabled = enoughSpace;
-        FreeSpaceText.Text = $"Free disk space: {LocManager.BytesToString(freeSpace)}";
+        FreeSpaceText.Text = $"Free disk space: {Locale.BytesToString(freeSpace)}";
 
         SetStatus(
           InstallStatusText,

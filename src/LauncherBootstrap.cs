@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace TEKLauncher;
 
-readonly record struct LauncherBootstrapResult(bool Success, LocCode? ErrorCode);
+readonly record struct LauncherBootstrapResult(bool Success, string? ErrorCode);
 
 static class LauncherBootstrap
 {
@@ -18,13 +18,13 @@ static class LauncherBootstrap
         CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = new CultureInfo("en-US");
 
         Settings.Load();
-        LocManager.Initialize(cultureCode);
+        Locale.Init(cultureCode);
 
         if (!IPC.Initialize())
-            return new(false, LocCode.AnotherInstanceRunning);
+            return new(false, "errors.anotherInstanceRunning");
 
         if (!Steam.App.Initialize())
-            return new(false, LocCode.SteamMissing);
+            return new(false, "errors.steamMissing");
 
         string oldExePath = string.Concat(Environment.ProcessPath, ".old");
         if (File.Exists(oldExePath))

@@ -57,22 +57,22 @@ static class Game
         if (IsCorrupted)
         {
             WriteLaunchAttemptLog(launchLog, "Launch blocked: game files look corrupted.");
-            Messages.Show("Error", LocManager.GetString(LocCode.LaunchFailCorrupted));
+            Messages.Show("common.error", Locale.Get("errors.launchFailCorrupted"));
         }
         else if (!Steam.App.IsRunning)
         {
             WriteLaunchAttemptLog(launchLog, "Launch blocked: Steam is not running.");
-            Messages.Show("Error", LocManager.GetString(LocCode.LaunchFailSteamNotRunning));
+            Messages.Show("common.error", Locale.Get("errors.launchFailSteamNotRunning"));
         }
         else if (!DirectXInstalled)
         {
             WriteLaunchAttemptLog(launchLog, "Launch blocked: DirectX/runtime requirements are missing.");
-            Messages.Show("Error", string.Format(LocManager.GetString(LocCode.LaunchFailDirectXNotInstalled), LocManager.GetString(LocCode.InstallDirectX)));
+            Messages.Show("common.error", string.Format(Locale.Get("errors.launchFailDirectXNotInstalled"), Locale.Get("errors.installDirectX")));
         }
         else if (server is not null && server.Map > MapCode.TheIsland && server.Map < MapCode.Mod && !DLC.Get(server.Map).IsInstalled)
         {
             WriteLaunchAttemptLog(launchLog, $"Launch blocked: DLC '{server.Map}' is missing for server join.");
-            Messages.Show("Warning", LocManager.GetString(LocCode.JoinFailDLCMissing));
+            Messages.Show("common.warning", Locale.Get("errors.joinFailDlcMissing"));
         }
         else
         {
@@ -82,7 +82,7 @@ static class Game
             if (Steam.App.CurrentUserStatus.SteamId64 == 0)
             {
                 WriteLaunchAttemptLog(launchLog, "Launch blocked: Steam user is not logged in or could not be resolved.");
-                Messages.Show("Error", LocManager.GetString(LocCode.LaunchFailNotLoggedIntoSteam));
+                Messages.Show("common.error", Locale.Get("errors.launchFailNotLoggedIntoSteam"));
                 return;
             }
 

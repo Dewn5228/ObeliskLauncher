@@ -69,7 +69,7 @@ public sealed class LauncherSettingsSectionScreenViewModel : LauncherSectionScre
 
     public bool LinuxLaunchToolVisible => OperatingSystem.IsLinux();
 
-    public string LinuxLaunchToolNote => "Choose which Windows compatibility runtime launches ARK on Linux. Automatic follows Steam's assigned Proton tool when possible, then falls back to the best discovered Proton or Wine build.";
+    public string LinuxLaunchToolNote => Locale.Get("launcherSettingsTab.linuxLaunchToolNote");
 
     public string LinuxCustomPrefixPath
     {

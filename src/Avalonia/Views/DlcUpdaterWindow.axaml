@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:TEKLauncher.Avalonia.ViewModels"
+        xmlns:u="clr-namespace:TEKLauncher.UI"
         x:Class="TEKLauncher.Avalonia.Views.DlcUpdaterWindow"
         x:DataType="vm:DlcUpdaterWindowViewModel"
         Width="900"
@@ -36,13 +37,13 @@
           <TextBlock Text="{Binding ProgressText}"
                      FontWeight="SemiBold"
                      IsVisible="{Binding HasProgressText}" />
-          <TextBlock Text="Close the window after pausing or when the task finishes. The underlying Steam task is the same one used by the old updater flow."
+          <TextBlock Text="{u:Tr dlcUpdaterWindow.closeNote}"
                      Opacity="0.74"
                      TextWrapping="Wrap" />
         </StackPanel>
         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
           <Button Content="{Binding ActionLabel}" Click="PauseOrRetry" IsEnabled="{Binding IsActionEnabled}" MinWidth="110" />
-          <Button Content="Close" Click="CloseWindow" MinWidth="110" />
+          <Button Content="{u:Tr mainWindow.close}" Click="CloseWindow" MinWidth="110" />
         </StackPanel>
       </Grid>
     </Border>
