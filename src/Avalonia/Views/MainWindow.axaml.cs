@@ -30,9 +30,6 @@ public partial class MainWindow : Window
         if (DataContext is MainWindowViewModel viewModel)
         {
             await viewModel.InitializeAsync();
-            UpdateNavigationLabels(viewModel);
-            Title = CommunismModeWorkflow.AppTitle;
-            await CommunismModeWorkflow.ApplyAsync();
             viewModel.GetScreen<PlaySectionScreenViewModel>(LauncherSection.Play)?.Activate();
             if (viewModel.DownloadFailureName is not null && viewModel.DownloadFailureUrl is not null)
             {
@@ -111,10 +108,7 @@ public partial class MainWindow : Window
 
             playScreen.LauncherLanguageIndex = comboBox.SelectedIndex;
             if (DataContext is MainWindowViewModel viewModel)
-            {
                 viewModel.RefreshLocale();
-                UpdateNavigationLabels(viewModel);
-            }
         }
     }
 
@@ -134,7 +128,7 @@ public partial class MainWindow : Window
 
         var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
-            Title = Locale.Get("gameOptionsTab.gamePath"),
+            Title = Locale.Get("mainWindow.gamePath"),
             AllowMultiple = false
         });
 
@@ -280,17 +274,6 @@ public partial class MainWindow : Window
         screen.CloseOnGameLaunch = false;
     }
 
-    async void SettingsCommunismModeChanged(object? sender, RoutedEventArgs e)
-    {
-        if (DataContext is not MainWindowViewModel viewModel || viewModel.CurrentScreen is not LauncherSettingsSectionScreenViewModel screen || sender is not CheckBox checkBox)
-            return;
-
-        screen.CommunismMode = checkBox.IsChecked == true;
-        Title = CommunismModeWorkflow.AppTitle;
-        await CommunismModeWorkflow.ApplyAsync();
-        viewModel.GetScreen<PlaySectionScreenViewModel>(LauncherSection.Play)?.Activate();
-    }
-
     async void SettingsPreAquaticaChanged(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not MainWindowViewModel viewModel || viewModel.CurrentScreen is not LauncherSettingsSectionScreenViewModel screen || sender is not CheckBox checkBox)
@@ -391,7 +374,7 @@ public partial class MainWindow : Window
         if (DataContext is not MainWindowViewModel { CurrentScreen: ModsSectionScreenViewModel screen } || sender is not Control { DataContext: ModRowViewModel row })
             return;
 
-        if (!Messages.ShowOptions("common.info", Locale.Get("modsTab.modDeletePrompt")))
+        if (!Messages.ShowOptions("common.info", Locale.Get("errors.modDeletePrompt")))
             return;
 
         await screen.DeleteAsync(row);
@@ -661,14 +644,4 @@ public partial class MainWindow : Window
 
     static void OpenUrl(string url) => Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
 
-    void UpdateNavigationLabels(MainWindowViewModel viewModel)
-    {
-        PlayButton.Content = viewModel.Sections[(int)LauncherSection.Play].TitleCode is var playCode ? Locale.Get(playCode) : PlayButton.Content;
-        ServersButton.Content = viewModel.Sections[(int)LauncherSection.Servers].TitleCode is var serversCode ? Locale.Get(serversCode) : ServersButton.Content;
-        GameOptionsButton.Content = viewModel.Sections[(int)LauncherSection.GameOptions].TitleCode is var gameOptionsCode ? Locale.Get(gameOptionsCode) : GameOptionsButton.Content;
-        DlcButton.Content = viewModel.Sections[(int)LauncherSection.DLC].TitleCode is var dlcCode ? Locale.Get(dlcCode) : DlcButton.Content;
-        ModsButton.Content = viewModel.Sections[(int)LauncherSection.Mods].TitleCode is var modsCode ? Locale.Get(modsCode) : ModsButton.Content;
-        LauncherSettingsButton.Content = viewModel.Sections[(int)LauncherSection.LauncherSettings].TitleCode is var settingsCode ? Locale.Get(settingsCode) : LauncherSettingsButton.Content;
-        AboutButton.Content = viewModel.Sections[(int)LauncherSection.About].TitleCode is var aboutCode ? Locale.Get(aboutCode) : AboutButton.Content;
-    }
 }

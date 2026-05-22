@@ -39,7 +39,8 @@
       "kb": "KB",
       "mb": "MB",
       "gb": "GB"
-    }
+    },
+    "updating": "Updating"
   },
   "time": {
     "second": "s",
@@ -179,7 +180,6 @@
   },
   "launcherSettingsTab": {
     "closeOnGameLaunch": "Close launcher on game launch",
-    "communismMode": "Communism Mode",
     "linuxLaunchSettings": "Linux Launch Settings",
     "launcherLanguage": "Launcher Language",
     "gameLanguage": "Game Language",
@@ -343,7 +343,6 @@
     "extraEnvVars": "Extra Environment Variables",
     "launchWrappers": "Launch Wrappers",
     "closeOnGameLaunch": "Close on game launch",
-    "communismMode": "Communism mode",
     "preAquaticaMode": "Pre-Aquatica mode",
     "highProcessPriority": "High process priority",
     "runGameAsAdmin": "Run game as admin",
@@ -401,5 +400,7 @@
   },
   "gameUpdaterWindow": {
     "tabTitle": "Update Game"
-  }
+  },
+  "gameUpdateAvailable": "Game update is available.",
+  "updateFinished": "Update finished."
 }

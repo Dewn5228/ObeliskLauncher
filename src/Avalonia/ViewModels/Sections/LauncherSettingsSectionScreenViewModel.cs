@@ -39,20 +39,6 @@ public sealed class LauncherSettingsSectionScreenViewModel : LauncherSectionScre
         }
     }
 
-    public bool CommunismMode
-    {
-        get => Settings.CommunismMode;
-        set
-        {
-            if (Settings.CommunismMode == value)
-                return;
-
-            Settings.CommunismMode = value;
-            OnPropertyChanged();
-            PersistSettings();
-        }
-    }
-
     public bool PreAquatica
     {
         get => Settings.PreAquatica;
@@ -315,7 +301,6 @@ public sealed class LauncherSettingsSectionScreenViewModel : LauncherSectionScre
         RefreshLinuxLaunchTools();
         RefreshLinuxLaunchPresets();
         OnPropertyChanged(nameof(CloseOnGameLaunch));
-        OnPropertyChanged(nameof(CommunismMode));
         OnPropertyChanged(nameof(LinuxCustomPrefixPath));
         OnPropertyChanged(nameof(LinuxExtraEnvironmentVariables));
         OnPropertyChanged(nameof(LinuxGamescopeArguments));
@@ -335,6 +320,12 @@ public sealed class LauncherSettingsSectionScreenViewModel : LauncherSectionScre
         OnPropertyChanged(nameof(LinuxWineFullscreenFsrStrength));
         OnPropertyChanged(nameof(LinuxWineFsrOptionsVisible));
         OnPropertyChanged(nameof(PreAquatica));
+    }
+
+    public override void RefreshLocale()
+    {
+        OnPropertyChanged(nameof(LinuxLaunchToolNote));
+        OnPropertyChanged(nameof(LinuxLaunchPresetName));
     }
 
     public void ApplySelectedLinuxPreset()

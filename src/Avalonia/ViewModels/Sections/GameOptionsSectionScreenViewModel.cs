@@ -173,7 +173,7 @@ public sealed class GameOptionsSectionScreenViewModel : LauncherSectionScreenVie
             return;
 
         IsBusy = true;
-        SetStatus(Locale.Get("common.downloading"), 0);
+        SetStatus(Locale.Get("downloads.downloading"), 0);
         try
         {
             var result = await GameOptionsWorkflow.UnlockSkinsAsync();

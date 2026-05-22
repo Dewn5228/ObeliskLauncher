@@ -212,7 +212,7 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
     {
         if (IsSteamTaskActive)
         {
-            Messages.Show("common.warning", Locale.Get("pauseRequired"));
+            Messages.Show("common.warning", Locale.Get("status.pauseRequired"));
             return false;
         }
 
@@ -262,7 +262,7 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
                 ProgressMaximum = 1;
                 ProgressValue = 1;
                 IsProgressIndeterminate = false;
-                SetStatus(Locale.Get("operationPaused"), Brushes.LimeGreen);
+                SetStatus(Locale.Get("status.operationPaused"), Brushes.LimeGreen);
             }
             else
             {

@@ -16,7 +16,7 @@ public sealed class LauncherUpdateWindowViewModel : INotifyPropertyChanged
     double _progressMaximum = 100;
     double _progressValue;
     string _statusBrush = "Yellow";
-    string _statusText = Locale.Get("common.downloading");
+    string _statusText = Locale.Get("downloads.downloading");
 
     public bool CanClose => !IsBusy;
 

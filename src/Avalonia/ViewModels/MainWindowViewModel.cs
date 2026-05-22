@@ -140,7 +140,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
         RebuildNotices();
 
-        CurrentScreen.Activate();
+        CurrentScreen.RefreshLocale();
         OnPropertyChanged(nameof(SelectedSectionTitle));
         OnPropertyChanged(nameof(SelectedSectionDescription));
     }
@@ -217,7 +217,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             {
                 ActionKind = ShellNoticeActionKind.OpenLauncherReleasePage,
                 ActionLabel = Locale.Get("common.update"),
-                Message = Locale.Get("show.whatsNew")
+                Message = Locale.Get("status.whatsNew")
             });
 
         if (_bootstrapWarningMessage is not null)
@@ -276,7 +276,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             {
                 ActionKind = ShellNoticeActionKind.OpenDlcSection,
                 ActionLabel = Locale.Get("common.update"),
-                Message = Locale.Get("dlcUpdatesAvailable")
+                Message = Locale.Get("dlcTab.dlcUpdatesAvailable")
             });
 
         return notices.ToArray();

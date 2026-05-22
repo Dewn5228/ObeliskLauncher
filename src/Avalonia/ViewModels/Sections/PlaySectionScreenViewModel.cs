@@ -54,7 +54,7 @@ public sealed class PlaySectionScreenViewModel : LauncherSectionScreenViewModel
 
     public string CurrentGamePath => Game.Path ?? Locale.Get("errors.noPathSelected");
 
-    public string? HeroImagePath => UI.CommunismModeWorkflow.GetPlayImagePath();
+    public string? HeroImagePath => null;
 
     public bool HasHeroImage => HeroImagePath is not null;
 
@@ -132,6 +132,14 @@ public sealed class PlaySectionScreenViewModel : LauncherSectionScreenViewModel
         OnPropertyChanged(nameof(RunAsAdminVisible));
         OnPropertyChanged(nameof(UseSpacewar));
         OnPropertyChanged(nameof(UseSpacewarVisible));
+    }
+
+    public override void RefreshLocale()
+    {
+        OnPropertyChanged(nameof(CurrentGamePath));
+        OnPropertyChanged(nameof(LaunchBehaviorNote));
+        OnPropertyChanged(nameof(LauncherLanguageAvailabilityNote));
+        OnPropertyChanged(nameof(LauncherLanguages));
     }
 
     static (string[] Labels, int[] IndexMap) BuildLauncherLanguageOptions()

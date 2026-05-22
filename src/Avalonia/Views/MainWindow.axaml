@@ -2,9 +2,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="TEKLauncher.Avalonia.Views.MainWindow"
         xmlns:vm="clr-namespace:TEKLauncher.Avalonia.ViewModels"
+        xmlns:d="clr-namespace:TEKLauncher.Data"
+        xmlns:p="clr-namespace:TEKLauncher.Platform"
         xmlns:u="clr-namespace:TEKLauncher.UI"
         x:DataType="vm:MainWindowViewModel"
-        x:CompileBindings="False"
+        x:CompileBindings="True"
         Width="1100"
         Height="720"
         MinWidth="900"
@@ -48,7 +50,8 @@
         <Border Padding="16" CornerRadius="12" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1">
           <StackPanel Spacing="8">
             <TextBlock FontSize="22" FontWeight="SemiBold">
-              <Run Text="TEK Launcher ver. " />
+              <Run Text="{u:Tr version.launcherVersion}" />
+              <Run Text=": " />
               <Run Text="{Binding AppVersion}" />
             </TextBlock>
             <TextBlock Text="{Binding DescriptionBody}" TextWrapping="Wrap" />
@@ -115,7 +118,7 @@
             <TextBlock Text="{u:Tr launchOptimization.launchParameters}" FontSize="18" FontWeight="SemiBold" />
             <ItemsControl ItemsSource="{Binding LaunchParameters}">
               <ItemsControl.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate DataType="vm:GameOptionsLaunchParameterViewModel">
                   <Border Padding="12" CornerRadius="12" Background="#132132" BorderBrush="#2A4C6D" BorderThickness="1">
                     <StackPanel Spacing="4">
                       <CheckBox Content="{Binding Title}" IsChecked="{Binding IsEnabled}" />
@@ -144,7 +147,7 @@
         </Border>
         <ItemsControl ItemsSource="{Binding Rows}">
           <ItemsControl.ItemTemplate>
-            <DataTemplate>
+            <DataTemplate DataType="vm:DlcRowViewModel">
               <Border Padding="16" CornerRadius="12" Background="#132132" BorderBrush="#2A4C6D" BorderThickness="1">
                 <StackPanel Spacing="10">
                   <StackPanel>
@@ -195,7 +198,7 @@
             </Border>
             <ItemsControl ItemsSource="{Binding WorkshopRows}">
               <ItemsControl.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate DataType="vm:WorkshopModRowViewModel">
                   <Border Padding="14" CornerRadius="12" Background="#132132" BorderBrush="#2A4C6D" BorderThickness="1">
                     <Grid ColumnDefinitions="*,Auto">
                       <StackPanel>
@@ -226,7 +229,7 @@
         </Border>
         <ItemsControl ItemsSource="{Binding Rows}">
           <ItemsControl.ItemTemplate>
-            <DataTemplate>
+            <DataTemplate DataType="vm:ModRowViewModel">
               <Border Padding="16" CornerRadius="12" Background="#132132" BorderBrush="#2A4C6D" BorderThickness="1">
                 <StackPanel Spacing="10">
                   <StackPanel>
@@ -266,7 +269,7 @@
               <TextBlock Text="{u:Tr mainWindow.linuxCompatibilityTool}" FontWeight="SemiBold" />
               <ComboBox ItemsSource="{Binding LinuxLaunchTools}" SelectedItem="{Binding SelectedLinuxLaunchTool}">
                 <ComboBox.ItemTemplate>
-                  <DataTemplate>
+                  <DataTemplate DataType="p:LinuxLaunchToolOption">
                     <TextBlock Text="{Binding DisplayName}" />
                   </DataTemplate>
                 </ComboBox.ItemTemplate>
@@ -280,7 +283,7 @@
               <TextBlock Margin="0,10,0,0" Text="{u:Tr mainWindow.linuxLaunchPresets}" FontWeight="SemiBold" />
               <ComboBox ItemsSource="{Binding LinuxLaunchPresets}" SelectedItem="{Binding SelectedLinuxLaunchPreset}">
                 <ComboBox.ItemTemplate>
-                  <DataTemplate>
+                  <DataTemplate DataType="d:LinuxLaunchPreset">
                     <TextBlock Text="{Binding Name}" />
                   </DataTemplate>
                 </ComboBox.ItemTemplate>
@@ -326,7 +329,6 @@
               <TextBox Text="{Binding LinuxLaunchWrappers, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="90" PlaceholderText="{u:Tr mainWindow.placeholderLaunchWrappers}" />
             </StackPanel>
             <CheckBox Content="{u:Tr mainWindow.closeOnGameLaunch}" IsChecked="{Binding CloseOnGameLaunch}" IsCheckedChanged="SettingsCloseOnLaunchChanged" />
-            <CheckBox Content="{u:Tr mainWindow.communismMode}" IsChecked="{Binding CommunismMode}" IsCheckedChanged="SettingsCommunismModeChanged" />
             <CheckBox Content="{u:Tr mainWindow.preAquaticaMode}" IsChecked="{Binding PreAquatica}" IsCheckedChanged="SettingsPreAquaticaChanged" />
           </StackPanel>
         </Border>
@@ -355,7 +357,7 @@
             </ItemsPanelTemplate>
           </ItemsControl.ItemsPanel>
           <ItemsControl.ItemTemplate>
-            <DataTemplate>
+              <DataTemplate DataType="vm:ServersClusterRowViewModel">
               <Button Padding="0" Background="Transparent" BorderThickness="0" Click="SelectServersCluster" Margin="0,0,8,8">
                 <Button.DataContext>
                   <Binding />
@@ -405,19 +407,19 @@
                 <TextBlock Text="{Binding SelectedCluster.HosterText}" Opacity="0.82" IsVisible="{Binding SelectedCluster.HasHoster}" />
               </StackPanel>
               <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                <Button Content="Discord" Click="OpenClusterDiscord" IsVisible="{Binding SelectedCluster.HasDiscord}" />
-                <Button Content="Refresh Cluster" Click="RefreshSelectedServersCluster" IsVisible="{Binding SelectedCluster.CanRefresh}" />
+                <Button Content="{u:Tr mainWindow.discord}" Click="OpenClusterDiscord" IsVisible="{Binding SelectedCluster.HasDiscord}" />
+                <Button Content="{u:Tr mainWindow.refresh}" Click="RefreshSelectedServersCluster" IsVisible="{Binding SelectedCluster.CanRefresh}" />
               </StackPanel>
             </Grid>
             <Border Padding="12" CornerRadius="10" Background="#132132" BorderBrush="#2A4C6D" BorderThickness="1" IsVisible="{Binding SelectedCluster.HasDescription}">
               <StackPanel Spacing="8">
-                <TextBlock Text="Description" FontWeight="SemiBold" />
+                <TextBlock Text="{u:Tr common.description}" FontWeight="SemiBold" />
                 <TextBlock Text="{Binding SelectedCluster.DescriptionText}" TextWrapping="Wrap" />
               </StackPanel>
             </Border>
             <ItemsControl ItemsSource="{Binding SelectedClusterServers}">
               <ItemsControl.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate DataType="vm:ServerRowViewModel">
                   <Border Padding="14" CornerRadius="12" Background="#132132" BorderBrush="#2A4C6D" BorderThickness="1">
                     <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto">
                       <StackPanel>
@@ -436,35 +438,35 @@
                         <TextBlock Text="{Binding Address}" Opacity="0.72" />
                       </StackPanel>
                       <StackPanel Grid.Column="1" Margin="12,0,0,0" Orientation="Horizontal" Spacing="8">
-                        <Button Content="Join" Click="JoinSelectedServer" />
-                        <Button Content="Favorite" Click="ToggleFavoriteServer" />
-                        <Button Content="Discord" Click="OpenServerDiscord" IsVisible="{Binding HasDiscord}" />
+                        <Button Content="{u:Tr serversTab.join}" Click="JoinSelectedServer" />
+                        <Button Content="{u:Tr serversTab.favorites}" Click="ToggleFavoriteServer" />
+                        <Button Content="{u:Tr mainWindow.discord}" Click="OpenServerDiscord" IsVisible="{Binding HasDiscord}" />
                       </StackPanel>
-                      <Expander Grid.Row="1" Grid.ColumnSpan="2" Margin="0,12,0,0" Header="Details" Expanded="ExpandServerDetails" IsVisible="{Binding CanShowDetails}">
+                      <Expander Grid.Row="1" Grid.ColumnSpan="2" Margin="0,12,0,0" Header="{u:Tr common.details}" Expanded="ExpandServerDetails" IsVisible="{Binding CanShowDetails}">
                         <StackPanel Margin="0,12,0,0" Spacing="10">
                           <TextBlock Text="{Binding HosterText}" IsVisible="{Binding HasHoster}" />
                           <Border Padding="12" CornerRadius="10" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1" IsVisible="{Binding HasDescription}">
                             <StackPanel Spacing="8">
-                              <TextBlock Text="Description" FontWeight="SemiBold" />
+                              <TextBlock Text="{u:Tr common.description}" FontWeight="SemiBold" />
                               <TextBlock Text="{Binding DescriptionText}" TextWrapping="Wrap" />
                             </StackPanel>
                           </Border>
                           <Border Padding="12" CornerRadius="10" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1" IsVisible="{Binding HasMods}">
                             <StackPanel Spacing="10">
                               <Grid ColumnDefinitions="*,Auto">
-                                <TextBlock Text="Mods" FontWeight="SemiBold" VerticalAlignment="Center" />
-                                <Button Grid.Column="1" Content="Validate All" Click="ValidateAllServerMods" />
+                                <TextBlock Text="{u:Tr tabs.mods}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                <Button Grid.Column="1" Content="{u:Tr gameOptionsTab.validateAll}" Click="ValidateAllServerMods" />
                               </Grid>
-                              <TextBlock Text="Loading mod details..." IsVisible="{Binding IsLoadingModDetails}" Opacity="0.74" />
+                              <TextBlock Text="{u:Tr common.loading}" IsVisible="{Binding IsLoadingModDetails}" Opacity="0.74" />
                               <ItemsControl ItemsSource="{Binding ModRows}" IsVisible="{Binding HasModRows}">
                                 <ItemsControl.ItemTemplate>
-                                  <DataTemplate>
+                                  <DataTemplate DataType="vm:ServerModRowViewModel">
                                     <Border Padding="10" CornerRadius="8" Background="#132132" BorderBrush="#2A4C6D" BorderThickness="1">
                                       <Grid ColumnDefinitions="*,Auto,Auto">
                                         <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" TextWrapping="Wrap" />
-                                        <Button Grid.Column="1" Margin="8,0,0,0" Content="Install" Click="InstallServerMod" IsVisible="{Binding CanInstall}" />
-                                        <TextBlock Grid.Column="1" Margin="8,0,0,0" Text="Installed" VerticalAlignment="Center" IsVisible="{Binding IsInstalled}" />
-                                        <Button Grid.Column="2" Margin="8,0,0,0" Content="Workshop" Click="OpenServerModWorkshopPage" />
+                                        <Button Grid.Column="1" Margin="8,0,0,0" Content="{u:Tr mainWindow.install}" Click="InstallServerMod" IsVisible="{Binding CanInstall}" />
+                                        <TextBlock Grid.Column="1" Margin="8,0,0,0" Text="{u:Tr common.installed}" VerticalAlignment="Center" IsVisible="{Binding IsInstalled}" />
+                                        <Button Grid.Column="2" Margin="8,0,0,0" Content="{u:Tr mainWindow.workshop}" Click="OpenServerModWorkshopPage" />
                                       </Grid>
                                     </Border>
                                   </DataTemplate>
@@ -493,13 +495,13 @@
       <StackPanel Spacing="12">
         <TextBlock Text="{Binding Title}" FontSize="28" FontWeight="SemiBold" />
         <TextBlock Text="{Binding Subtitle}" Opacity="0.78" TextWrapping="Wrap" />
-        <Button x:Name="PlayButton" Classes="nav" Content="Play" Click="SelectPlay" />
-        <Button x:Name="ServersButton" Classes="nav" Content="Servers" Click="SelectServers" />
-        <Button x:Name="GameOptionsButton" Classes="nav" Content="Game Options" Click="SelectGameOptions" />
-        <Button x:Name="DlcButton" Classes="nav" Content="DLC" Click="SelectDlc" />
-        <Button x:Name="ModsButton" Classes="nav" Content="Mods" Click="SelectMods" />
-        <Button x:Name="LauncherSettingsButton" Classes="nav" Content="Launcher Settings" Click="SelectLauncherSettings" />
-        <Button x:Name="AboutButton" Classes="nav" Content="About" Click="SelectAbout" />
+        <Button Classes="nav" Content="{u:Tr tabs.play}" Click="SelectPlay" />
+        <Button Classes="nav" Content="{u:Tr tabs.servers}" Click="SelectServers" />
+        <Button Classes="nav" Content="{u:Tr tabs.gameOptions}" Click="SelectGameOptions" />
+        <Button Classes="nav" Content="{u:Tr tabs.dlc}" Click="SelectDlc" />
+        <Button Classes="nav" Content="{u:Tr tabs.mods}" Click="SelectMods" />
+        <Button Classes="nav" Content="{u:Tr tabs.launcherSettings}" Click="SelectLauncherSettings" />
+        <Button Classes="nav" Content="{u:Tr tabs.about}" Click="SelectAbout" />
       </StackPanel>
     </Border>
     <Border Grid.Column="1"

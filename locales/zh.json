@@ -39,7 +39,8 @@
       "kb": "KB",
       "mb": "MB",
       "gb": "GB"
-    }
+    },
+    "updating": "Updating"
   },
   "time": {
     "second": "秒",
@@ -74,7 +75,9 @@
     "highProcessPriority": "高进程优先级",
     "highProcessPriorityDesc": "以更高 CPU 优先级运行游戏。",
     "runGameAsAdmin": "以管理员身份运行",
-    "useSpacewar": "使用 Spacewar"
+    "useSpacewar": "使用 Spacewar",
+    "launchBehaviorNoteLinux": "Linux launches ARK through Steam/Proton. Windows-only elevation behavior is not used on this platform.",
+    "launcherLanguageAvailabilityNote": "Additional launcher translations are unavailable in this build because the localization files are missing."
   },
   "gameOptionsTab": {
     "install": "安装",
@@ -98,11 +101,14 @@
     "cleanDownloadCachePrompt": "要清理下载缓存吗？这将删除所有缓存的游戏文件，之后需要重新下载。",
     "cleanDownloadCacheSuccess": "下载缓存已成功清理。",
     "steamUpdater": "Steam 提供游戏更新。",
-    "enablingAnselSupport": "启用 Ansel 支持将禁用在线模式的反作弊功能。"
+    "enablingAnselSupport": "启用 Ansel 支持将禁用在线模式的反作弊功能。",
+    "maintenanceNoteLinux": "Game maintenance actions run natively on Linux, while game launch goes through Steam/Proton. Windows-only priority and DirectX checks are hidden on this platform.",
+    "maintenanceNoteWindows": "Game update, validation, and file maintenance run directly from the current launcher shell."
   },
   "dlcTab": {
     "tabTitle": "DLC",
-    "dlcUpdatesAvailable": "有可用的 DLC 更新。"
+    "dlcUpdatesAvailable": "有可用的 DLC 更新。",
+    "sectionNote": "Install, update, validate, and delete DLC content from the native launcher. Operations use the shared Steam task backend and refresh launcher status when they finish."
   },
   "modsTab": {
     "installMod": "安装模组",
@@ -150,7 +156,10 @@
     "failedToLoadPreview": "加载预览失败。",
     "noModSelectedForPreview": "未选择模组进行预览。",
     "workshopPage": "创意工坊页面",
-    "adlerHashMismatch": "文件哈希不匹配——文件可能在列表生成后被修改。"
+    "adlerHashMismatch": "文件哈希不匹配——文件可能在列表生成后被修改。",
+    "alreadyInstalled": "{0} is already installed.",
+    "failedToLoadWorkshopModList": "Failed to load workshop mod list.",
+    "readyToInstall": "{0} ready to install."
   },
   "serversTab": {
     "tabTitle": "服务器",
@@ -171,13 +180,13 @@
   },
   "launcherSettingsTab": {
     "closeOnGameLaunch": "启动游戏后关闭启动器",
-    "communismMode": "共产模式",
     "linuxLaunchSettings": "Linux 启动设置",
     "launcherLanguage": "启动器语言",
     "gameLanguage": "游戏语言",
     "useGlobalFonts": "使用全局字体",
     "keyFeatures": "核心功能",
-    "keyFeaturesHeader": "Arsenal 核心功能："
+    "keyFeaturesHeader": "Arsenal 核心功能：",
+    "linuxLaunchToolNote": "Choose which Windows compatibility runtime launches ARK on Linux. Automatic follows Steam's assigned Proton tool when possible, then falls back to the best discovered Proton or Wine build."
   },
   "downloads": {
     "downloading": "下载中…",
@@ -224,7 +233,9 @@
     "launcherClosePrompt": "确定要关闭启动器吗？",
     "launcherCloseWarning": "未保存的数据将丢失。",
     "deleteLauncherSettings": "删除启动器设置",
-    "deleteLauncherSettingsPrompt": "是否永久删除所有启动器设置？"
+    "deleteLauncherSettingsPrompt": "是否永久删除所有启动器设置？",
+    "downloadFailed": "Download failed: ",
+    "steamClientBootstrapFailed": "tek-steamclient bootstrap failed"
   },
   "version": {
     "launcherVersion": "启动器版本",
@@ -238,7 +249,10 @@
     "pauseRequired": "请先暂停当前任务再开始新任务。",
     "downloading": "下载中…",
     "gameFilesFound": "已找到游戏文件。",
-    "gameFilesNotFound": "未找到游戏文件。"
+    "gameFilesNotFound": "未找到游戏文件。",
+    "manageArkInstalls": "Manage ARK installs, DLC, mods, servers, and launch behavior from the native launcher shell.",
+    "preparingInstallation": "Preparing first-launch installation tasks for ARK.",
+    "restartRequiredForSteamClient": "Launcher has to be restarted to load new version of tek-steamclient"
   },
   "launchOptimization": {
     "noRHIThread": "无 RHI 线程",
@@ -329,7 +343,6 @@
     "extraEnvVars": "额外环境变量",
     "launchWrappers": "启动包装器",
     "closeOnGameLaunch": "启动后关闭",
-    "communismMode": "共产模式",
     "preAquaticaMode": "Pre-Aquatica 模式",
     "highProcessPriority": "高进程优先级",
     "runGameAsAdmin": "以管理员身份运行",
@@ -387,5 +400,7 @@
   },
   "gameUpdaterWindow": {
     "tabTitle": "更新游戏"
-  }
+  },
+  "gameUpdateAvailable": "Game update is available.",
+  "updateFinished": "Update finished."
 }

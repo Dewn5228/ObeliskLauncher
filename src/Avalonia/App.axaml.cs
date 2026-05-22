@@ -97,7 +97,6 @@ public partial class App : Application
     void DesktopExitHandler(object? sender, ControlledApplicationLifetimeExitEventArgs e)
     {
         ShuttingDown = true;
-        CommunismModeWorkflow.StopAudio();
         SteamTaskUpdaterWindowViewModelBase.PauseAllActiveTasks();
         UdpClient.Dispose();
         LauncherServices.ServerBrowser.Shutdown();

@@ -39,7 +39,8 @@
       "kb": "КБ",
       "mb": "МБ",
       "gb": "ГБ"
-    }
+    },
+    "updating": "Updating"
   },
   "time": {
     "second": "с",
@@ -74,7 +75,9 @@
     "highProcessPriority": "Высокий приоритет процесса",
     "highProcessPriorityDesc": "Запуск игры с более высоким приоритетом CPU.",
     "runGameAsAdmin": "Запуск от имени администратора",
-    "useSpacewar": "Использовать Spacewar"
+    "useSpacewar": "Использовать Spacewar",
+    "launchBehaviorNoteLinux": "Linux launches ARK through Steam/Proton. Windows-only elevation behavior is not used on this platform.",
+    "launcherLanguageAvailabilityNote": "Additional launcher translations are unavailable in this build because the localization files are missing."
   },
   "gameOptionsTab": {
     "install": "Установить",
@@ -98,11 +101,14 @@
     "cleanDownloadCachePrompt": "Вы хотите очистить кэш загрузок? Это удалит все закешированные файлы игры, и их придется скачивать заново.",
     "cleanDownloadCacheSuccess": "Кэш загрузок успешно очищен.",
     "steamUpdater": "Steam предоставляет обновления игры.",
-    "enablingAnselSupport": "Включение поддержки Ansel отключит античит в онлайн-режимах."
+    "enablingAnselSupport": "Включение поддержки Ansel отключит античит в онлайн-режимах.",
+    "maintenanceNoteLinux": "Game maintenance actions run natively on Linux, while game launch goes through Steam/Proton. Windows-only priority and DirectX checks are hidden on this platform.",
+    "maintenanceNoteWindows": "Game update, validation, and file maintenance run directly from the current launcher shell."
   },
   "dlcTab": {
     "tabTitle": "DLC",
-    "dlcUpdatesAvailable": "Доступны обновления DLC."
+    "dlcUpdatesAvailable": "Доступны обновления DLC.",
+    "sectionNote": "Install, update, validate, and delete DLC content from the native launcher. Operations use the shared Steam task backend and refresh launcher status when they finish."
   },
   "modsTab": {
     "installMod": "Установить мод",
@@ -150,7 +156,10 @@
     "failedToLoadPreview": "Не удалось загрузить предпросмотр.",
     "noModSelectedForPreview": "Мод не выбран для предпросмотра.",
     "workshopPage": "Страница Workshop",
-    "adlerHashMismatch": "Несовпадение хеша файла — файл мог быть изменен после генерации списка."
+    "adlerHashMismatch": "Несовпадение хеша файла — файл мог быть изменен после генерации списка.",
+    "alreadyInstalled": "{0} is already installed.",
+    "failedToLoadWorkshopModList": "Failed to load workshop mod list.",
+    "readyToInstall": "{0} ready to install."
   },
   "serversTab": {
     "tabTitle": "Серверы",
@@ -171,13 +180,13 @@
   },
   "launcherSettingsTab": {
     "closeOnGameLaunch": "Закрывать лаунчер при запуске игры",
-    "communismMode": "Режим коммунизма",
     "linuxLaunchSettings": "Настройки запуска в Linux",
     "launcherLanguage": "Язык лаунчера",
     "gameLanguage": "Язык игры",
     "useGlobalFonts": "Использовать глобальные шрифты",
     "keyFeatures": "Основные функции",
-    "keyFeaturesHeader": "Ключевые возможности Arsenal:"
+    "keyFeaturesHeader": "Ключевые возможности Arsenal:",
+    "linuxLaunchToolNote": "Choose which Windows compatibility runtime launches ARK on Linux. Automatic follows Steam's assigned Proton tool when possible, then falls back to the best discovered Proton or Wine build."
   },
   "downloads": {
     "downloading": "Загрузка…",
@@ -224,7 +233,9 @@
     "launcherClosePrompt": "Вы уверены, что хотите закрыть лаунчер?",
     "launcherCloseWarning": "Несохраненные данные будут потеряны.",
     "deleteLauncherSettings": "Удалить настройки лаунчера",
-    "deleteLauncherSettingsPrompt": "Вы хотите навсегда удалить все настройки лаунчера?"
+    "deleteLauncherSettingsPrompt": "Вы хотите навсегда удалить все настройки лаунчера?",
+    "downloadFailed": "Download failed: ",
+    "steamClientBootstrapFailed": "tek-steamclient bootstrap failed"
   },
   "version": {
     "launcherVersion": "Версия лаунчера",
@@ -238,7 +249,10 @@
     "pauseRequired": "Приостановите текущую задачу перед запуском новой.",
     "downloading": "Загрузка…",
     "gameFilesFound": "Файлы игры найдены.",
-    "gameFilesNotFound": "Файлы игры не найдены."
+    "gameFilesNotFound": "Файлы игры не найдены.",
+    "manageArkInstalls": "Manage ARK installs, DLC, mods, servers, and launch behavior from the native launcher shell.",
+    "preparingInstallation": "Preparing first-launch installation tasks for ARK.",
+    "restartRequiredForSteamClient": "Launcher has to be restarted to load new version of tek-steamclient"
   },
   "launchOptimization": {
     "noRHIThread": "Без RHI-потока",
@@ -329,7 +343,6 @@
     "extraEnvVars": "Доп. переменные окружения",
     "launchWrappers": "Оболочки запуска (Wrappers)",
     "closeOnGameLaunch": "Закрывать при запуске",
-    "communismMode": "Режим коммунизма",
     "preAquaticaMode": "Режим Pre-Aquatica",
     "highProcessPriority": "Высокий приоритет",
     "runGameAsAdmin": "Запуск от админа",
@@ -387,5 +400,7 @@
   },
   "gameUpdaterWindow": {
     "tabTitle": "Обновление игры"
-  }
+  },
+  "gameUpdateAvailable": "Game update is available.",
+  "updateFinished": "Update finished."
 }

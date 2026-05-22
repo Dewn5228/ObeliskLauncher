@@ -39,7 +39,8 @@
       "kb": "KB",
       "mb": "MB",
       "gb": "GB"
-    }
+    },
+    "updating": "Updating"
   },
   "time": {
     "second": "s",
@@ -74,7 +75,9 @@
     "highProcessPriority": "Hoge procesprioriteit",
     "highProcessPriorityDesc": "Start het spel met een hogere CPU-prioriteit.",
     "runGameAsAdmin": "Als administrator uitvoeren",
-    "useSpacewar": "Spacewar gebruiken"
+    "useSpacewar": "Spacewar gebruiken",
+    "launchBehaviorNoteLinux": "Linux launches ARK through Steam/Proton. Windows-only elevation behavior is not used on this platform.",
+    "launcherLanguageAvailabilityNote": "Additional launcher translations are unavailable in this build because the localization files are missing."
   },
   "gameOptionsTab": {
     "install": "Installeren",
@@ -98,11 +101,14 @@
     "cleanDownloadCachePrompt": "Wil je de downloadcache opschonen? Dit verwijdert alle gecachte spelbestanden en ze zullen opnieuw moeten worden gedownload.",
     "cleanDownloadCacheSuccess": "Downloadcache succesvol opgeschoond.",
     "steamUpdater": "Steam levert spelupdates.",
-    "enablingAnselSupport": "Ansel inschakelen schakelt anti-cheat uit in online modi."
+    "enablingAnselSupport": "Ansel inschakelen schakelt anti-cheat uit in online modi.",
+    "maintenanceNoteLinux": "Game maintenance actions run natively on Linux, while game launch goes through Steam/Proton. Windows-only priority and DirectX checks are hidden on this platform.",
+    "maintenanceNoteWindows": "Game update, validation, and file maintenance run directly from the current launcher shell."
   },
   "dlcTab": {
     "tabTitle": "DLC",
-    "dlcUpdatesAvailable": "DLC-updates zijn beschikbaar."
+    "dlcUpdatesAvailable": "DLC-updates zijn beschikbaar.",
+    "sectionNote": "Install, update, validate, and delete DLC content from the native launcher. Operations use the shared Steam task backend and refresh launcher status when they finish."
   },
   "modsTab": {
     "installMod": "Mod installeren",
@@ -150,7 +156,10 @@
     "failedToLoadPreview": "Voorbeeld laden mislukt.",
     "noModSelectedForPreview": "Geen mod geselecteerd voor voorbeeld.",
     "workshopPage": "Workshop-pagina",
-    "adlerHashMismatch": "Hash-fout — het bestand kan gewijzigd zijn nadat de lijst was gegenereerd."
+    "adlerHashMismatch": "Hash-fout — het bestand kan gewijzigd zijn nadat de lijst was gegenereerd.",
+    "alreadyInstalled": "{0} is already installed.",
+    "failedToLoadWorkshopModList": "Failed to load workshop mod list.",
+    "readyToInstall": "{0} ready to install."
   },
   "serversTab": {
     "tabTitle": "Servers",
@@ -171,13 +180,13 @@
   },
   "launcherSettingsTab": {
     "closeOnGameLaunch": "Launcher sluiten bij starten van spel",
-    "communismMode": "Communisme-modus",
     "linuxLaunchSettings": "Linux-startinstellingen",
     "launcherLanguage": "Launchertaal",
     "gameLanguage": "Speltaal",
     "useGlobalFonts": "Globale lettertypen gebruiken",
     "keyFeatures": "Belangrijkste functies",
-    "keyFeaturesHeader": "Belangrijkste Arsenal-functies:"
+    "keyFeaturesHeader": "Belangrijkste Arsenal-functies:",
+    "linuxLaunchToolNote": "Choose which Windows compatibility runtime launches ARK on Linux. Automatic follows Steam's assigned Proton tool when possible, then falls back to the best discovered Proton or Wine build."
   },
   "downloads": {
     "downloading": "Downloaden…",
@@ -224,7 +233,9 @@
     "launcherClosePrompt": "Weet je zeker dat je de launcher wilt sluiten?",
     "launcherCloseWarning": "Niet-opgeslagen gegevens gaan verloren.",
     "deleteLauncherSettings": "Launcher-instellingen verwijderen",
-    "deleteLauncherSettingsPrompt": "Wil je alle launcher-instellingen permanent verwijderen?"
+    "deleteLauncherSettingsPrompt": "Wil je alle launcher-instellingen permanent verwijderen?",
+    "downloadFailed": "Download failed: ",
+    "steamClientBootstrapFailed": "tek-steamclient bootstrap failed"
   },
   "version": {
     "launcherVersion": "Launcher-versie",
@@ -238,7 +249,10 @@
     "pauseRequired": "Pauzeer de huidige taak voordat je een nieuwe start.",
     "downloading": "Downloaden…",
     "gameFilesFound": "Spelbestanden gevonden.",
-    "gameFilesNotFound": "Spelbestanden niet gevonden."
+    "gameFilesNotFound": "Spelbestanden niet gevonden.",
+    "manageArkInstalls": "Manage ARK installs, DLC, mods, servers, and launch behavior from the native launcher shell.",
+    "preparingInstallation": "Preparing first-launch installation tasks for ARK.",
+    "restartRequiredForSteamClient": "Launcher has to be restarted to load new version of tek-steamclient"
   },
   "launchOptimization": {
     "noRHIThread": "Geen RHI-thread",
@@ -329,7 +343,6 @@
     "extraEnvVars": "Extra Omgevingsvariabelen",
     "launchWrappers": "Start-wrappers",
     "closeOnGameLaunch": "Sluiten bij starten van spel",
-    "communismMode": "Communisme-modus",
     "preAquaticaMode": "Pre-Aquatica-modus",
     "highProcessPriority": "Hoge procesprioriteit",
     "runGameAsAdmin": "Spel als admin uitvoeren",
@@ -387,5 +400,7 @@
   },
   "gameUpdaterWindow": {
     "tabTitle": "Spel Bijwerken"
-  }
+  },
+  "gameUpdateAvailable": "Game update is available.",
+  "updateFinished": "Update finished."
 }

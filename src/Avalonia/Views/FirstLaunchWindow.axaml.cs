@@ -29,14 +29,14 @@ public partial class FirstLaunchWindow : Window
 
     async void BrowseExistingInstallPath(object? sender, RoutedEventArgs e)
     {
-        string? path = await PickFolderAsync("Select existing ARK folder");
+        string? path = await PickFolderAsync(Locale.Get("firstLaunchWindow.selectExistingFolder"));
         if (path is not null)
             ExistingPathBox.Text = path;
     }
 
     async void BrowseInstallPath(object? sender, RoutedEventArgs e)
     {
-        string? path = await PickFolderAsync("Select installation folder");
+        string? path = await PickFolderAsync(Locale.Get("firstLaunchWindow.chooseInstallFolder"));
         if (path is not null)
             InstallPathBox.Text = path;
     }
@@ -66,7 +66,7 @@ public partial class FirstLaunchWindow : Window
         {
             _existingInstallPath = null;
             ContinueExistingButton.IsEnabled = false;
-            SetStatus(ExistingStatusText, "Select a folder to continue.", "#D49B38");
+            SetStatus(ExistingStatusText, Locale.Get("firstLaunchWindow.selectFolderToContinue"), "#D49B38");
             return;
         }
 
@@ -76,12 +76,12 @@ public partial class FirstLaunchWindow : Window
         {
             _existingInstallPath = path;
             _preAquatica = validation.IsPreAquatica;
-            SetStatus(ExistingStatusText, Locale.Get("gameFilesFound"), "#0AA63E");
+            SetStatus(ExistingStatusText, Locale.Get("status.gameFilesFound"), "#0AA63E");
         }
         else
         {
             _existingInstallPath = null;
-            SetStatus(ExistingStatusText, Locale.Get("gameFilesNotFound"), "#D4573B");
+            SetStatus(ExistingStatusText, Locale.Get("status.gameFilesNotFound"), "#D4573B");
         }
     }
 
@@ -123,8 +123,8 @@ public partial class FirstLaunchWindow : Window
         if (string.IsNullOrWhiteSpace(_installPath))
         {
             BeginInstallButton.IsEnabled = false;
-            FreeSpaceText.Text = "Free disk space: unknown";
-            SetStatus(InstallStatusText, "Select a folder to continue.", "#D49B38");
+            FreeSpaceText.Text = $"{Locale.Get("gameOptionsTab.freeDiskSpace")}: {Locale.Get("common.na")}";
+            SetStatus(InstallStatusText, Locale.Get("firstLaunchWindow.selectFolderToContinue"), "#D49B38");
             return;
         }
 
@@ -133,8 +133,8 @@ public partial class FirstLaunchWindow : Window
         if (!validation.PathExists)
         {
             BeginInstallButton.IsEnabled = false;
-            FreeSpaceText.Text = "Free disk space: unknown";
-            SetStatus(InstallStatusText, "The selected installation folder does not exist.", "#D4573B");
+            FreeSpaceText.Text = $"{Locale.Get("gameOptionsTab.freeDiskSpace")}: {Locale.Get("common.na")}";
+            SetStatus(InstallStatusText, Locale.Get("errors.noPathSelected"), "#D4573B");
             return;
         }
 
@@ -142,11 +142,11 @@ public partial class FirstLaunchWindow : Window
         bool enoughSpace = validation.EnoughSpace;
 
         BeginInstallButton.IsEnabled = enoughSpace;
-        FreeSpaceText.Text = $"Free disk space: {Locale.BytesToString(freeSpace)}";
+        FreeSpaceText.Text = $"{Locale.Get("gameOptionsTab.freeDiskSpace")}: {Locale.BytesToString(freeSpace)}";
 
         SetStatus(
           InstallStatusText,
-          enoughSpace ? "Enough disk space detected." : "Not enough disk space for this installation.",
+                    enoughSpace ? Locale.Get("common.ok") : Locale.Get("modsTab.notEnoughSpace"),
           enoughSpace ? "#0AA63E" : "#D4573B");
     }
 
@@ -163,5 +163,5 @@ public partial class FirstLaunchWindow : Window
         block.Foreground = new SolidColorBrush(Color.Parse(color));
     }
 
-    void UpdateRequiredSpaceText() => RequiredSpaceText.Text = $"Required disk space: {FirstLaunchWorkflow.GetRequiredGigabytes(_preAquatica)} GB";
+    void UpdateRequiredSpaceText() => RequiredSpaceText.Text = $"{Locale.Get("gameOptionsTab.requiredDiskSpace")}: {FirstLaunchWorkflow.GetRequiredGigabytes(_preAquatica)} GB";
 }

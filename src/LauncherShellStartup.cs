@@ -27,6 +27,20 @@ readonly record struct LauncherShellStartupResult(
 
 static class LauncherShellStartup
 {
+    static readonly Dictionary<uint, ulong> s_preAquaticaDlcManifests = new()
+    {
+        [346114] = 5573587184752106093,
+        [375351] = 8265777340034981821,
+        [375354] = 7952753366101555648,
+        [375357] = 1447242805278740772,
+        [473851] = 2551727096735353757,
+        [473854] = 847717640995143866,
+        [473857] = 1054814513659387220,
+        [1318685] = 8189621638927588129,
+        [1691801] = 3147973472387347535,
+        [1887561] = 580528532335699271
+    };
+
     public static async Task<LauncherShellStartupResult> InitializeAsync(bool beginInstallation)
     {
         string gameVersionText = Locale.Get(Game.IsCorrupted ? "?None?" : "common.na");
@@ -64,9 +78,7 @@ static class LauncherShellStartup
                 var desc = GetDesc(346111);
                 if (desc != null && desc->CurrentManifestId != 0)
                 {
-                    gameUpdateAvailable = Settings.PreAquatica
-                      ? desc->CurrentManifestId != UI.GameUpdateWorkflow.PreAquaticaManifestId
-                      : desc->Status.HasFlag(TEKSteamClient.AmItemStatus.UpdAvailable);
+                    gameUpdateAvailable = IsGameUpdateAvailable(desc);
 
                     gameVersionText = Locale.Get(gameUpdateAvailable ? "common.outdated" : "common.latest");
                     gameVersionTone = gameUpdateAvailable ? LauncherShellTone.Warning : LauncherShellTone.Success;
@@ -81,22 +93,7 @@ static class LauncherShellStartup
                     if (desc == null)
                         continue;
 
-                    bool updateAvailable = Settings.PreAquatica
-                      ? desc->CurrentManifestId != dlc.DepotId switch
-                      {
-                          346114 => 5573587184752106093,
-                          375351 => 8265777340034981821,
-                          375354 => 7952753366101555648,
-                          375357 => 1447242805278740772,
-                          473851 => 2551727096735353757,
-                          473854 => 847717640995143866,
-                          473857 => 1054814513659387220,
-                          1318685 => 8189621638927588129,
-                          1691801 => 3147973472387347535,
-                          1887561 => 580528532335699271,
-                          _ => 0
-                      }
-                      : desc->Status.HasFlag(TEKSteamClient.AmItemStatus.UpdAvailable);
+                    bool updateAvailable = IsDlcUpdateAvailable(desc, dlc.DepotId);
 
                     dlc.CurrentStatus = updateAvailable ? ARK.DLC.Status.UpdateAvailable : ARK.DLC.Status.Installed;
                 }
@@ -122,6 +119,22 @@ static class LauncherShellStartup
         return Version.TryParse(versionString, out var onlineVersion)
           && Version.TryParse(LauncherBootstrap.Version, out var currentVersion)
           && onlineVersion > currentVersion;
+    }
+
+    static unsafe bool IsGameUpdateAvailable(TEKSteamClient.AmItemDesc* desc)
+      => Settings.PreAquatica
+        ? desc->CurrentManifestId != UI.GameUpdateWorkflow.PreAquaticaManifestId
+        : desc->Status.HasFlag(TEKSteamClient.AmItemStatus.UpdAvailable);
+
+    static unsafe bool IsDlcUpdateAvailable(TEKSteamClient.AmItemDesc* desc, uint depotId)
+    {
+        if (!Settings.PreAquatica)
+            return desc->Status.HasFlag(TEKSteamClient.AmItemStatus.UpdAvailable);
+
+        if (!s_preAquaticaDlcManifests.TryGetValue(depotId, out ulong expectedManifestId))
+            return false;
+
+        return desc->CurrentManifestId != expectedManifestId;
     }
 
     readonly record struct Release

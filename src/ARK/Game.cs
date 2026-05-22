@@ -28,7 +28,11 @@ static class Game
     public static bool RunAsAdmin { get; set; }
     public static bool CanRunAsAdmin => LaunchCapabilities.SupportsRunAsAdmin;
     /// <summary>Gets or sets a value that indicates whether game's Steam app ID should be set to 480.</summary>
-    public static bool UseSpacewar { get; set; }
+    public static bool UseSpacewar
+    {
+        get => _useSpacewar;
+        set => _useSpacewar = value && CanUseSpacewar;
+    }
     public static bool CanUseSpacewar => LaunchCapabilities.SupportsSpoofAppId;
     /// <summary>Gets or sets the index of the game localization to use.</summary>
     public static int Language { get; set; } = 4;
@@ -36,6 +40,8 @@ static class Game
     public static string ExePath { get; private set; } = null!;
     /// <summary>Gets or sets path to the root game folder.</summary>
     public static string? Path { get; set; }
+
+    static bool _useSpacewar;
 
     public static void Initialize()
     {
@@ -72,7 +78,7 @@ static class Game
         else if (server is not null && server.Map > MapCode.TheIsland && server.Map < MapCode.Mod && !DLC.Get(server.Map).IsInstalled)
         {
             WriteLaunchAttemptLog(launchLog, $"Launch blocked: DLC '{server.Map}' is missing for server join.");
-            Messages.Show("common.warning", Locale.Get("errors.joinFailDlcMissing"));
+            Messages.Show("common.warning", Locale.Get("errors.joinFailDLCMissing"));
         }
         else
         {
@@ -101,7 +107,8 @@ static class Game
                 if (dlc.IsInstalled)
                     instDlc.Add(dlc.AppId);
 
-            var settings = new TekGameRuntimeSettings("steam", 346110, UseSpacewar ? 480u : 0, new Dictionary<uint, string>
+            uint spoofAppId = GetEffectiveSpoofAppId();
+            var settings = new TekGameRuntimeSettings("steam", 346110, spoofAppId, new Dictionary<uint, string>
             {
                 [473850] = "The Center – ARK Expansion Map",
                 [508150] = "Primitive+ – ARK Total Conversion",
@@ -118,15 +125,13 @@ static class Game
                 [3537070] = "Aquatica – ARK Expansion Map"
             }, [.. instDlc], System.IO.Path.Combine(Path!, "Mods"), Path!);
 
-            uint spoofAppId = CanUseSpacewar && UseSpacewar ? 480u : 0;
-            settings = settings with { SpoofAppId = spoofAppId };
-
             var data = JsonSerializer.SerializeToUtf8Bytes(settings, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower });
             bool useHighProcessPriority = CanUseHighProcessPriority && HighProcessPriority;
             bool useRunAsAdmin = CanRunAsAdmin && RunAsAdmin;
             launchLog.AppendLine($"High priority: {useHighProcessPriority}");
             launchLog.AppendLine($"Run as admin: {useRunAsAdmin}");
-            launchLog.AppendLine($"Use Spacewar: {spoofAppId == 480}");
+            launchLog.AppendLine($"Use Spacewar requested: {UseSpacewar}");
+            launchLog.AppendLine($"Use Spacewar effective: {spoofAppId == 480}");
             launchLog.AppendLine($"Arguments: {string.Join(' ', args)}");
             var launchResult = LauncherServices.GameLauncher.Launch(new(ExePath, args, useHighProcessPriority, useRunAsAdmin, data));
             if (!launchResult.Success)
@@ -155,6 +160,8 @@ static class Game
         {
         }
     }
+
+    static uint GetEffectiveSpoofAppId() => CanUseSpacewar && UseSpacewar ? 480u : 0;
 
     /// <summary>Game ownership status used to initialize ARK Shellcode.</summary>
     public enum Status

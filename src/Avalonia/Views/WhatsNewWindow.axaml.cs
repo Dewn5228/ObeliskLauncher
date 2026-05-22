@@ -16,7 +16,7 @@ public partial class WhatsNewWindow : Window
     public WhatsNewWindow()
     {
         InitializeComponent();
-        Title = Locale.Get("whatsNew");
+        Title = Locale.Get("status.whatsNew");
         LoadEntries();
     }
 

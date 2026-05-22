@@ -6,7 +6,7 @@
         Height="620"
         MinWidth="420"
         MinHeight="280"
-        Title="{u:Tr whatsNew}">
+        Title="{u:Tr status.whatsNew}">
   <Border Margin="16" Padding="12" CornerRadius="12" Background="#10233A" BorderBrush="#2E5E8C" BorderThickness="1">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
       <StackPanel x:Name="Root" Spacing="10" />

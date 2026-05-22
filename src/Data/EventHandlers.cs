@@ -7,6 +7,4 @@ class EventHandlers
     public Action<bool, long>? PrepareProgress;
     /// <summary>Handler for progress update event.</summary>
     public Action<long>? UpdateProgress;
-    /// <summary>Handler for status set event.</summary>
-    public Action<string, int>? SetStatus;
 }

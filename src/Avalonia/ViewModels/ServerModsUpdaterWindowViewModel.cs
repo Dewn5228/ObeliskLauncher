@@ -8,7 +8,7 @@ internal sealed class ServerModsUpdaterWindowViewModel : SteamTaskUpdaterWindowV
     readonly ulong[] _modIds;
 
     internal ServerModsUpdaterWindowViewModel(ulong[] modIds)
-      : base(string.Format(Locale.Get("gameOptionsTab.steamUpdater"), Locale.Get("common.mods")), true)
+    : base(string.Format(Locale.Get("gameOptionsTab.steamUpdater"), Locale.Get("tabs.mods")), true)
     {
         _modIds = modIds;
     }

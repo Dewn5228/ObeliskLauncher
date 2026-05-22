@@ -42,7 +42,7 @@ static class ModWorkflow
     public static async Task<ModActionResult> DeleteAsync(Mod mod)
     {
         if (Game.IsRunning)
-            return new(Locale.Get("modsTab.modDeleteFail"), 2);
+            return new(Locale.Get("errors.modDeleteFail"), 2);
 
         string description = Describe(mod);
         await Task.Run(mod.Delete);
