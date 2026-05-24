@@ -108,15 +108,8 @@ static class LauncherShellStartup
 
     static async Task<bool> CheckLauncherUpdateAsync()
     {
-        string? versionString = await Downloader.DownloadStringAsync(
-          "https://teknology-hub.com/software/tek-launcher/version",
-          "https://de.teknology-hub.com/software/tek-launcher/version");
-
-        if (versionString is null)
-        {
-            var release = await Downloader.DownloadJsonAsync<Release>("https://api.github.com/repos/Dewn5228/TEKLauncher/releases/latest");
-            versionString = release.TagName?[1..];
-        }
+        var release = await Downloader.DownloadJsonAsync<Release>("https://api.github.com/repos/Dewn5228/TEKLauncher/releases/latest");
+        string? versionString = release.TagName?[1..];
 
         return Version.TryParse(versionString, out var onlineVersion)
           && Version.TryParse(LauncherBootstrap.Version, out var currentVersion)

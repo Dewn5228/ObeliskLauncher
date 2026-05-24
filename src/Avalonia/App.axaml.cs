@@ -64,7 +64,6 @@ public partial class App : Application
     {
         InitializeLauncherState();
         var mainWindow = CreateMainWindow(beginInstallation, startupMessage);
-        TryScheduleWhatsNew(mainWindow);
         return mainWindow;
     }
 
@@ -80,20 +79,7 @@ public partial class App : Application
     static void TryScheduleWhatsNew(Window owner)
     {
         string? lastLaunchedVersion = LauncherPlatform.Current.GetLastLaunchedVersion();
-        if (lastLaunchedVersion == LauncherBootstrap.Version)
-            return;
-
         LauncherPlatform.Current.SetLastLaunchedVersion(LauncherBootstrap.Version);
-        if (lastLaunchedVersion is null)
-            return;
-
-        void OpenWhatsNew(object? sender, EventArgs e)
-        {
-            owner.Opened -= OpenWhatsNew;
-            Dispatcher.UIThread.Post(() => new WhatsNewWindow().Show(owner), DispatcherPriority.Background);
-        }
-
-        owner.Opened += OpenWhatsNew;
     }
 
     void DesktopExitHandler(object? sender, ControlledApplicationLifetimeExitEventArgs e)

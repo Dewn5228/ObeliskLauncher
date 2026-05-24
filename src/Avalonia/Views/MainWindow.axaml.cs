@@ -706,7 +706,7 @@ public partial class MainWindow : Window
         switch (notice.ActionKind)
         {
             case ShellNoticeActionKind.OpenLauncherReleasePage:
-                new LauncherUpdateWindow(this).Show(this);
+                OpenUrl("https://github.com/Dewn5228/TEKLauncher/releases");
                 break;
             case ShellNoticeActionKind.OpenGameUpdater:
                 OpenGameUpdater(false, navigateToGameOptions: true);

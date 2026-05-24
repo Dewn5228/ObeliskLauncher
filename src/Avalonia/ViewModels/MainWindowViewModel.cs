@@ -380,8 +380,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             notices.Add(new ShellNoticeViewModel
             {
                 ActionKind = ShellNoticeActionKind.OpenLauncherReleasePage,
-                ActionLabel = Locale.Get("common.update"),
-                Message = Locale.Get("status.whatsNew")
+                ActionLabel = Locale.Get("common.download"),
+                Message = "An update to the launcher is available."
             });
 
         if (_bootstrapWarningMessage is not null)
