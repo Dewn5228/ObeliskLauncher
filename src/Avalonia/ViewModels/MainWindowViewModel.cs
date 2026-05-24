@@ -1,8 +1,35 @@
 using System.Linq;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using TEKLauncher.Servers;
 
 namespace TEKLauncher.Avalonia.ViewModels;
+
+public sealed class LauncherNavNodeViewModel
+{
+    public required string Key { get; init; }
+
+    public required string Title { get; init; }
+
+    public required string Description { get; init; }
+
+    public required LauncherSection Section { get; init; }
+
+    public string? GameId { get; init; }
+
+    public bool IsSelected { get; init; }
+
+    public string DisplayTitle => string.IsNullOrWhiteSpace(GameId) ? Title : $"{GameId} / {Title}";
+}
+
+public sealed class LauncherNavGroupViewModel
+{
+    public required string Title { get; init; }
+
+    public required bool IsVisible { get; init; }
+
+    public required IReadOnlyList<LauncherNavNodeViewModel> Children { get; init; }
+}
 
 public sealed class MainWindowViewModel : INotifyPropertyChanged
 {
@@ -35,10 +62,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         _selectedSection = LauncherSection.Play;
         _currentScreen = _screens[_selectedSection];
         _currentScreen.Activate();
+        RefreshNavigationGroups();
+        if (TryGetFirstNavigationNode(out LauncherNavNodeViewModel? node) && node is not null)
+            SelectSectionInternal(node.Section, node.Key);
     }
 
     readonly bool _beginInstallation;
     readonly Dictionary<LauncherSection, LauncherSectionScreenViewModel> _screens;
+    IReadOnlyList<LauncherNavGroupViewModel> _navigationGroups = [];
     ShellNoticeViewModel[] _baseNotices = [];
     bool _canRefreshShellStatus;
     bool _bootstrapSuccess;
@@ -46,6 +77,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     bool _launcherUpdateAvailable;
     bool _gameUpdateAvailable;
     bool _dlcUpdatesAvailable;
+    string? _catalogWarningMessage;
     string? _bootstrapWarningMessage;
     string? _bootstrapDownloadName;
     string? _bootstrapErrorMessage;
@@ -57,6 +89,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     string _gameVersionColor = "#FFFFFF";
     ShellNoticeViewModel[] _notices = [];
     LauncherSection _selectedSection;
+    string _selectedNodeKey = string.Empty;
     bool _shouldRestartAfterInitialization;
     bool _shouldStartInstallationAfterInitialization;
     string _subtitle;
@@ -107,11 +140,29 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         private set => SetProperty(ref _currentScreen, value);
     }
 
-    public LauncherSectionInfo[] Sections => LauncherShellNavigation.Sections;
+    public IReadOnlyList<LauncherNavGroupViewModel> NavigationGroups
+    {
+        get => _navigationGroups;
+        private set => SetProperty(ref _navigationGroups, value);
+    }
 
-    public string SelectedSectionDescription => Locale.Get(LauncherShellNavigation.GetInfo(_selectedSection).Description);
+    public string SelectedSectionDescription
+    {
+        get
+        {
+            LauncherNavNodeViewModel? node = FindNodeByKey(_selectedNodeKey);
+            return node is not null ? node.Description : Locale.Get(LauncherShellNavigation.GetInfo(_selectedSection).Description);
+        }
+    }
 
-    public string SelectedSectionTitle => Locale.Get(LauncherShellNavigation.GetInfo(_selectedSection).TitleCode);
+    public string SelectedSectionTitle
+    {
+        get
+        {
+            LauncherNavNodeViewModel? node = FindNodeByKey(_selectedNodeKey);
+            return node is not null ? node.DisplayTitle : Locale.Get(LauncherShellNavigation.GetInfo(_selectedSection).TitleCode);
+        }
+    }
 
     public LauncherSection SelectedSection
     {
@@ -137,6 +188,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         _defaultSubtitle = _startupMessage ?? (_beginInstallation
           ? Locale.Get("status.preparingInstallation")
           : Locale.Get("status.manageArkInstalls"));
+
+        RefreshNavigationGroups();
 
         RebuildNotices();
 
@@ -172,6 +225,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             _bootstrapErrorMessage = startup.BootstrapResult.ErrorMessage;
             _gameUpdateAvailable = startup.GameUpdateAvailable;
             _dlcUpdatesAvailable = startup.DlcUpdatesAvailable;
+            _catalogWarningMessage = startup.CatalogWarning;
             RebuildNotices();
         }
         finally
@@ -189,8 +243,70 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             return false;
         }
 
-        SelectedSection = section;
+        string selectedNodeKey = ResolveNodeKeyForSection(section) ?? _selectedNodeKey;
+        SelectSectionInternal(section, selectedNodeKey);
+        RefreshNavigationGroups();
+        OnPropertyChanged(nameof(SelectedSectionTitle));
+        OnPropertyChanged(nameof(SelectedSectionDescription));
         return true;
+    }
+
+    public async Task<string?> TrySelectNavigationNodeAsync(LauncherNavNodeViewModel node)
+    {
+        if (!string.IsNullOrWhiteSpace(node.GameId))
+        {
+            string targetPath = Settings.GetGamePath(node.GameId!);
+            if (string.IsNullOrWhiteSpace(targetPath))
+                return string.Format(Locale.Get("errors.gamePathNotConfigured"), node.GameId);
+
+            bool switchingGame = !ActiveGameManager.IsConfigured || !string.Equals(ActiveGameManager.Current.Id, node.GameId, StringComparison.OrdinalIgnoreCase);
+            if (switchingGame)
+            {
+                string? previousGameId = ActiveGameManager.IsConfigured ? ActiveGameManager.Current.Id : null;
+                string? previousGamePath = ActiveGameManager.IsConfigured ? ActiveGameManager.Current.RootPath : null;
+                bool previousPreAquatica = Settings.PreAquatica;
+
+                ActiveGameManager.Configure(node.GameId!, targetPath);
+                Settings.Save();
+
+                if (_bootstrapSuccess && LauncherServices.TekSteamClient.IsLoaded)
+                {
+                    bool reloaded = await ReloadAfterGameSwitchAsync();
+                    if (!reloaded)
+                    {
+                        if (!string.IsNullOrWhiteSpace(previousGameId) && !string.IsNullOrWhiteSpace(previousGamePath))
+                        {
+                            ActiveGameManager.Configure(previousGameId, previousGamePath);
+                            Settings.PreAquatica = previousPreAquatica;
+                            Settings.Save();
+                            await ReloadAfterGameSwitchAsync();
+                        }
+
+                        RefreshNavigationGroups();
+                        return Locale.Get("errors.steamClientBootstrapFailed");
+                    }
+                }
+            }
+        }
+
+        if (LauncherShellNavigation.RequiresSpacewarWarning(node.Section) && Steam.App.CurrentUserStatus.GameStatus == Game.Status.OwnedAndInstalled && !Game.UseSpacewar)
+            return Locale.Get("modsTab.modsOnSteamWarning");
+
+        SelectSectionInternal(node.Section, node.Key);
+        RefreshNavigationGroups();
+        OnPropertyChanged(nameof(SelectedSectionTitle));
+        OnPropertyChanged(nameof(SelectedSectionDescription));
+        return null;
+    }
+
+    public void RefreshNavigation()
+    {
+        RefreshNavigationGroups();
+        if (FindNodeByKey(_selectedNodeKey) is null && TryGetFirstNavigationNode(out LauncherNavNodeViewModel? node) && node is not null)
+            SelectSectionInternal(node.Section, node.Key);
+
+        OnPropertyChanged(nameof(SelectedSectionTitle));
+        OnPropertyChanged(nameof(SelectedSectionDescription));
     }
 
     public async Task RefreshShellStatusAsync()
@@ -202,7 +318,55 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         ApplyGameVersionStatus(status.GameVersionText, status.GameVersionTone);
         _gameUpdateAvailable = status.GameUpdateAvailable;
         _dlcUpdatesAvailable = status.DlcUpdatesAvailable;
+        _catalogWarningMessage = status.CatalogWarning;
         ApplyNotices(BuildDynamicNotices(_gameUpdateAvailable, _dlcUpdatesAvailable));
+    }
+
+    public async Task<bool> ReloadAfterGameSwitchAsync()
+    {
+        if (IsBusy)
+            return false;
+
+        IsBusy = true;
+        try
+        {
+            LauncherServices.ServerBrowser.Shutdown();
+            LauncherServices.TekSteamClient.Close();
+            Steam.CM.Client.Disconnect();
+            Steam.App.UpdateUserStatus();
+
+            var bootstrapResult = await LauncherServices.TekSteamClientBootstrap.InitializeAsync(ActiveGameManager.Current.RootPath);
+            _bootstrapSuccess = bootstrapResult.Success;
+            _bootstrapRestartRequired = bootstrapResult.RestartRequired;
+            _bootstrapWarningMessage = bootstrapResult.WarningMessage;
+            _bootstrapDownloadName = bootstrapResult.DownloadName;
+            _bootstrapErrorMessage = bootstrapResult.ErrorMessage;
+
+            if (!bootstrapResult.Success || bootstrapResult.RestartRequired || bootstrapResult.DownloadName is not null)
+            {
+                RebuildNotices();
+                return false;
+            }
+
+            await Task.Run(Mod.InitializeList);
+            await Task.Run(Cluster.ReloadLists);
+
+            var status = await LauncherShellStartup.GetStatusSummaryAsync(_beginInstallation);
+            ApplyGameVersionStatus(status.GameVersionText, status.GameVersionTone);
+            _gameUpdateAvailable = status.GameUpdateAvailable;
+            _dlcUpdatesAvailable = status.DlcUpdatesAvailable;
+            _catalogWarningMessage = status.CatalogWarning;
+
+            foreach (var screen in _screens.Values)
+                screen.Activate();
+
+            RebuildNotices();
+            return true;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     public T? GetScreen<T>(LauncherSection section)
@@ -225,6 +389,20 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             {
                 ActionKind = ShellNoticeActionKind.None,
                 Message = _bootstrapWarningMessage
+            });
+
+        if (!string.IsNullOrWhiteSpace(Steam.App.StartupNotice))
+            notices.Add(new ShellNoticeViewModel
+            {
+                ActionKind = ShellNoticeActionKind.None,
+                Message = Steam.App.StartupNotice
+            });
+
+        if (!string.IsNullOrWhiteSpace(GameCatalog.StartupNotice))
+            notices.Add(new ShellNoticeViewModel
+            {
+                ActionKind = ShellNoticeActionKind.None,
+                Message = GameCatalog.StartupNotice
             });
 
         if (_bootstrapDownloadName is not null)
@@ -263,6 +441,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     ShellNoticeViewModel[] BuildDynamicNotices(bool gameUpdateAvailable, bool dlcUpdatesAvailable)
     {
         var notices = new List<ShellNoticeViewModel>();
+        if (!string.IsNullOrWhiteSpace(_catalogWarningMessage))
+            notices.Add(new ShellNoticeViewModel
+            {
+                ActionKind = ShellNoticeActionKind.None,
+                Message = _catalogWarningMessage
+            });
+
         if (gameUpdateAvailable)
             notices.Add(new ShellNoticeViewModel
             {
@@ -293,6 +478,118 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     {
         (_baseNotices, _canRefreshShellStatus) = BuildBaseNotices();
         ApplyNotices(BuildDynamicNotices(_gameUpdateAvailable, _dlcUpdatesAvailable));
+    }
+
+    void RefreshNavigationGroups()
+    {
+        static IReadOnlyList<LauncherSection> CreateGameSections()
+          => [LauncherSection.Play, LauncherSection.Servers, LauncherSection.GameOptions, LauncherSection.DLC, LauncherSection.Mods];
+
+        static LauncherNavNodeViewModel BuildNode(LauncherSection section, string? gameId, string selectedNodeKey)
+        {
+            LauncherSectionInfo info = LauncherShellNavigation.GetInfo(section);
+            string key = $"{(string.IsNullOrWhiteSpace(gameId) ? "GLOBAL" : gameId)}:{section}";
+            return new()
+            {
+                Key = key,
+                Title = Locale.Get(info.TitleCode),
+                Description = Locale.Get(info.Description),
+                Section = section,
+                GameId = gameId,
+                IsSelected = key == selectedNodeKey
+            };
+        }
+
+        var groups = new List<LauncherNavGroupViewModel>();
+        foreach (GameCatalogEntry game in GameCatalog.AllGames.OrderBy(static game => game.Id, StringComparer.OrdinalIgnoreCase))
+        {
+            bool isVisible = !string.IsNullOrWhiteSpace(Settings.GetGamePath(game.Id));
+            groups.Add(new LauncherNavGroupViewModel
+            {
+                Title = game.Id,
+                IsVisible = isVisible,
+                Children = [.. CreateGameSections().Select(section => BuildNode(section, game.Id, _selectedNodeKey))]
+            });
+        }
+
+        groups.Add(new LauncherNavGroupViewModel
+        {
+            Title = "Global",
+            IsVisible = true,
+            Children =
+            [
+                BuildNode(LauncherSection.LauncherSettings, null, _selectedNodeKey),
+                BuildNode(LauncherSection.About, null, _selectedNodeKey)
+            ]
+        });
+
+        NavigationGroups = groups;
+    }
+
+    void SelectSectionInternal(LauncherSection section, string selectedNodeKey)
+    {
+        _selectedNodeKey = selectedNodeKey;
+        if (_selectedSection == section)
+        {
+            _screens[section].Activate();
+            OnPropertyChanged(nameof(SelectedSectionTitle));
+            OnPropertyChanged(nameof(SelectedSectionDescription));
+            return;
+        }
+
+        SelectedSection = section;
+    }
+
+    LauncherNavNodeViewModel? FindNodeByKey(string key)
+    {
+        foreach (LauncherNavGroupViewModel group in NavigationGroups)
+        {
+            if (!group.IsVisible)
+                continue;
+
+            foreach (LauncherNavNodeViewModel node in group.Children)
+                if (node.Key == key)
+                    return node;
+        }
+
+        return null;
+    }
+
+    bool TryGetFirstNavigationNode(out LauncherNavNodeViewModel? node)
+    {
+        foreach (LauncherNavGroupViewModel group in NavigationGroups)
+        {
+            if (!group.IsVisible || group.Children.Count == 0)
+                continue;
+
+            node = group.Children[0];
+            return true;
+        }
+
+        node = null;
+        return false;
+    }
+
+    string? ResolveNodeKeyForSection(LauncherSection section)
+    {
+        if (section is LauncherSection.LauncherSettings or LauncherSection.About)
+        {
+            string globalKey = $"GLOBAL:{section}";
+            return FindNodeByKey(globalKey) is null ? null : globalKey;
+        }
+
+        IEnumerable<string> gameOrder = ActiveGameManager.IsConfigured
+            ? [ActiveGameManager.Current.Id, .. GameCatalog.AllGames.Select(static game => game.Id)]
+            : [.. GameCatalog.AllGames.Select(static game => game.Id)];
+
+        foreach (string gameId in gameOrder.Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            string key = $"{gameId}:{section}";
+            if (FindNodeByKey(key) is not null)
+                return key;
+        }
+
+        return null;
     }
 
     void ApplyGameVersionStatus(string text, LauncherShellTone tone)

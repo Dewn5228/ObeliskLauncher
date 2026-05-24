@@ -326,7 +326,7 @@ public sealed class ModsSectionScreenViewModel : LauncherSectionScreenViewModel
             return;
         }
 
-        if (details.AppId != 346110)
+        if (details.AppId != ActiveGameManager.Current.SteamAppId)
         {
             ClearCandidate();
             SetStatus(new(Locale.Get("modsTab.notAnARKMod"), 2));

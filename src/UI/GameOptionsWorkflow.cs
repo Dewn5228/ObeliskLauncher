@@ -18,15 +18,18 @@ static class GameOptionsWorkflow
     new("-preventhibernation", "launchOptimization.disableSPHibernation", "launchOptimization.disableSPHibernationDesc")
     ];
 
-    public static IReadOnlyList<GameOptionsLaunchParameterDefinition> StandardParameters => s_standardParameters;
+    public static bool HasPredefinedLaunchParameters => ActiveGameManager.Current.Id == GameCatalog.AseGameId;
+
+    public static IReadOnlyList<GameOptionsLaunchParameterDefinition> StandardParameters
+        => HasPredefinedLaunchParameters ? s_standardParameters : Array.Empty<GameOptionsLaunchParameterDefinition>();
 
     public static bool HasLaunchParameter(string parameter) => Game.LaunchParameters.Contains(parameter);
 
-    public static string GetCustomLaunchParametersText() => string.Join(' ', Game.LaunchParameters.FindAll(parameter => Array.IndexOf(Game.StandardLaunchParameters, parameter) == -1));
+    public static string GetCustomLaunchParametersText() => string.Join(' ', Game.LaunchParameters.FindAll(parameter => !IsPredefinedParameter(parameter)));
 
     public static void SetCustomLaunchParameters(string text)
     {
-        Game.LaunchParameters.RemoveAll(parameter => Array.IndexOf(Game.StandardLaunchParameters, parameter) == -1);
+        Game.LaunchParameters.RemoveAll(parameter => !IsPredefinedParameter(parameter));
         if (string.IsNullOrWhiteSpace(text))
             return;
 
@@ -37,6 +40,9 @@ static class GameOptionsWorkflow
 
     public static void SetLaunchParameter(string parameter, bool enabled)
     {
+        if (!HasPredefinedLaunchParameters)
+            return;
+
         if (enabled)
         {
             if (!Game.LaunchParameters.Contains(parameter))
@@ -46,15 +52,26 @@ static class GameOptionsWorkflow
             Game.LaunchParameters.Remove(parameter);
     }
 
+    public static void EnforcePredefinedLaunchParameterPolicy()
+    {
+        if (HasPredefinedLaunchParameters)
+            return;
+
+        Game.LaunchParameters.RemoveAll(IsKnownPredefinedParameter);
+    }
+
+    static bool IsPredefinedParameter(string parameter)
+            => HasPredefinedLaunchParameters && IsKnownPredefinedParameter(parameter);
+
+    static bool IsKnownPredefinedParameter(string parameter)
+        => Array.IndexOf(Game.StandardLaunchParameters, parameter) != -1;
+
     public static GameOptionsActionResult FixBloom()
     {
         if (Game.IsRunning)
             return new(Locale.Get("errors.fixBloomFail"), 2);
 
-        if (string.IsNullOrWhiteSpace(Game.Path))
-            return new(Locale.Get("errors.noPathSelected"), 2);
-
-        string configDirectory = LauncherPlatform.Current.GetGameConfigDirectory(Game.Path);
+        string configDirectory = LauncherPlatform.Current.GetGameConfigDirectory(ActiveGameManager.Current.RootPath);
         Directory.CreateDirectory(configDirectory);
         string file = Path.Combine(configDirectory, "Scalability.ini");
         using var writer = new StreamWriter(file);
@@ -74,9 +91,6 @@ static class GameOptionsWorkflow
         if (Game.IsRunning)
             return new(Locale.Get("errors.unlockSkinsFail"), 2);
 
-        if (string.IsNullOrWhiteSpace(Game.Path))
-            return new(Locale.Get("errors.noPathSelected"), 2);
-
         string file = Path.Combine(LauncherBootstrap.AppDataFolder, "Dw_PlayerLocalData.arkprofile");
         bool success = await Downloader.DownloadFileAsync(file, new EventHandlers(),
           "https://nuclearist.ru/static/teklauncher/PlayerLocalData.arkprofile",
@@ -85,7 +99,7 @@ static class GameOptionsWorkflow
         if (!success)
             return new(Locale.Get("modsTab.downloadFailed"), 2);
 
-        string profilesDirectory = LauncherPlatform.Current.GetGameProfilesDirectory(Game.Path);
+        string profilesDirectory = LauncherPlatform.Current.GetGameProfilesDirectory(ActiveGameManager.Current.RootPath);
         Directory.CreateDirectory(profilesDirectory);
         File.Move(file, Path.Combine(profilesDirectory, "PlayerLocalData.arkprofile"), true);
         return new(Locale.Get("errors.unlockSkinsSuccess"), 1);

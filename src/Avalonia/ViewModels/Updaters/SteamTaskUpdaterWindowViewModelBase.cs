@@ -378,11 +378,13 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
     {
         if (updateMask.HasFlag(TEKSteamClient.AmUpdType.DeltaCreated))
         {
-            long diskFreeSpace = LauncherPlatform.Current.GetDiskFreeSpace(Path.Combine(Game.Path!, "tek-sc-data")) + 20971520;
+            long diskFreeSpace = LauncherPlatform.Current.GetDiskFreeSpace(Path.Combine(ActiveGameManager.Current.RootPath, "tek-sc-data")) + 20971520;
             long requiredSpace = LauncherServices.TekSteamClient.EstimateDeltaDiskSpace(desc.Job.Delta);
             if (diskFreeSpace < requiredSpace)
             {
-                _spaceMessage = string.Format(Locale.Get("modsTab.notEnoughSpace"), Locale.BytesToString(requiredSpace));
+                _spaceMessage = $"{Locale.Get("modsTab.notEnoughSpace")} "
+                    + $"{Locale.Get("gameOptionsTab.requiredDiskSpace")}: {Locale.BytesToString(requiredSpace)}. "
+                    + $"{Locale.Get("gameOptionsTab.freeDiskSpace")}: {Locale.BytesToString(diskFreeSpace)}.";
                 LauncherServices.TekSteamClient.PauseJob(ref desc);
             }
         }

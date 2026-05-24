@@ -180,6 +180,8 @@
   },
   "launcherSettingsTab": {
     "closeOnGameLaunch": "Close launcher on game launch",
+    "aseGamePath": "ASE game path",
+    "asaGamePath": "ASA game path",
     "linuxLaunchSettings": "Linux Launch Settings",
     "launcherLanguage": "Launcher Language",
     "gameLanguage": "Game Language",
@@ -223,6 +225,7 @@
     "unlockSkinsSuccess": "Skins unlocked successfully.",
     "unlockSkinsFail": "Failed to unlock skins. Ensure the game folder is set correctly.",
     "noPathSelected": "No path selected.",
+    "gamePathNotConfigured": "{0} path is not configured. Set it in Launcher Settings.",
     "languageChangeInfo": "Restart the launcher to fully apply the language change.",
     "anotherInstanceRunning": "Another instance of the launcher is already running.",
     "steamMissing": "Steam is not installed or could not be detected.",

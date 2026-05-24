@@ -180,6 +180,8 @@
   },
   "launcherSettingsTab": {
     "closeOnGameLaunch": "Fechar launcher ao iniciar o jogo",
+    "aseGamePath": "Caminho do jogo ASE",
+    "asaGamePath": "Caminho do jogo ASA",
     "linuxLaunchSettings": "Configurações de Inicialização Linux",
     "launcherLanguage": "Idioma do Launcher",
     "gameLanguage": "Idioma do Jogo",
@@ -223,6 +225,7 @@
     "unlockSkinsSuccess": "Skins desbloqueadas com sucesso.",
     "unlockSkinsFail": "Falha ao desbloquear skins. Verifique a pasta do jogo.",
     "noPathSelected": "Nenhum caminho selecionado.",
+    "gamePathNotConfigured": "O caminho de {0} não está configurado. Defina-o nas Configurações do Launcher.",
     "languageChangeInfo": "Reinicie o launcher para aplicar a mudança de idioma completamente.",
     "anotherInstanceRunning": "Outra instância do launcher já está em execução.",
     "steamMissing": "Steam não está instalada ou não pôde ser detectada.",

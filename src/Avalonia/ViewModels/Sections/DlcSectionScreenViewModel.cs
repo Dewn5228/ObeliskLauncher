@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Linq;
+using System.Collections.ObjectModel;
 
 namespace TEKLauncher.Avalonia.ViewModels;
 
@@ -55,7 +56,7 @@ public sealed class DlcSectionScreenViewModel : LauncherSectionScreenViewModel
     public DlcSectionScreenViewModel()
       : base(LauncherSection.DLC)
     {
-        Rows = [.. DLC.List.Select(dlc => new DlcRowViewModel(dlc))];
+        Rows = [];
         Activate();
     }
 
@@ -76,7 +77,7 @@ public sealed class DlcSectionScreenViewModel : LauncherSectionScreenViewModel
 
     public string SectionNote => Locale.Get("dlcTab.sectionNote");
 
-    public DlcRowViewModel[] Rows { get; }
+    public ObservableCollection<DlcRowViewModel> Rows { get; }
 
     public string StatusColor
     {
@@ -100,6 +101,10 @@ public sealed class DlcSectionScreenViewModel : LauncherSectionScreenViewModel
 
     public override void Activate()
     {
+        Rows.Clear();
+        foreach (var dlc in DLC.List)
+            Rows.Add(new DlcRowViewModel(dlc));
+
         foreach (var row in Rows)
             row.Refresh();
     }

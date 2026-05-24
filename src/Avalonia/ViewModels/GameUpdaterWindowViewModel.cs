@@ -9,9 +9,16 @@ internal sealed class GameUpdaterWindowViewModel : SteamTaskUpdaterWindowViewMod
 
     protected override string ThreadName => "GameUpdater";
 
-    protected override TEKSteamClient.ItemId CreateItemId() => new() { AppId = 346110, DepotId = 346111, WorkshopItemId = 0 };
+    protected override TEKSteamClient.ItemId CreateItemId()
+    {
+        IGameContext game = ActiveGameManager.Current;
+        return new() { AppId = game.SteamAppId, DepotId = game.MainDepotId, WorkshopItemId = 0 };
+    }
 
-    protected override ulong GetManifestId() => Settings.PreAquatica ? GameUpdateWorkflow.PreAquaticaManifestId : 0;
+    protected override ulong GetManifestId()
+      => Settings.PreAquatica && ActiveGameManager.Current.Id == GameCatalog.AseGameId
+        ? GameUpdateWorkflow.PreAquaticaManifestId
+        : 0;
 
     protected override unsafe void HandleSuccessfulResult(TEKSteamClient.Error result)
     {

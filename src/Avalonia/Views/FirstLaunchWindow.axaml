@@ -24,6 +24,10 @@
           <StackPanel Spacing="16">
             <TextBlock Text="{u:Tr firstLaunchWindow.selectExistingFolder}" FontSize="24" FontWeight="SemiBold" />
             <TextBlock Text="{u:Tr firstLaunchWindow.selectFolderDescription}" Opacity="0.8" TextWrapping="Wrap" />
+            <StackPanel Orientation="Horizontal" Spacing="18">
+              <RadioButton x:Name="ExistingAseRadio" IsChecked="True" GroupName="ExistingGameType" Content="ARK: Survival Evolved (ASE)" IsCheckedChanged="ExistingGameChanged" />
+              <RadioButton x:Name="ExistingAsaRadio" GroupName="ExistingGameType" Content="ARK: Survival Ascended (ASA)" IsCheckedChanged="ExistingGameChanged" />
+            </StackPanel>
             <Grid ColumnDefinitions="*,Auto">
               <TextBox x:Name="ExistingPathBox" PlaceholderText="{u:Tr firstLaunchWindow.placeholderPathToArk}" TextChanged="ExistingPathChanged" />
               <Button Grid.Column="1" Margin="12,0,0,0" Content="{u:Tr mainWindow.browse}" Click="BrowseExistingInstallPath" />
@@ -41,6 +45,10 @@
           <StackPanel Spacing="16">
             <TextBlock Text="{u:Tr firstLaunchWindow.chooseInstallFolder}" FontSize="24" FontWeight="SemiBold" />
             <TextBlock Text="{u:Tr firstLaunchWindow.chooseInstallDescription}" Opacity="0.8" TextWrapping="Wrap" />
+            <StackPanel Orientation="Horizontal" Spacing="18">
+              <RadioButton x:Name="InstallAseRadio" IsChecked="True" GroupName="InstallGameType" Content="ARK: Survival Evolved (ASE)" IsCheckedChanged="InstallGameChanged" />
+              <RadioButton x:Name="InstallAsaRadio" GroupName="InstallGameType" Content="ARK: Survival Ascended (ASA)" IsCheckedChanged="InstallGameChanged" />
+            </StackPanel>
             <Grid ColumnDefinitions="*,Auto">
               <TextBox x:Name="InstallPathBox" PlaceholderText="{u:Tr firstLaunchWindow.placeholderInstallPath}" TextChanged="InstallPathChanged" />
               <Button Grid.Column="1" Margin="12,0,0,0" Content="{u:Tr mainWindow.browse}" Click="BrowseInstallPath" />

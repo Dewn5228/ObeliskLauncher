@@ -64,10 +64,11 @@ internal sealed class ServerModsUpdaterWindowViewModel : SteamTaskUpdaterWindowV
                 OnTaskStarting();
             });
 
+            IGameContext game = ActiveGameManager.Current;
             var itemId = new TEKSteamClient.ItemId
             {
-                AppId = 346110,
-                DepotId = 346110,
+                AppId = game.SteamAppId,
+                DepotId = game.WorkshopDepotId,
                 WorkshopItemId = detail.Id
             };
 

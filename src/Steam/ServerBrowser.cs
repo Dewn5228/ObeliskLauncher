@@ -103,17 +103,19 @@ static class ServerBrowser
     /// <param name="endpoint">Query endpoint of the server.</param>
     public static void AddFavorite(IPEndPoint endpoint)
     {
+        uint appId = ActiveGameManager.Current.SteamAppId;
         Span<byte> buffer = stackalloc byte[4];
         endpoint.Address.TryWriteBytes(buffer, out _);
-        s_addFavoriteGame(s_steamMatchmaking, 346110, (uint)IPAddress.NetworkToHostOrder(BitConverter.ToInt32(buffer)), (ushort)endpoint.Port, (ushort)endpoint.Port, 0x1, (uint)DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+        s_addFavoriteGame(s_steamMatchmaking, appId, (uint)IPAddress.NetworkToHostOrder(BitConverter.ToInt32(buffer)), (ushort)endpoint.Port, (ushort)endpoint.Port, 0x1, (uint)DateTimeOffset.UtcNow.ToUnixTimeSeconds());
     }
     /// <summary>Removes specified server from favorites.</summary>
     /// <param name="endpoint">Query endpoint of the server.</param>
     public static void RemoveFavorite(IPEndPoint endpoint)
     {
+        uint appId = ActiveGameManager.Current.SteamAppId;
         Span<byte> buffer = stackalloc byte[4];
         endpoint.Address.TryWriteBytes(buffer, out _);
-        s_removeFavoriteGame(s_steamMatchmaking, 346110, (uint)IPAddress.NetworkToHostOrder(BitConverter.ToInt32(buffer)), (ushort)endpoint.Port, (ushort)endpoint.Port, 0x1);
+        s_removeFavoriteGame(s_steamMatchmaking, appId, (uint)IPAddress.NetworkToHostOrder(BitConverter.ToInt32(buffer)), (ushort)endpoint.Port, (ushort)endpoint.Port, 0x1);
     }
     /// <summary>Shuts down Steam client API interfaces and releases their resources.</summary>
     public static void Shutdown()
@@ -130,6 +132,8 @@ static class ServerBrowser
     /// <returns>An array of server objects, or <see langword="null"/> if the request fails.</returns>
     public static Server[]? GetServers(ServerListType type, string? clusterId = null)
     {
+        uint appId = ActiveGameManager.Current.SteamAppId;
+        string gameDir = ActiveGameManager.Current.ServerGameDir;
         if (s_steamClient == IntPtr.Zero)
         {
             Initialize();
@@ -138,14 +142,14 @@ static class ServerBrowser
         }
         var filters = type == ServerListType.LAN ? null : new MatchMakingKeyValuePair_t[]
         {
-            new() { m_szKey = "gamedir", m_szValue = "ark_survival_evolved" },
+            new() { m_szKey = "gamedir", m_szValue = gameDir },
             new() { m_szKey = "gamedataand", m_szValue = clusterId is null ? "SERVERUSESBATTLEYE_b:false,TEKWrapper:1" : $"SERVERUSESBATTLEYE_b:false,TEKWrapper:1,CLUSTERID_s:{clusterId}" }
         };
         var request = type switch
         {
-            ServerListType.LAN => s_requestLANServerList(s_steamMatchmakingServers, 346110, IntPtr.Zero),
-            ServerListType.Favorites => s_requestFavoritesServerList(s_steamMatchmakingServers, 346110, in filters!, 2, IntPtr.Zero),
-            _ => s_requestInternetServerList(s_steamMatchmakingServers, 346110, in filters!, 2, IntPtr.Zero)
+            ServerListType.LAN => s_requestLANServerList(s_steamMatchmakingServers, appId, IntPtr.Zero),
+            ServerListType.Favorites => s_requestFavoritesServerList(s_steamMatchmakingServers, appId, in filters!, 2, IntPtr.Zero),
+            _ => s_requestInternetServerList(s_steamMatchmakingServers, appId, in filters!, 2, IntPtr.Zero)
         };
         for (int i = type == ServerListType.Online ? 250 : 20; i > 0 && s_getServerCount(s_steamMatchmakingServers, request) == 0; i--)
         {

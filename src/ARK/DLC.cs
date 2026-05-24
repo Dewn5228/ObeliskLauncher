@@ -5,8 +5,13 @@ namespace TEKLauncher.ARK;
 /// <summary>Represents a DLC of the game.</summary>
 class DLC
 {
+    static uint s_cachedAppId;
+    static string? s_cachedRootPath;
+    static DLC[] s_cachedList = [];
+
     /// <summary>Current status of the DLC.</summary>
     Status _status;
+    readonly string _rootPath;
     /// <summary>Path to the Content folder of the DLC.</summary>
     readonly string _path;
     /// <summary>Path to the SeekFreeContent folder of the DLC.</summary>
@@ -18,21 +23,8 @@ class DLC
     public readonly uint DepotId;
     /// <summary>Code of the map provided by the DLC.</summary>
     public readonly MapCode Code;
-    /// <summary>List of all DLC supported by the launcher.</summary>
-    public static readonly DLC[] List =
-    {
-        new("The Center", 473850, 346114, true, false),
-        new("Scorched Earth", 512540, 375351, false, true),
-        new("Ragnarok", 642250, 375354, true, false),
-        new("Aberration", 708770, 375357, false, true),
-        new("Extinction", 887380, 473851, false, false),
-        new("Valguero", 1100810, 473854, true, true),
-        new("Genesis Part 1 & 2", 1113410, 473857, false, false),
-        new("Crystal Isles", 1270830, 1318685, true, false),
-        new("Lost Island", 1691800, 1691801, true, false),
-        new("Fjordur", 1887560, 1887561, true, false),
-        new("Aquatica", 3537070, 3537070, false, false)
-    };
+    /// <summary>List of all DLC supported by current active game.</summary>
+    public static IReadOnlyList<DLC> List => GetList();
     /// <summary>Gets a value that indicates whether the DLC is installed.</summary>
     public bool IsInstalled
     {
@@ -40,7 +32,7 @@ class DLC
         {
             bool result = File.Exists(_umapPath);
             if (Code == MapCode.Genesis) //Steam depot of Genesis DLC in fact includes 2 maps, we'll assume that it's installed if at least one of those maps is present
-                result |= File.Exists(Path.Combine(Game.Path!, "ShooterGame", "Content", "Maps", "Genesis2", "Gen2.umap"));
+                result |= File.Exists(Path.Combine(_rootPath, "ShooterGame", "Content", "Maps", "Genesis2", "Gen2.umap"));
             return result;
         }
     }
@@ -64,43 +56,28 @@ class DLC
     /// <param name="depotId">ID of Steam depot that stores the DLC content.</param>
     /// <param name="isMod"><see langword="true"/> if the DLC folders are located in Mods directory rather than Maps; otherwise, <see langword="false"/>.</param>
     /// <param name="has_P"><see langword="true"/> if the name of DLC's .umap file is suffixed with "_P"; otherwise, <see langword="false"/>.</param>
-    DLC(string name, uint appId, uint depotId, bool isMod, bool has_P)
+    DLC(string rootPath, GameDlcInfo info)
     {
-        string contentDirectory = isMod ? "Mods" : "Maps";
-        string folderName = depotId switch
-        {
-            473857 => "Genesis",
-            1887561 => "FjordurOfficial",
-            3537070 => "Abyss",
-            _ => name.Replace(" ", string.Empty)
-        };
-        _path = Path.Combine(Game.Path!, "ShooterGame", "Content", contentDirectory, folderName);
-        _sfcPath = Path.Combine(Game.Path!, "ShooterGame", "SeekFreeContent", contentDirectory, folderName);
-        string mapFileName = depotId switch
-        {
-            1887561 => "Fjordur",
-            3537070 => "Aquatica",
-            _ => Enum.Parse<MapCode>(folderName).ToString()
-        };
-        if (has_P)
+        _rootPath = rootPath;
+        string contentDirectory = info.IsModContent ? "Mods" : "Maps";
+        string folderName = string.IsNullOrWhiteSpace(info.FolderNameOverride) ? info.Name.Replace(" ", string.Empty) : info.FolderNameOverride;
+        _path = Path.Combine(rootPath, "ShooterGame", "Content", contentDirectory, folderName);
+        _sfcPath = Path.Combine(rootPath, "ShooterGame", "SeekFreeContent", contentDirectory, folderName);
+        string mapFileName = string.IsNullOrWhiteSpace(info.MapFileNameOverride) ? info.Code.ToString() : info.MapFileNameOverride;
+        if (info.HasPPostfix)
             mapFileName += "_P";
         _umapPath = Path.Combine(_path, $"{mapFileName}.umap");
-        AppId = appId;
-        DepotId = depotId;
-        Name = name;
-        Code = depotId switch
-        {
-            1887561 => MapCode.Fjordur,
-            3537070 => MapCode.Aquatica,
-            _ => Enum.Parse<MapCode>(folderName)
-        };
+        AppId = info.AppId;
+        DepotId = info.DepotId;
+        Name = info.Name;
+        Code = info.Code;
         _status = IsInstalled ? Status.Installed : Status.NotInstalled;
     }
     /// <summary>Uninstalls the DLC.</summary>
     public unsafe void Delete()
     {
         CurrentStatus = Status.Deleting;
-        var itemId = new TEKSteamClient.ItemId { AppId = 346110, DepotId = DepotId, WorkshopItemId = 0 };
+        var itemId = new TEKSteamClient.ItemId { AppId = ActiveGameManager.Current.SteamAppId, DepotId = DepotId, WorkshopItemId = 0 };
         var desc = LauncherServices.TekSteamClient.GetItemDesc(&itemId);
         var prevStatus = _status;
         CurrentStatus = Status.Deleting;
@@ -112,10 +89,10 @@ class DLC
                 Directory.Delete(_sfcPath, true);
             if (Code == MapCode.Genesis)
             {
-                string gen2Folder = Path.Combine(Game.Path!, "ShooterGame", "Content", "Maps", "Genesis2");
+                string gen2Folder = Path.Combine(_rootPath, "ShooterGame", "Content", "Maps", "Genesis2");
                 if (Directory.Exists(gen2Folder))
                     Directory.Delete(gen2Folder, true);
-                gen2Folder = Path.Combine(Game.Path!, "ShooterGame", "SeekFreeContent", "Maps", "Genesis2");
+                gen2Folder = Path.Combine(_rootPath, "ShooterGame", "SeekFreeContent", "Maps", "Genesis2");
                 if (Directory.Exists(gen2Folder))
                     Directory.Delete(gen2Folder, true);
             }
@@ -147,11 +124,34 @@ class DLC
     public static DLC Get(MapCode code)
     {
         if (code == MapCode.Genesis2)
-            return List[6];
-        int index = (int)code - 1;
-        if (code > MapCode.Genesis2)
-            index--;
-        return List[index];
+            code = MapCode.Genesis;
+        foreach (var dlc in List)
+            if (dlc.Code == code)
+                return dlc;
+        throw new InvalidOperationException($"DLC for map code '{code}' is not available for active game '{ActiveGameManager.Current.Id}'.");
+    }
+
+    static DLC[] GetList()
+    {
+        IGameContext context = ActiveGameManager.Current;
+        uint appId = context.SteamAppId;
+        string rootPath = context.RootPath;
+        if (s_cachedAppId == appId && string.Equals(s_cachedRootPath, rootPath, StringComparison.OrdinalIgnoreCase) && s_cachedList.Length > 0)
+            return s_cachedList;
+
+        s_cachedAppId = appId;
+        s_cachedRootPath = rootPath;
+        s_cachedList = BuildList(rootPath, context.DlcCatalog);
+        return s_cachedList;
+    }
+
+    static DLC[] BuildList(string rootPath, IReadOnlyList<GameDlcInfo> catalog)
+    {
+        var items = new List<DLC>(catalog.Count);
+        foreach (GameDlcInfo dlc in catalog)
+            items.Add(new(rootPath, dlc));
+
+        return [.. items];
     }
     /// <summary>Defines DLC status codes.</summary>
     public enum Status

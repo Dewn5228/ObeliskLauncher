@@ -57,27 +57,29 @@ static class LinuxServerBrowser
         if (!EnsureInitialized())
             throw new InvalidOperationException("Linux Steam server browser is not initialized.");
 
+        uint appId = ActiveGameManager.Current.SteamAppId;
         Span<byte> buffer = stackalloc byte[4];
         endpoint.Address.TryWriteBytes(buffer, out _);
-        s_addFavoriteGame(s_steamMatchmaking, 346110, (uint)IPAddress.NetworkToHostOrder(BitConverter.ToInt32(buffer)), (ushort)endpoint.Port, (ushort)endpoint.Port, 0x1, (uint)DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+        s_addFavoriteGame(s_steamMatchmaking, appId, (uint)IPAddress.NetworkToHostOrder(BitConverter.ToInt32(buffer)), (ushort)endpoint.Port, (ushort)endpoint.Port, 0x1, (uint)DateTimeOffset.UtcNow.ToUnixTimeSeconds());
     }
-
     public static Server[]? GetServers(ServerBrowserListType type, string? clusterId = null)
     {
         if (!EnsureInitialized())
             return null;
 
+        uint appId = ActiveGameManager.Current.SteamAppId;
+        string gameDir = ActiveGameManager.Current.ServerGameDir;
         MatchMakingKeyValuePair_t[]? filters = type == ServerBrowserListType.LAN ? null :
         [
-          new() { m_szKey = "gamedir", m_szValue = "ark_survival_evolved" },
+                    new() { m_szKey = "gamedir", m_szValue = gameDir },
       new() { m_szKey = "gamedataand", m_szValue = clusterId is null ? "SERVERUSESBATTLEYE_b:false,TEKWrapper:1" : $"SERVERUSESBATTLEYE_b:false,TEKWrapper:1,CLUSTERID_s:{clusterId}" }
         ];
 
         IntPtr request = type switch
         {
-            ServerBrowserListType.LAN => s_requestLANServerList(s_steamMatchmakingServers, 346110, IntPtr.Zero),
-            ServerBrowserListType.Favorites => s_requestFavoritesServerList(s_steamMatchmakingServers, 346110, in filters!, 2, IntPtr.Zero),
-            _ => s_requestInternetServerList(s_steamMatchmakingServers, 346110, in filters!, 2, IntPtr.Zero)
+            ServerBrowserListType.LAN => s_requestLANServerList(s_steamMatchmakingServers, appId, IntPtr.Zero),
+            ServerBrowserListType.Favorites => s_requestFavoritesServerList(s_steamMatchmakingServers, appId, in filters!, 2, IntPtr.Zero),
+            _ => s_requestInternetServerList(s_steamMatchmakingServers, appId, in filters!, 2, IntPtr.Zero)
         };
 
         try
@@ -115,9 +117,10 @@ static class LinuxServerBrowser
         if (!EnsureInitialized())
             throw new InvalidOperationException("Linux Steam server browser is not initialized.");
 
+        uint appId = ActiveGameManager.Current.SteamAppId;
         Span<byte> buffer = stackalloc byte[4];
         endpoint.Address.TryWriteBytes(buffer, out _);
-        s_removeFavoriteGame(s_steamMatchmaking, 346110, (uint)IPAddress.NetworkToHostOrder(BitConverter.ToInt32(buffer)), (ushort)endpoint.Port, (ushort)endpoint.Port, 0x1);
+        s_removeFavoriteGame(s_steamMatchmaking, appId, (uint)IPAddress.NetworkToHostOrder(BitConverter.ToInt32(buffer)), (ushort)endpoint.Port, (ushort)endpoint.Port, 0x1);
     }
 
     public static void Shutdown()
@@ -154,25 +157,35 @@ static class LinuxServerBrowser
 
     static bool TryInitialize()
     {
+        uint appId = ActiveGameManager.Current.SteamAppId;
+        string appIdText = appId.ToString();
+        Environment.SetEnvironmentVariable("SteamAppId", appIdText);
+        Environment.SetEnvironmentVariable("SteamGameId", appIdText);
+        LauncherLog.Debug("LinuxServerBrowser: primed Steam environment. SteamAppId={SteamAppId}", appIdText);
+
         if (!App.IsRunning)
         {
+            LauncherLog.Warning("LinuxServerBrowser init skipped: Steam process is not running.");
             return false;
         }
 
         string? libraryPath = LauncherPlatform.Current.GetSteamClientDllPath();
         if (string.IsNullOrWhiteSpace(libraryPath) || !File.Exists(libraryPath))
         {
+            LauncherLog.Warning("LinuxServerBrowser init skipped: steamclient library path is unavailable.");
             return false;
         }
 
         try
         {
+            LauncherLog.Debug("LinuxServerBrowser init started. LibraryPath={LibraryPath}", libraryPath);
             s_libraryHandle = NativeLibrary.Load(libraryPath);
             IntPtr createInterfaceExport = NativeLibrary.GetExport(s_libraryHandle, "CreateInterface");
             var createInterface = Marshal.GetDelegateForFunctionPointer<CreateInterface>(createInterfaceExport);
             s_steamClient = createInterface("SteamClient023", 0);
             if (s_steamClient == IntPtr.Zero)
             {
+                LauncherLog.Warning("LinuxServerBrowser init failed: SteamClient023 interface is null.");
                 return false;
             }
 
@@ -191,6 +204,10 @@ static class LinuxServerBrowser
             s_steamUtils = s_getISteamGenericInterface(s_steamClient, s_user, s_pipe, "SteamUtils010");
             if (s_steamMatchmaking == IntPtr.Zero || s_steamMatchmakingServers == IntPtr.Zero || s_steamUtils == IntPtr.Zero)
             {
+                LauncherLog.Warning("LinuxServerBrowser init failed: one or more Steam interfaces are null. Matchmaking={MatchmakingOk}, MatchmakingServers={MatchmakingServersOk}, Utils={UtilsOk}",
+                    s_steamMatchmaking != IntPtr.Zero,
+                    s_steamMatchmakingServers != IntPtr.Zero,
+                    s_steamUtils != IntPtr.Zero);
                 Shutdown();
                 return false;
             }
@@ -211,10 +228,13 @@ static class LinuxServerBrowser
             IntPtr utilsVtable = Marshal.ReadIntPtr(s_steamUtils);
             s_runFrame = GetVirtualFunction<RunFrame>(utilsVtable, 14);
 
+            LauncherLog.Information("LinuxServerBrowser initialized successfully. SteamAppId={SteamAppId}", appIdText);
+
             return true;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LauncherLog.Error(ex, "LinuxServerBrowser initialization failed");
             Shutdown();
             return false;
         }

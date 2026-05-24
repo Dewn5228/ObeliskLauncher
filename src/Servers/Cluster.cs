@@ -66,10 +66,14 @@ public class Cluster
         try
         {
             CurrentStatus = 0;
-            Favorites.Servers.Clear();
-            Lan.Servers.Clear();
-            Unclustered.Servers.Clear();
-            OnlineClusters.Clear();
+            lock (Favorites.Servers)
+                Favorites.Servers.Clear();
+            lock (Lan.Servers)
+                Lan.Servers.Clear();
+            lock (Unclustered.Servers)
+                Unclustered.Servers.Clear();
+            lock (OnlineClusters)
+                OnlineClusters.Clear();
             LauncherServices.ServerUi.OnClusterListsCleared();
             if (!Steam.App.IsRunning)
             {
@@ -181,10 +185,10 @@ public class Cluster
             clusterCandidateCache.Clear();
             CurrentStatus = 3;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             CurrentStatus = 2;
-            throw;
+            LauncherLog.Error(ex, "Cluster.ReloadLists failed");
         }
     }
 }

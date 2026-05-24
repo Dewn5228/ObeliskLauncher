@@ -56,6 +56,7 @@ static class Client
     public static Mod.ModDetails[] QueryMods(uint page, string? search, out uint total)
     {
         total = 0;
+        IGameContext game = ActiveGameManager.Current;
         if (!WebSocketConnection.IsLoggedOn)
             try { WebSocketConnection.Connect(); }
             catch { return Array.Empty<Mod.ModDetails>(); }
@@ -63,7 +64,7 @@ static class Client
         var message = new Message<QueryMods>(MessageType.ServiceMethod);
         message.Body.Page = page;
         message.Body.ModsPerPage = 20;
-        message.Body.AppId = 346110;
+        message.Body.AppId = game.SteamAppId;
         if (!string.IsNullOrEmpty(search))
             message.Body.SearchText = search;
         message.Body.ReturnMetadata = true;
@@ -77,7 +78,7 @@ static class Client
         for (int i = 0; i < response.Body.Items.Count; i++)
         {
             var item = response.Body.Items[i];
-            result[i] = new(346110, item.Result == 1 ? 1 : item.Result == 9 ? 2 : 0, DateTimeOffset.FromUnixTimeSeconds(item.LastUpdated).Ticks, item.Id, item.HcontentFile, item.Name, item.PreviewUrl);
+            result[i] = new(game.SteamAppId, item.Result == 1 ? 1 : item.Result == 9 ? 2 : 0, DateTimeOffset.FromUnixTimeSeconds(item.LastUpdated).Ticks, item.Id, item.HcontentFile, item.Name, item.PreviewUrl);
         }
         return result;
     }

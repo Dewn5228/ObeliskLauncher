@@ -37,7 +37,7 @@ public partial class App : Application
                 return;
             }
 
-            if (string.IsNullOrEmpty(Game.Path) || !Directory.Exists(Path.GetPathRoot(Game.Path)))
+            if (!ActiveGameManager.IsConfigured || !Directory.Exists(ActiveGameManager.Current.RootPath))
             {
                 var firstLaunchWindow = new FirstLaunchWindow();
                 firstLaunchWindow.WorkflowCompleted += (_, beginInstallation) =>
@@ -70,9 +70,11 @@ public partial class App : Application
 
     static void InitializeLauncherState()
     {
-        Game.Initialize();
         Task.Run(Mod.InitializeList);
-        Task.Run(Cluster.ReloadLists);
+        if (OperatingSystem.IsLinux())
+            LauncherLog.Information("Skipping automatic cluster reload on Linux startup; server list will load on demand.");
+        else
+            Task.Run(Cluster.ReloadLists);
     }
 
     static void TryScheduleWhatsNew(Window owner)

@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using System.Linq;
+using TEKLauncher.Data;
 
 namespace TEKLauncher.Servers;
 
@@ -45,8 +47,11 @@ public class Server
     public void AddFavorite()
     {
         LauncherServices.ServerBrowser.AddFavorite(_endpoint);
-        if (!Cluster.Favorites.Servers.Contains(this))
-            Cluster.Favorites.Servers.Add(this);
+        lock (Cluster.Favorites.Servers)
+        {
+            if (!Cluster.Favorites.Servers.Contains(this))
+                Cluster.Favorites.Servers.Add(this);
+        }
         LauncherServices.ServerUi.OnClusterServerCountChanged(Cluster.Favorites);
         LauncherServices.ServerUi.OnServerAdded(Cluster.Favorites, this);
     }
@@ -54,7 +59,8 @@ public class Server
     public void RemoveFavorite()
     {
         LauncherServices.ServerBrowser.RemoveFavorite(_endpoint);
-        Cluster.Favorites.Servers.Remove(this);
+        lock (Cluster.Favorites.Servers)
+            Cluster.Favorites.Servers.Remove(this);
         LauncherServices.ServerUi.OnClusterServerCountChanged(Cluster.Favorites);
         LauncherServices.ServerUi.OnServerRemoved(Cluster.Favorites, this);
     }
@@ -64,6 +70,7 @@ public class Server
     {
         bool Fail(string reason)
         {
+            LauncherLog.Debug("Server query failed for {Address}: {Reason}", Address, reason);
             return false;
         }
 
@@ -104,11 +111,12 @@ public class Server
             MapCode.TheIsland => "The Island",
             MapCode.Genesis2 => "Genesis 2",
             MapCode.Mod => map,
-            _ => DLC.Get(Map).Name
+            _ => ResolveDlcMapDisplayName(map)
         };
         startIndex = nullIndex + 1;
         nullIndex = Array.IndexOf(buffer, (byte)0, startIndex);
-        if (Encoding.ASCII.GetString(buffer, startIndex, nullIndex - startIndex) != "ark_survival_evolved")
+        string gameDir = Encoding.ASCII.GetString(buffer, startIndex, nullIndex - startIndex);
+        if (!ActiveGameManager.Current.AcceptedServerGameDirs.Contains(gameDir, StringComparer.OrdinalIgnoreCase))
             return Fail("A2S_INFO reported a different gamedir.");
         MaxNumPlayers = buffer[Array.IndexOf(buffer, (byte)0, nullIndex + 1) + 4];
         //A2S_RULES
@@ -212,6 +220,24 @@ public class Server
         Info = info;
         return true;
     }
+
+    string ResolveDlcMapDisplayName(string fallback)
+    {
+        try
+        {
+            return DLC.Get(Map).Name;
+        }
+        catch (Exception ex)
+        {
+            LauncherLog.Warning("Falling back to raw map name for {Address}. ActiveGame={GameId}, MapCode={MapCode}, Reason={Reason}",
+                Address,
+                ActiveGameManager.Current.Id,
+                Map,
+                ex.Message);
+            return fallback;
+        }
+    }
+
     public override bool Equals(object? obj) => obj is Server other && _endpoint.Equals(other._endpoint);
     public override int GetHashCode() => _endpoint.GetHashCode();
 }

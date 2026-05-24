@@ -28,9 +28,9 @@ static class Locale
     {
         return bytes switch
         {
-            >= 1073741824 => $"{bytes / 1073741824.0:0.##} {Get("bytes.gb")}",
-            >= 1048576 => $"{bytes / 1048576.0:0.#} {Get("bytes.mb")}",
-            _ => $"{bytes / 1024.0:0} {Get("bytes.kb")}"
+            >= 1073741824 => $"{bytes / 1073741824.0:0.##} {Get("common.bytes.gb")}",
+            >= 1048576 => $"{bytes / 1048576.0:0.#} {Get("common.bytes.mb")}",
+            _ => $"{bytes / 1024.0:0} {Get("common.bytes.kb")}"
         };
     }
 
@@ -38,15 +38,15 @@ static class Locale
     {
         if (bytes >= 1073741824)
         {
-            unit = Get("bytes.gb");
+            unit = Get("common.bytes.gb");
             return (bytes / 1073741824.0).ToString("0.##");
         }
         if (bytes >= 1048576)
         {
-            unit = Get("bytes.mb");
+            unit = Get("common.bytes.mb");
             return (bytes / 1048576.0).ToString("0.#");
         }
-        unit = Get("bytes.kb");
+        unit = Get("common.bytes.kb");
         return (bytes / 1024.0).ToString("0");
     }
 

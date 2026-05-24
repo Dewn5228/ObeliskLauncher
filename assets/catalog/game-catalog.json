@@ -1,0 +1,312 @@
+{
+  "schemaVersion": 1,
+  "games": [
+    {
+      "id": "ASE",
+      "displayName": "ARK: Survival Evolved",
+      "steamAppId": 346110,
+      "runtimeAppId": 346110,
+      "mainDepotId": 346111,
+      "workshopDepotId": 346110,
+      "serverGameDir": "ark_survival_evolved",
+      "acceptedServerGameDirs": [
+        "ark_survival_evolved"
+      ],
+      "steamFolderName": "ARK",
+      "exeFileName": "ShooterGame.exe",
+      "exeRelativePath": "ShooterGame/Binaries/Win64/ShooterGame.exe",
+      "workshopDirRelativePath": "Mods",
+      "supportsSpacewarSpoof": true,
+      "isWindowsBuild": true,
+      "runtimeDlcDisplayNames": {
+        "473850": "The Center - ARK Expansion Map",
+        "508150": "Primitive+ - ARK Total Conversion",
+        "512540": "ARK: Scorched Earth - Expansion Pack",
+        "642250": "Ragnarok - ARK Expansion Map",
+        "696680": "ARK: Survival Evolved Season Pass",
+        "708770": "ARK: Aberration - Expansion Pack",
+        "887380": "ARK: Extinction - Expansion Pack",
+        "1100810": "Valguero - ARK Expansion Map",
+        "1113410": "ARK: Genesis Season Pass",
+        "1270830": "Crystal Isles - ARK Expansion Map",
+        "1691800": "Lost Island - ARK Expansion Map",
+        "1887560": "Fjordur - ARK Expansion Map",
+        "3537070": "Aquatica - ARK Expansion Map"
+      },
+      "preAquaticaManifestOverrides": {
+        "346114": 5573587184752106093,
+        "375351": 8265777340034981821,
+        "375354": 7952753366101555648,
+        "375357": 1447242805278740772,
+        "473851": 2551727096735353757,
+        "473854": 847717640995143866,
+        "473857": 1054814513659387220,
+        "1318685": 8189621638927588129,
+        "1691801": 3147973472387347535,
+        "1887561": 580528532335699271
+      },
+      "dlcCatalog": [
+        {
+          "name": "The Center",
+          "appId": 473850,
+          "depotId": 346114,
+          "isModContent": true,
+          "hasPPostfix": false,
+          "mapCode": "TheCenter"
+        },
+        {
+          "name": "Scorched Earth",
+          "appId": 512540,
+          "depotId": 375351,
+          "isModContent": false,
+          "hasPPostfix": true,
+          "mapCode": "ScorchedEarth"
+        },
+        {
+          "name": "Ragnarok",
+          "appId": 642250,
+          "depotId": 375354,
+          "isModContent": true,
+          "hasPPostfix": false,
+          "mapCode": "Ragnarok"
+        },
+        {
+          "name": "Aberration",
+          "appId": 708770,
+          "depotId": 375357,
+          "isModContent": false,
+          "hasPPostfix": true,
+          "mapCode": "Aberration"
+        },
+        {
+          "name": "Extinction",
+          "appId": 887380,
+          "depotId": 473851,
+          "isModContent": false,
+          "hasPPostfix": false,
+          "mapCode": "Extinction"
+        },
+        {
+          "name": "Valguero",
+          "appId": 1100810,
+          "depotId": 473854,
+          "isModContent": true,
+          "hasPPostfix": true,
+          "mapCode": "Valguero"
+        },
+        {
+          "name": "Genesis Part 1 & 2",
+          "appId": 1113410,
+          "depotId": 473857,
+          "isModContent": false,
+          "hasPPostfix": false,
+          "mapCode": "Genesis",
+          "folderNameOverride": "Genesis"
+        },
+        {
+          "name": "Crystal Isles",
+          "appId": 1270830,
+          "depotId": 1318685,
+          "isModContent": true,
+          "hasPPostfix": false,
+          "mapCode": "CrystalIsles"
+        },
+        {
+          "name": "Lost Island",
+          "appId": 1691800,
+          "depotId": 1691801,
+          "isModContent": true,
+          "hasPPostfix": false,
+          "mapCode": "LostIsland"
+        },
+        {
+          "name": "Fjordur",
+          "appId": 1887560,
+          "depotId": 1887561,
+          "isModContent": true,
+          "hasPPostfix": false,
+          "mapCode": "Fjordur",
+          "folderNameOverride": "FjordurOfficial",
+          "mapFileNameOverride": "Fjordur"
+        },
+        {
+          "name": "Aquatica",
+          "appId": 3537070,
+          "depotId": 3537070,
+          "isModContent": false,
+          "hasPPostfix": false,
+          "mapCode": "Aquatica",
+          "folderNameOverride": "Abyss",
+          "mapFileNameOverride": "Aquatica"
+        }
+      ]
+    },
+    {
+      "id": "ASA",
+      "displayName": "ARK: Survival Ascended",
+      "steamAppId": 2399830,
+      "runtimeAppId": 2399830,
+      "mainDepotId": 2399831,
+      "workshopDepotId": 2399830,
+      "serverGameDir": "ark_survival_ascended",
+      "acceptedServerGameDirs": [
+        "ark_survival_ascended"
+      ],
+      "steamFolderName": "ARK Survival Ascended",
+      "exeFileName": "ArkAscended.exe",
+      "exeRelativePath": "ShooterGame/Binaries/Win64/ArkAscended.exe",
+      "workshopDirRelativePath": "Mods",
+      "supportsSpacewarSpoof": true,
+      "isWindowsBuild": true,
+      "runtimeDlcDisplayNames": {
+        "2827030": "ARK: The Center Ascended",
+        "2849450": "ARK: Scorched Earth Ascended",
+        "2881150": "ARK: Bob\u0027s Tall Tales",
+        "2972680": "ARK Fantastic Tames - Pyromane",
+        "3059650": "ARK: Aberration Ascended",
+        "3282470": "ARK Fantastic Tames - Dreadmare",
+        "3349320": "ARK: Extinction Ascended",
+        "3483400": "ARK: Astraeos",
+        "3571730": "ARK Animated Series 109-Costumes Pack",
+        "3583650": "ARK: Lost Colony",
+        "3675020": "ARK: Ragnarok Ascended",
+        "3720100": "ARK: Lost Colony Expansion Pass",
+        "3720200": "ARK Fantastic Tames - Drakelings",
+        "3982300": "ARK Fantastic Tames - Elderclaw",
+        "3982310": "ARK: Valguero Ascended",
+        "4558510": "ARK Fantastic Tames Season 1"
+      },
+      "preAquaticaManifestOverrides": {},
+      "dlcCatalog": [
+        {
+          "name": "ARK: The Center Ascended",
+          "appId": 2827030,
+          "depotId": 2827030,
+          "isModContent": false,
+          "hasPPostfix": false,
+          "mapCode": "Mod"
+        },
+        {
+          "name": "ARK: Scorched Earth Ascended",
+          "appId": 2849450,
+          "depotId": 2849450,
+          "isModContent": false,
+          "hasPPostfix": false,
+          "mapCode": "Mod"
+        },
+        {
+          "name": "ARK: Bob\u0027s Tall Tales",
+          "appId": 2881150,
+          "depotId": 2881150,
+          "isModContent": false,
+          "hasPPostfix": false,
+          "mapCode": "Mod"
+        },
+        {
+          "name": "ARK Fantastic Tames - Pyromane",
+          "appId": 2972680,
+          "depotId": 2972680,
+          "isModContent": false,
+          "hasPPostfix": false,
+          "mapCode": "Mod"
+        },
+        {
+          "name": "ARK: Aberration Ascended",
+          "appId": 3059650,
+          "depotId": 3059650,
+          "isModContent": false,
+          "hasPPostfix": false,
+          "mapCode": "Mod"
+        },
+        {
+          "name": "ARK Fantastic Tames - Dreadmare",
+          "appId": 3282470,
+          "depotId": 3282470,
+          "isModContent": false,
+          "hasPPostfix": false,
+          "mapCode": "Mod"
+        },
+        {
+          "name": "ARK: Extinction Ascended",
+          "appId": 3349320,
+          "depotId": 3349320,
+          "isModContent": false,
+          "hasPPostfix": false,
+          "mapCode": "Mod"
+        },
+        {
+          "name": "ARK: Astraeos",
+          "appId": 3483400,
+          "depotId": 3483400,
+          "isModContent": false,
+          "hasPPostfix": false,
+          "mapCode": "Mod"
+        },
+        {
+          "name": "ARK Animated Series 109-Costumes Pack",
+          "appId": 3571730,
+          "depotId": 3571730,
+          "isModContent": false,
+          "hasPPostfix": false,
+          "mapCode": "Mod"
+        },
+        {
+          "name": "ARK: Lost Colony",
+          "appId": 3583650,
+          "depotId": 3583650,
+          "isModContent": false,
+          "hasPPostfix": false,
+          "mapCode": "Mod"
+        },
+        {
+          "name": "ARK: Ragnarok Ascended",
+          "appId": 3675020,
+          "depotId": 3675020,
+          "isModContent": false,
+          "hasPPostfix": false,
+          "mapCode": "Mod"
+        },
+        {
+          "name": "ARK: Lost Colony Expansion Pass",
+          "appId": 3720100,
+          "depotId": 3720100,
+          "isModContent": false,
+          "hasPPostfix": false,
+          "mapCode": "Mod"
+        },
+        {
+          "name": "ARK Fantastic Tames - Drakelings",
+          "appId": 3720200,
+          "depotId": 3720200,
+          "isModContent": false,
+          "hasPPostfix": false,
+          "mapCode": "Mod"
+        },
+        {
+          "name": "ARK Fantastic Tames - Elderclaw",
+          "appId": 3982300,
+          "depotId": 3982300,
+          "isModContent": false,
+          "hasPPostfix": false,
+          "mapCode": "Mod"
+        },
+        {
+          "name": "ARK: Valguero Ascended",
+          "appId": 3982310,
+          "depotId": 3982310,
+          "isModContent": false,
+          "hasPPostfix": false,
+          "mapCode": "Mod"
+        },
+        {
+          "name": "ARK Fantastic Tames Season 1",
+          "appId": 4558510,
+          "depotId": 4558510,
+          "isModContent": false,
+          "hasPPostfix": false,
+          "mapCode": "Mod"
+        }
+      ]
+    }
+  ]
+}

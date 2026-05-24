@@ -8,7 +8,7 @@ namespace TEKLauncher.Avalonia.ViewModels;
 
 public sealed class LauncherUpdateWindowViewModel : INotifyPropertyChanged
 {
-    const string LatestReleaseUrl = "https://github.com/Nuclearistt/TEKLauncher/releases/latest";
+    const string LatestReleaseUrl = "https://github.com/Dewn5228/TEKLauncher/releases/latest";
 
     bool _canOpenReleasePage;
     bool _isBusy;
@@ -119,7 +119,7 @@ public sealed class LauncherUpdateWindowViewModel : INotifyPropertyChanged
               eventHandlers,
               "https://teknology-hub.com/software/tek-launcher/releases/latest/win-x86_64-static/tek-launcher.exe",
               "https://de.teknology-hub.com/software/tek-launcher/releases/latest/win-x86_64-static/tek-launcher.exe",
-              "https://github.com/Nuclearistt/TEKLauncher/releases/latest/download/TEKLauncher.exe");
+                            "https://github.com/Dewn5228/TEKLauncher/releases/latest/download/TEKLauncher.exe");
 
             if (!success)
             {

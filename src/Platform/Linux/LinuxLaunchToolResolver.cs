@@ -189,6 +189,13 @@ static class LinuxLaunchToolResolver
         if (!string.IsNullOrWhiteSpace(compatToolName) && MatchesToolName(option, compatToolName))
             score += 100;
 
+        string normalizedPath = option.ExecutablePath.Replace('\\', '/');
+        if (normalizedPath.Contains("/compatibilitytools.d/", StringComparison.OrdinalIgnoreCase))
+            score += 60;
+        if (normalizedPath.Contains("cachyos", StringComparison.OrdinalIgnoreCase)
+            || option.DisplayName.Contains("cachyos", StringComparison.OrdinalIgnoreCase))
+            score += 60;
+
         if (option.DisplayName.StartsWith("Proton ", StringComparison.OrdinalIgnoreCase))
             score += 30;
         if (option.DisplayName.Contains("Experimental", StringComparison.OrdinalIgnoreCase))

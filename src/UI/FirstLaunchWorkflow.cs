@@ -4,6 +4,11 @@ namespace TEKLauncher.UI;
 
 readonly record struct ExistingInstallValidation(bool FilesExist, bool IsPreAquatica);
 
+readonly record struct DetectedGameInstall(string GameId, string? Path, ExistingInstallValidation Validation)
+{
+    public bool IsDetected => Validation.FilesExist && !string.IsNullOrWhiteSpace(Path);
+}
+
 readonly record struct InstallTargetValidation(bool PathExists, long FreeSpace, long RequiredSpace)
 {
     public bool EnoughSpace => PathExists && FreeSpace >= RequiredSpace;
@@ -14,10 +19,22 @@ static class FirstLaunchWorkflow
     public const long PreAquaticaBytes = 138512695296;
     public const long LatestBytes = 178241142784;
 
-    public static void ApplySelection(string path, bool preAquatica)
+    static readonly string[] s_supportedExeRelativePaths =
+    [
+        "ShooterGame/Binaries/Win64/ShooterGame.exe",
+        "ShooterGame/Binaries/Win64/ArkAscended.exe",
+        "ShooterGame/Binaries/Win64/ArkAscended_BE.exe"
+    ];
+
+    public static void ApplySelection(string gameId, string path, bool preAquatica)
     {
-        Settings.PreAquatica = preAquatica;
-        Game.Path = path;
+        if (string.Equals(gameId, GameCatalog.AseGameId, StringComparison.OrdinalIgnoreCase))
+            Settings.AseGamePath = Path.GetFullPath(path);
+        else if (string.Equals(gameId, GameCatalog.AsaGameId, StringComparison.OrdinalIgnoreCase))
+            Settings.AsaGamePath = Path.GetFullPath(path);
+
+        ActiveGameManager.Configure(gameId, path);
+        Settings.PreAquatica = gameId == GameCatalog.AseGameId && preAquatica;
     }
 
     public static ExistingInstallValidation EvaluateExistingInstall(string? path)
@@ -25,7 +42,7 @@ static class FirstLaunchWorkflow
         if (string.IsNullOrWhiteSpace(path))
             return new(false, true);
 
-        bool filesExist = File.Exists(Path.Combine(path, "ShooterGame", "Binaries", "Win64", "ShooterGame.exe"));
+        bool filesExist = HasSupportedExecutable(path);
         bool isPreAquatica = filesExist && !Directory.Exists(Path.Combine(path, "ShooterGame", "Content", "Abyss"));
         return new(filesExist, isPreAquatica);
     }
@@ -50,5 +67,44 @@ static class FirstLaunchWorkflow
         return path.StartsWith(userProfile, StringComparison.OrdinalIgnoreCase);
     }
 
-    public static string? SuggestedGamePath => Steam.App.GamePath;
+    public static string? GetSuggestedGamePath(string gameId)
+    {
+        GameCatalogEntry catalog = GameCatalog.GetByGameId(gameId);
+        return Steam.App.TryGetGamePath(catalog.SteamAppId, catalog.SteamFolderName);
+    }
+
+    static bool HasSupportedExecutable(string rootPath)
+    {
+        foreach (string relativePath in s_supportedExeRelativePaths)
+            if (File.Exists(Path.Combine(rootPath, relativePath.Replace('/', Path.DirectorySeparatorChar))))
+                return true;
+
+        return false;
+    }
+
+    public static IReadOnlyList<DetectedGameInstall> DetectInstallPaths()
+    {
+        var asePath = GetSuggestedGamePath(GameCatalog.AseGameId);
+        var asaPath = GetSuggestedGamePath(GameCatalog.AsaGameId);
+        return
+        [
+            new(GameCatalog.AseGameId, asePath, EvaluateExistingInstall(asePath)),
+            new(GameCatalog.AsaGameId, asaPath, EvaluateExistingInstall(asaPath))
+        ];
+    }
+
+    public static DetectedGameInstall? ResolvePreferredDetectedInstall(IReadOnlyList<DetectedGameInstall> detected)
+    {
+        var ase = detected.FirstOrDefault(item => item.GameId == GameCatalog.AseGameId);
+        var asa = detected.FirstOrDefault(item => item.GameId == GameCatalog.AsaGameId);
+
+        if (ase.IsDetected && !asa.IsDetected)
+            return ase;
+        if (asa.IsDetected && !ase.IsDetected)
+            return asa;
+        if (ase.IsDetected)
+            return ase;
+
+        return null;
+    }
 }

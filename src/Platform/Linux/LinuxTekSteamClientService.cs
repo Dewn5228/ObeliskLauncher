@@ -14,7 +14,14 @@ sealed class LinuxTekSteamClientService : ITekSteamClientService
 
     public long EstimateDeltaDiskSpace(nint delta) => TEKSteamClient.DeltaEstimateDiskSpace(delta);
 
-    public unsafe TEKSteamClient.AmItemDesc* GetItemDesc(TEKSteamClient.ItemId* id) => AppManager!.GetItemDesc(id);
+    public unsafe TEKSteamClient.AmItemDesc* GetItemDesc(TEKSteamClient.ItemId* id)
+    {
+        TEKSteamClient.AppManager? appManager = AppManager;
+        if (appManager is null)
+            return null;
+
+        return appManager.GetItemDesc(id);
+    }
 
     public void Initialize(TEKSteamClient.LibCtx ctx, TEKSteamClient.AppManager appManager)
     {

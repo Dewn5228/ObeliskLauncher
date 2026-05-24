@@ -4,6 +4,13 @@ namespace TEKLauncher.UI;
 
 static class LauncherSettingsWorkflow
 {
+    static readonly string[] s_supportedExeRelativePaths =
+    [
+        "ShooterGame/Binaries/Win64/ShooterGame.exe",
+        "ShooterGame/Binaries/Win64/ArkAscended.exe",
+        "ShooterGame/Binaries/Win64/ArkAscended_BE.exe"
+    ];
+
     public static async Task<bool> CleanDownloadCacheAsync()
     {
         if (!LauncherServices.TekSteamClient.IsLoaded)
@@ -28,9 +35,18 @@ static class LauncherSettingsWorkflow
         return true;
     }
 
-    public static string GetGamePathChangePromptCode(string newPath) => File.Exists(Path.Combine(newPath, "ShooterGame", "Binaries", "Win64", "ShooterGame.exe"))
-      ? "errors.gamePathChangePrompt"
-      : "errors.gamePathChangeFilesMissing";
+    public static string GetGamePathChangePromptCode(string newPath) => HasSupportedExecutable(newPath)
+        ? "errors.gamePathChangePrompt"
+        : "errors.gamePathChangeFilesMissing";
+
+    static bool HasSupportedExecutable(string rootPath)
+    {
+        foreach (string relativePath in s_supportedExeRelativePaths)
+            if (File.Exists(Path.Combine(rootPath, relativePath.Replace('/', Path.DirectorySeparatorChar))))
+                return true;
+
+        return false;
+    }
 
     public static bool ShouldWarnCloseOnLaunch(bool enabled) => enabled && (Steam.App.CurrentUserStatus.GameStatus != Game.Status.OwnedAndInstalled || Game.CanUseSpacewar && Game.UseSpacewar);
 }

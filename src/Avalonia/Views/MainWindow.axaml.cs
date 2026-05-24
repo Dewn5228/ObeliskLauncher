@@ -3,8 +3,10 @@ using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.Controls.Primitives;
 using System.Diagnostics;
+using TEKLauncher.ARK;
 using TEKLauncher.Platform;
 using TEKLauncher.Avalonia.ViewModels;
+using TEKLauncher.Data;
 using TEKLauncher.UI;
 using Avalonia.Input.Platform;
 
@@ -49,21 +51,7 @@ public partial class MainWindow : Window
         }
     }
 
-    void SelectAbout(object? sender, RoutedEventArgs e) => SelectSection(LauncherSection.About);
-
-    void SelectDlc(object? sender, RoutedEventArgs e) => SelectSection(LauncherSection.DLC);
-
-    void SelectGameOptions(object? sender, RoutedEventArgs e) => SelectSection(LauncherSection.GameOptions);
-
-    void SelectLauncherSettings(object? sender, RoutedEventArgs e) => SelectSection(LauncherSection.LauncherSettings);
-
     void OpenLauncherSettingsSection(object? sender, RoutedEventArgs e) => SelectSection(LauncherSection.LauncherSettings);
-
-    void SelectMods(object? sender, RoutedEventArgs e) => SelectSection(LauncherSection.Mods);
-
-    void SelectPlay(object? sender, RoutedEventArgs e) => SelectSection(LauncherSection.Play);
-
-    void SelectServers(object? sender, RoutedEventArgs e) => SelectSection(LauncherSection.Servers);
 
     void SelectSection(LauncherSection section)
     {
@@ -71,6 +59,16 @@ public partial class MainWindow : Window
             return;
 
         if (!viewModel.TrySelectSection(section, out string? warningMessage) && !string.IsNullOrWhiteSpace(warningMessage))
+            Messages.Show("common.warning", warningMessage);
+    }
+
+    async void SelectNavigationNode(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainWindowViewModel viewModel || sender is not Control { DataContext: LauncherNavNodeViewModel node })
+            return;
+
+        string? warningMessage = await viewModel.TrySelectNavigationNodeAsync(node);
+        if (!string.IsNullOrWhiteSpace(warningMessage))
             Messages.Show("common.warning", warningMessage);
     }
 
@@ -114,51 +112,76 @@ public partial class MainWindow : Window
 
     void OpenDiscordLink(object? sender, RoutedEventArgs e) => OpenUrl("https://discord.gg/JBUgcwvpfc");
 
-    void OpenLicenseLink(object? sender, RoutedEventArgs e) => OpenUrl("https://github.com/Nuclearistt/TEKLauncher/blob/main/LICENSE.TXT");
+    void OpenLicenseLink(object? sender, RoutedEventArgs e) => OpenUrl("https://github.com/Dewn5228/TEKLauncher/blob/main/LICENSE.TXT");
 
-    void OpenRepoLink(object? sender, RoutedEventArgs e) => OpenUrl("https://github.com/Nuclearistt/TEKLauncher");
+    void OpenRepoLink(object? sender, RoutedEventArgs e) => OpenUrl("https://github.com/Dewn5228/TEKLauncher");
 
-    async void BrowseSettingsGamePath(object? sender, RoutedEventArgs e)
+    async void BrowseSettingsAseGamePath(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainWindowViewModel viewModel || viewModel.CurrentScreen is not LauncherSettingsSectionScreenViewModel screen)
+            return;
+
+        string? path = await PickFolderPathAsync(Locale.Get("mainWindow.gamePath"));
+        if (!string.IsNullOrWhiteSpace(path))
+        {
+            screen.AseGamePath = path;
+            screen.SaveGamePathDrafts();
+            viewModel.RefreshNavigation();
+        }
+    }
+
+    async void BrowseSettingsAsaGamePath(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainWindowViewModel viewModel || viewModel.CurrentScreen is not LauncherSettingsSectionScreenViewModel screen)
+            return;
+
+        string? path = await PickFolderPathAsync(Locale.Get("mainWindow.gamePath"));
+        if (!string.IsNullOrWhiteSpace(path))
+        {
+            screen.AsaGamePath = path;
+            screen.SaveGamePathDrafts();
+            viewModel.RefreshNavigation();
+        }
+    }
+
+    void SettingsGamePathEdited(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainWindowViewModel viewModel || viewModel.CurrentScreen is not LauncherSettingsSectionScreenViewModel screen)
+            return;
+
+        screen.SaveGamePathDrafts();
+        viewModel.RefreshNavigation();
+    }
+
+    async void BrowseAseLinuxCompatPrefix(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not MainWindowViewModel { CurrentScreen: LauncherSettingsSectionScreenViewModel screen })
             return;
 
-        if (!StorageProvider.CanOpen)
-            return;
-
-        var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
-        {
-            Title = Locale.Get("mainWindow.gamePath"),
-            AllowMultiple = false
-        });
-
-        if (folders.Count > 0)
-            screen.GamePath = folders[0].TryGetLocalPath() ?? screen.GamePath;
+        string? path = await PickFolderPathAsync(Locale.Get("mainWindow.customPrefix"));
+        if (!string.IsNullOrWhiteSpace(path))
+            screen.AseLinuxCustomPrefixPath = path;
     }
 
-    async void BrowseLinuxCompatPrefix(object? sender, RoutedEventArgs e)
+    async void BrowseAsaLinuxCompatPrefix(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not MainWindowViewModel { CurrentScreen: LauncherSettingsSectionScreenViewModel screen })
             return;
 
-        if (!StorageProvider.CanOpen)
-            return;
-
-        var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
-        {
-            Title = Locale.Get("mainWindow.customPrefix"),
-            AllowMultiple = false
-        });
-
-        if (folders.Count > 0)
-            screen.LinuxCustomPrefixPath = folders[0].TryGetLocalPath() ?? screen.LinuxCustomPrefixPath;
+        string? path = await PickFolderPathAsync(Locale.Get("mainWindow.customPrefix"));
+        if (!string.IsNullOrWhiteSpace(path))
+            screen.AsaLinuxCustomPrefixPath = path;
     }
 
-    async void ImportLinuxProtonTool(object? sender, RoutedEventArgs e) => await ImportLinuxLaunchToolAsync(LinuxLaunchToolKind.Proton, Locale.Get("mainWindow.importProtonPath"));
+    async void ImportAseLinuxProtonTool(object? sender, RoutedEventArgs e) => await ImportLinuxLaunchToolForGameAsync(GameCatalog.AseGameId, LinuxLaunchToolKind.Proton, Locale.Get("mainWindow.importProtonPath"));
 
-    async void ImportLinuxWineTool(object? sender, RoutedEventArgs e) => await ImportLinuxLaunchToolAsync(LinuxLaunchToolKind.Wine, Locale.Get("mainWindow.importWinePath"));
+    async void ImportAseLinuxWineTool(object? sender, RoutedEventArgs e) => await ImportLinuxLaunchToolForGameAsync(GameCatalog.AseGameId, LinuxLaunchToolKind.Wine, Locale.Get("mainWindow.importWinePath"));
 
-    async Task ImportLinuxLaunchToolAsync(LinuxLaunchToolKind kind, string title)
+    async void ImportAsaLinuxProtonTool(object? sender, RoutedEventArgs e) => await ImportLinuxLaunchToolForGameAsync(GameCatalog.AsaGameId, LinuxLaunchToolKind.Proton, Locale.Get("mainWindow.importProtonPath"));
+
+    async void ImportAsaLinuxWineTool(object? sender, RoutedEventArgs e) => await ImportLinuxLaunchToolForGameAsync(GameCatalog.AsaGameId, LinuxLaunchToolKind.Wine, Locale.Get("mainWindow.importWinePath"));
+
+    async Task ImportLinuxLaunchToolForGameAsync(string gameId, LinuxLaunchToolKind kind, string title)
     {
         if (DataContext is not MainWindowViewModel { CurrentScreen: LauncherSettingsSectionScreenViewModel screen })
             return;
@@ -179,27 +202,93 @@ public partial class MainWindow : Window
         if (string.IsNullOrWhiteSpace(localPath))
             return;
 
-        screen.ImportCustomLinuxLaunchTool(kind, localPath);
+        screen.ImportCustomLinuxLaunchToolForGame(gameId, kind, localPath);
     }
 
-    void ApplySettingsGamePath(object? sender, RoutedEventArgs e)
+    async void ApplySettingsGamePath(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is not MainWindowViewModel { CurrentScreen: LauncherSettingsSectionScreenViewModel screen })
+        if (DataContext is not MainWindowViewModel viewModel || viewModel.CurrentScreen is not LauncherSettingsSectionScreenViewModel screen)
             return;
 
-        string newPath = screen.GamePath.Trim();
-        if (string.IsNullOrWhiteSpace(newPath))
+        bool hasSelectionChanges = screen.IsGameSelectionChanged();
+        if (!hasSelectionChanges)
         {
-            Messages.Show("common.warning", Locale.Get("errors.noPathSelected"));
+            Messages.Show("common.info", Locale.Get("common.ok"));
             return;
         }
 
-        string code = LauncherSettingsWorkflow.GetGamePathChangePromptCode(newPath);
-        if (!Messages.ShowOptions("common.warning", Locale.Get(code)))
+        if (!screen.TryValidateGameSelection(out string? validationError))
+        {
+            Messages.Show("common.warning", validationError ?? Locale.Get("errors.noPathSelected"));
+            return;
+        }
+
+        if (!Messages.ShowOptions("common.warning", Locale.Get("errors.gamePathChangePrompt")))
             return;
 
-        Game.Path = newPath;
-        LauncherServices.Lifetime.Shutdown();
+        bool hadPreviousActive = ActiveGameManager.IsConfigured;
+        string? previousGameId = hadPreviousActive ? ActiveGameManager.Current.Id : null;
+        string? previousGamePath = hadPreviousActive ? ActiveGameManager.Current.RootPath : null;
+        string previousAseGamePath = Settings.AseGamePath;
+        string previousAsaGamePath = Settings.AsaGamePath;
+        bool previousPreAquatica = Settings.PreAquatica;
+        screen.ApplyGameSelection();
+
+        bool hasCurrentActive = ActiveGameManager.IsConfigured;
+        bool activeChanged = hadPreviousActive != hasCurrentActive
+            || (hadPreviousActive
+                    && hasCurrentActive
+                    && (!string.Equals(previousGameId, ActiveGameManager.Current.Id, StringComparison.OrdinalIgnoreCase)
+                            || !string.Equals(previousGamePath, ActiveGameManager.Current.RootPath, StringComparison.OrdinalIgnoreCase)));
+
+        if (!activeChanged)
+        {
+            viewModel.RefreshNavigation();
+            Messages.Show("common.info", Locale.Get("common.ok"));
+            return;
+        }
+
+        bool reloaded = await viewModel.ReloadAfterGameSwitchAsync();
+        if (!reloaded)
+        {
+            Settings.AseGamePath = previousAseGamePath;
+            Settings.AsaGamePath = previousAsaGamePath;
+            Settings.PreAquatica = previousPreAquatica;
+            if (!string.IsNullOrWhiteSpace(previousGameId) && !string.IsNullOrWhiteSpace(previousGamePath))
+                ActiveGameManager.Configure(previousGameId, previousGamePath);
+            Settings.Save();
+
+            bool rollbackReloaded = hadPreviousActive && !string.IsNullOrWhiteSpace(previousGameId) && !string.IsNullOrWhiteSpace(previousGamePath)
+              ? await viewModel.ReloadAfterGameSwitchAsync()
+              : true;
+            if (!rollbackReloaded)
+            {
+                Messages.Show("common.warning", Locale.Get("errors.steamClientBootstrapFailed"));
+                return;
+            }
+
+            screen.Activate();
+            viewModel.RefreshNavigation();
+            Messages.Show("common.warning", "Game switch failed; previous game configuration was restored.");
+            return;
+        }
+
+        viewModel.RefreshNavigation();
+        Messages.Show("common.info", Locale.Get("common.ok"));
+    }
+
+    async Task<string?> PickFolderPathAsync(string title)
+    {
+        if (!StorageProvider.CanOpen)
+            return null;
+
+        var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = title,
+            AllowMultiple = false
+        });
+
+        return folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
     }
 
     async void CleanDownloadCache(object? sender, RoutedEventArgs e)

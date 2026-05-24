@@ -115,8 +115,8 @@
         </Border>
         <Border Padding="16" CornerRadius="12" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1">
           <StackPanel Spacing="12">
-            <TextBlock Text="{u:Tr launchOptimization.launchParameters}" FontSize="18" FontWeight="SemiBold" />
-            <ItemsControl ItemsSource="{Binding LaunchParameters}">
+            <TextBlock Text="{u:Tr launchOptimization.launchParameters}" FontSize="18" FontWeight="SemiBold" IsVisible="{Binding PredefinedLaunchParametersVisible}" />
+            <ItemsControl ItemsSource="{Binding LaunchParameters}" IsVisible="{Binding PredefinedLaunchParametersVisible}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate DataType="vm:GameOptionsLaunchParameterViewModel">
                   <Border Padding="12" CornerRadius="12" Background="#132132" BorderBrush="#2A4C6D" BorderThickness="1">
@@ -255,31 +255,26 @@
       <StackPanel Spacing="16">
         <Border Padding="16" CornerRadius="12" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1">
           <StackPanel Spacing="10">
-            <TextBlock Text="{u:Tr mainWindow.gamePath}" FontWeight="SemiBold" />
+            <TextBlock Text="{u:Tr launcherSettingsTab.aseGamePath}" FontWeight="SemiBold" />
             <Grid ColumnDefinitions="*,Auto">
-              <TextBox Text="{Binding GamePath}" />
-              <Button Grid.Column="1" Margin="12,0,0,0" Content="{u:Tr mainWindow.browse}" Click="BrowseSettingsGamePath" />
+              <TextBox Text="{Binding AseGamePath, UpdateSourceTrigger=PropertyChanged}" LostFocus="SettingsGamePathEdited" />
+              <Button Grid.Column="1" Margin="12,0,0,0" Content="{u:Tr mainWindow.browse}" Click="BrowseSettingsAseGamePath" />
+            </Grid>
+            <TextBlock Text="{u:Tr launcherSettingsTab.asaGamePath}" FontWeight="SemiBold" />
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBox Text="{Binding AsaGamePath, UpdateSourceTrigger=PropertyChanged}" LostFocus="SettingsGamePathEdited" />
+              <Button Grid.Column="1" Margin="12,0,0,0" Content="{u:Tr mainWindow.browse}" Click="BrowseSettingsAsaGamePath" />
             </Grid>
             <TextBlock Text="{u:Tr mainWindow.gamePathDescription}" Opacity="0.78" TextWrapping="Wrap" />
           </StackPanel>
         </Border>
         <Border Padding="16" CornerRadius="12" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1">
           <StackPanel Spacing="10">
-            <StackPanel Spacing="6" IsVisible="{Binding LinuxLaunchToolVisible}">
-              <TextBlock Text="{u:Tr mainWindow.linuxCompatibilityTool}" FontWeight="SemiBold" />
-              <ComboBox ItemsSource="{Binding LinuxLaunchTools}" SelectedItem="{Binding SelectedLinuxLaunchTool}">
-                <ComboBox.ItemTemplate>
-                  <DataTemplate DataType="p:LinuxLaunchToolOption">
-                    <TextBlock Text="{Binding DisplayName}" />
-                  </DataTemplate>
-                </ComboBox.ItemTemplate>
-              </ComboBox>
-              <WrapPanel>
-                <Button Content="{u:Tr mainWindow.importProtonPath}" Click="ImportLinuxProtonTool" />
-                <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.importWinePath}" Click="ImportLinuxWineTool" />
-              </WrapPanel>
-              <TextBlock Text="{Binding LinuxLaunchToolNote}" TextWrapping="Wrap" Foreground="#A7C4E3" />
+            <TextBlock Text="Global settings" FontWeight="SemiBold" FontSize="16" />
+            <CheckBox Content="{u:Tr mainWindow.closeOnGameLaunch}" IsChecked="{Binding CloseOnGameLaunch}" IsCheckedChanged="SettingsCloseOnLaunchChanged" />
+            <CheckBox Content="{u:Tr mainWindow.preAquaticaMode}" IsChecked="{Binding PreAquatica}" IsVisible="{Binding PreAquaticaVisible}" IsCheckedChanged="SettingsPreAquaticaChanged" />
 
+            <StackPanel Spacing="6" IsVisible="{Binding LinuxLaunchToolVisible}">
               <TextBlock Margin="0,10,0,0" Text="{u:Tr mainWindow.linuxLaunchPresets}" FontWeight="SemiBold" />
               <ComboBox ItemsSource="{Binding LinuxLaunchPresets}" SelectedItem="{Binding SelectedLinuxLaunchPreset}">
                 <ComboBox.ItemTemplate>
@@ -294,42 +289,111 @@
                 <Button Grid.Column="2" Margin="10,0,0,0" Content="{u:Tr mainWindow.applyPreset}" Click="ApplyLinuxLaunchPreset" IsEnabled="{Binding CanApplyLinuxLaunchPreset}" />
                 <Button Grid.Column="3" Margin="10,0,0,0" Content="{u:Tr mainWindow.deletePreset}" Click="DeleteLinuxLaunchPreset" IsEnabled="{Binding CanDeleteLinuxLaunchPreset}" />
               </Grid>
-
-              <TextBlock Margin="0,10,0,0" Text="{u:Tr mainWindow.customPrefix}" FontWeight="SemiBold" />
-              <Grid ColumnDefinitions="*,Auto">
-                <TextBox Text="{Binding LinuxCustomPrefixPath, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="{u:Tr mainWindow.placeholderCustomPrefix}" />
-                <Button Grid.Column="1" Margin="12,0,0,0" Content="{u:Tr mainWindow.browse}" Click="BrowseLinuxCompatPrefix" />
-              </Grid>
-              <TextBlock Text="{u:Tr mainWindow.customPrefixDescription}" Opacity="0.78" TextWrapping="Wrap" />
-
-              <WrapPanel Margin="0,10,0,0">
-                <CheckBox Content="{u:Tr mainWindow.gamemoderun}" IsChecked="{Binding LinuxUseGameMode}" />
-                <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.gamescope}" IsChecked="{Binding LinuxUseGamescope}" />
-                <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.mangohud}" IsChecked="{Binding LinuxUseMangoHud}" />
-                <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.vkbasalt}" IsChecked="{Binding LinuxUseVkBasalt}" />
-                <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.wineFsr}" IsChecked="{Binding LinuxUseWineFullscreenFsr}" />
-              </WrapPanel>
-
-              <StackPanel Spacing="6" IsVisible="{Binding LinuxGamescopeOptionsVisible}">
-                <TextBlock Text="{u:Tr mainWindow.gamescopeArguments}" FontWeight="SemiBold" />
-                <TextBox Text="{Binding LinuxGamescopeArguments, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="{u:Tr mainWindow.placeholderGamescopeArgs}" />
-                <CheckBox Content="{u:Tr mainWindow.enableGamescopeFsr}" IsChecked="{Binding LinuxUseGamescopeFsr}" />
-                <TextBox Text="{Binding LinuxGamescopeSharpness, UpdateSourceTrigger=PropertyChanged}" IsVisible="{Binding LinuxGamescopeFsrOptionsVisible}" PlaceholderText="{u:Tr mainWindow.gamescopeFsrSharpness}" />
-              </StackPanel>
-
-              <StackPanel Spacing="6" IsVisible="{Binding LinuxWineFsrOptionsVisible}">
-                <TextBlock Text="{u:Tr mainWindow.wineFsrStrength}" FontWeight="SemiBold" />
-                <TextBox Text="{Binding LinuxWineFullscreenFsrStrength, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="{u:Tr mainWindow.placeholderWineFsrStrength}" />
-              </StackPanel>
-
-              <TextBlock Margin="0,10,0,0" Text="{u:Tr mainWindow.extraEnvVars}" FontWeight="SemiBold" />
-              <TextBox Text="{Binding LinuxExtraEnvironmentVariables, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="90" PlaceholderText="{u:Tr mainWindow.placeholderExtraEnv}" />
-
-              <TextBlock Margin="0,10,0,0" Text="{u:Tr mainWindow.launchWrappers}" FontWeight="SemiBold" />
-              <TextBox Text="{Binding LinuxLaunchWrappers, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="90" PlaceholderText="{u:Tr mainWindow.placeholderLaunchWrappers}" />
             </StackPanel>
-            <CheckBox Content="{u:Tr mainWindow.closeOnGameLaunch}" IsChecked="{Binding CloseOnGameLaunch}" IsCheckedChanged="SettingsCloseOnLaunchChanged" />
-            <CheckBox Content="{u:Tr mainWindow.preAquaticaMode}" IsChecked="{Binding PreAquatica}" IsCheckedChanged="SettingsPreAquaticaChanged" />
+
+            <Border Margin="0,12,0,0" Padding="12" CornerRadius="10" Background="#132132" BorderBrush="#2A4C6D" BorderThickness="1" IsVisible="{Binding LinuxLaunchToolVisible}">
+              <StackPanel Spacing="8">
+                <TextBlock Text="ASE settings" FontWeight="SemiBold" FontSize="15" />
+                <TextBlock Text="{u:Tr mainWindow.linuxCompatibilityTool}" FontWeight="SemiBold" />
+                <ComboBox ItemsSource="{Binding LinuxLaunchTools}" SelectedItem="{Binding SelectedAseLinuxLaunchTool}">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate DataType="p:LinuxLaunchToolOption">
+                      <TextBlock Text="{Binding DisplayName}" />
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+                <WrapPanel>
+                  <Button Content="{u:Tr mainWindow.importProtonPath}" Click="ImportAseLinuxProtonTool" />
+                  <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.importWinePath}" Click="ImportAseLinuxWineTool" />
+                </WrapPanel>
+                <TextBlock Text="{Binding LinuxLaunchToolNote}" TextWrapping="Wrap" Foreground="#A7C4E3" />
+
+                <TextBlock Margin="0,8,0,0" Text="{u:Tr mainWindow.customPrefix}" FontWeight="SemiBold" />
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBox Text="{Binding AseLinuxCustomPrefixPath, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="{u:Tr mainWindow.placeholderCustomPrefix}" />
+                  <Button Grid.Column="1" Margin="12,0,0,0" Content="{u:Tr mainWindow.browse}" Click="BrowseAseLinuxCompatPrefix" />
+                </Grid>
+                <TextBlock Text="{u:Tr mainWindow.customPrefixDescription}" Opacity="0.78" TextWrapping="Wrap" />
+
+                <WrapPanel Margin="0,8,0,0">
+                  <CheckBox Content="{u:Tr mainWindow.gamemoderun}" IsChecked="{Binding AseLinuxUseGameMode}" />
+                  <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.gamescope}" IsChecked="{Binding AseLinuxUseGamescope}" />
+                  <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.mangohud}" IsChecked="{Binding AseLinuxUseMangoHud}" />
+                  <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.vkbasalt}" IsChecked="{Binding AseLinuxUseVkBasalt}" />
+                  <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.wineFsr}" IsChecked="{Binding AseLinuxUseWineFullscreenFsr}" />
+                </WrapPanel>
+
+                <StackPanel Spacing="6" IsVisible="{Binding AseLinuxGamescopeOptionsVisible}">
+                  <TextBlock Text="{u:Tr mainWindow.gamescopeArguments}" FontWeight="SemiBold" />
+                  <TextBox Text="{Binding AseLinuxGamescopeArguments, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="{u:Tr mainWindow.placeholderGamescopeArgs}" />
+                  <CheckBox Content="{u:Tr mainWindow.enableGamescopeFsr}" IsChecked="{Binding AseLinuxUseGamescopeFsr}" />
+                  <TextBox Text="{Binding AseLinuxGamescopeSharpness, UpdateSourceTrigger=PropertyChanged}" IsVisible="{Binding AseLinuxGamescopeFsrOptionsVisible}" PlaceholderText="{u:Tr mainWindow.gamescopeFsrSharpness}" />
+                </StackPanel>
+
+                <StackPanel Spacing="6" IsVisible="{Binding AseLinuxWineFsrOptionsVisible}">
+                  <TextBlock Text="{u:Tr mainWindow.wineFsrStrength}" FontWeight="SemiBold" />
+                  <TextBox Text="{Binding AseLinuxWineFullscreenFsrStrength, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="{u:Tr mainWindow.placeholderWineFsrStrength}" />
+                </StackPanel>
+
+                <TextBlock Margin="0,8,0,0" Text="{u:Tr mainWindow.extraEnvVars}" FontWeight="SemiBold" />
+                <TextBox Text="{Binding AseLinuxExtraEnvironmentVariables, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="90" PlaceholderText="{u:Tr mainWindow.placeholderExtraEnv}" />
+
+                <TextBlock Margin="0,8,0,0" Text="{u:Tr mainWindow.launchWrappers}" FontWeight="SemiBold" />
+                <TextBox Text="{Binding AseLinuxLaunchWrappers, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="90" PlaceholderText="{u:Tr mainWindow.placeholderLaunchWrappers}" />
+              </StackPanel>
+            </Border>
+
+            <Border Padding="12" CornerRadius="10" Background="#132132" BorderBrush="#2A4C6D" BorderThickness="1" IsVisible="{Binding LinuxLaunchToolVisible}">
+              <StackPanel Spacing="8">
+                <TextBlock Text="ASA settings" FontWeight="SemiBold" FontSize="15" />
+                <TextBlock Text="{u:Tr mainWindow.linuxCompatibilityTool}" FontWeight="SemiBold" />
+                <ComboBox ItemsSource="{Binding LinuxLaunchTools}" SelectedItem="{Binding SelectedAsaLinuxLaunchTool}">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate DataType="p:LinuxLaunchToolOption">
+                      <TextBlock Text="{Binding DisplayName}" />
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+                <WrapPanel>
+                  <Button Content="{u:Tr mainWindow.importProtonPath}" Click="ImportAsaLinuxProtonTool" />
+                  <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.importWinePath}" Click="ImportAsaLinuxWineTool" />
+                </WrapPanel>
+                <TextBlock Text="{Binding LinuxLaunchToolNote}" TextWrapping="Wrap" Foreground="#A7C4E3" />
+
+                <TextBlock Margin="0,8,0,0" Text="{u:Tr mainWindow.customPrefix}" FontWeight="SemiBold" />
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBox Text="{Binding AsaLinuxCustomPrefixPath, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="{u:Tr mainWindow.placeholderCustomPrefix}" />
+                  <Button Grid.Column="1" Margin="12,0,0,0" Content="{u:Tr mainWindow.browse}" Click="BrowseAsaLinuxCompatPrefix" />
+                </Grid>
+                <TextBlock Text="{u:Tr mainWindow.customPrefixDescription}" Opacity="0.78" TextWrapping="Wrap" />
+
+                <WrapPanel Margin="0,8,0,0">
+                  <CheckBox Content="{u:Tr mainWindow.gamemoderun}" IsChecked="{Binding AsaLinuxUseGameMode}" />
+                  <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.gamescope}" IsChecked="{Binding AsaLinuxUseGamescope}" />
+                  <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.mangohud}" IsChecked="{Binding AsaLinuxUseMangoHud}" />
+                  <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.vkbasalt}" IsChecked="{Binding AsaLinuxUseVkBasalt}" />
+                  <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.wineFsr}" IsChecked="{Binding AsaLinuxUseWineFullscreenFsr}" />
+                </WrapPanel>
+
+                <StackPanel Spacing="6" IsVisible="{Binding AsaLinuxGamescopeOptionsVisible}">
+                  <TextBlock Text="{u:Tr mainWindow.gamescopeArguments}" FontWeight="SemiBold" />
+                  <TextBox Text="{Binding AsaLinuxGamescopeArguments, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="{u:Tr mainWindow.placeholderGamescopeArgs}" />
+                  <CheckBox Content="{u:Tr mainWindow.enableGamescopeFsr}" IsChecked="{Binding AsaLinuxUseGamescopeFsr}" />
+                  <TextBox Text="{Binding AsaLinuxGamescopeSharpness, UpdateSourceTrigger=PropertyChanged}" IsVisible="{Binding AsaLinuxGamescopeFsrOptionsVisible}" PlaceholderText="{u:Tr mainWindow.gamescopeFsrSharpness}" />
+                </StackPanel>
+
+                <StackPanel Spacing="6" IsVisible="{Binding AsaLinuxWineFsrOptionsVisible}">
+                  <TextBlock Text="{u:Tr mainWindow.wineFsrStrength}" FontWeight="SemiBold" />
+                  <TextBox Text="{Binding AsaLinuxWineFullscreenFsrStrength, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="{u:Tr mainWindow.placeholderWineFsrStrength}" />
+                </StackPanel>
+
+                <TextBlock Margin="0,8,0,0" Text="{u:Tr mainWindow.extraEnvVars}" FontWeight="SemiBold" />
+                <TextBox Text="{Binding AsaLinuxExtraEnvironmentVariables, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="90" PlaceholderText="{u:Tr mainWindow.placeholderExtraEnv}" />
+
+                <TextBlock Margin="0,8,0,0" Text="{u:Tr mainWindow.launchWrappers}" FontWeight="SemiBold" />
+                <TextBox Text="{Binding AsaLinuxLaunchWrappers, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="90" PlaceholderText="{u:Tr mainWindow.placeholderLaunchWrappers}" />
+              </StackPanel>
+            </Border>
           </StackPanel>
         </Border>
         <WrapPanel>
@@ -492,17 +556,38 @@
             Background="#17202C"
             BorderBrush="#284560"
             BorderThickness="1,1,0,1">
-      <StackPanel Spacing="12">
-        <TextBlock Text="{Binding Title}" FontSize="28" FontWeight="SemiBold" />
-        <TextBlock Text="{Binding Subtitle}" Opacity="0.78" TextWrapping="Wrap" />
-        <Button Classes="nav" Content="{u:Tr tabs.play}" Click="SelectPlay" />
-        <Button Classes="nav" Content="{u:Tr tabs.servers}" Click="SelectServers" />
-        <Button Classes="nav" Content="{u:Tr tabs.gameOptions}" Click="SelectGameOptions" />
-        <Button Classes="nav" Content="{u:Tr tabs.dlc}" Click="SelectDlc" />
-        <Button Classes="nav" Content="{u:Tr tabs.mods}" Click="SelectMods" />
-        <Button Classes="nav" Content="{u:Tr tabs.launcherSettings}" Click="SelectLauncherSettings" />
-        <Button Classes="nav" Content="{u:Tr tabs.about}" Click="SelectAbout" />
-      </StackPanel>
+      <Grid RowDefinitions="Auto,*">
+        <StackPanel Spacing="12">
+          <TextBlock Text="{Binding Title}" FontSize="28" FontWeight="SemiBold" />
+          <TextBlock Text="{Binding Subtitle}" Opacity="0.78" TextWrapping="Wrap" />
+        </StackPanel>
+        <ScrollViewer Grid.Row="1" Margin="0,12,0,0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+          <ItemsControl ItemsSource="{Binding NavigationGroups}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="vm:LauncherNavGroupViewModel">
+                <StackPanel IsVisible="{Binding IsVisible}" Spacing="6">
+                  <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold" Opacity="0.86" Margin="0,8,0,0" />
+                  <ItemsControl ItemsSource="{Binding Children}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate DataType="vm:LauncherNavNodeViewModel">
+                        <Button Padding="12,8" Background="#132132" BorderBrush="#2A4C6D" BorderThickness="1" Click="SelectNavigationNode" Classes.selected="{Binding IsSelected}">
+                          <Button.Styles>
+                            <Style Selector="Button.selected">
+                              <Setter Property="Background" Value="#2B5D8C" />
+                              <Setter Property="BorderBrush" Value="#4C8CC7" />
+                            </Style>
+                          </Button.Styles>
+                          <TextBlock Text="{Binding Title}" />
+                        </Button>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </Grid>
     </Border>
     <Border Grid.Column="1"
             Padding="24"

@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Text;
+using System.Text.Json.Serialization;
+using TEKLauncher.Data;
 using TEKLauncher.Servers;
 
 namespace TEKLauncher.ARK;
@@ -7,6 +9,7 @@ namespace TEKLauncher.ARK;
 /// <summary>Manages game files and parameters.</summary>
 static class Game
 {
+
     static GameLaunchCapabilities LaunchCapabilities => LauncherServices.GameLauncher.Capabilities;
 
     /// <summary>List of codes of all cultures supported by the game.</summary>
@@ -20,8 +23,27 @@ static class Game
     /// <summary>Gets or sets a value that indicates whether TEK Injector should set game process base priority to high.</summary>
     public static bool HighProcessPriority { get; set; }
     public static bool CanUseHighProcessPriority => LaunchCapabilities.SupportsHighProcessPriority;
+    static readonly string[] s_asaExeFallbackRelativePaths =
+    [
+        "ShooterGame/Binaries/Win64/ArkAscended.exe",
+        "ShooterGame/Binaries/Win64/ArkAscended_BE.exe"
+    ];
+
     /// <summary>Gets a value that indicates whether game files are corrupted.</summary>
-    public static bool IsCorrupted => !File.Exists(ExePath) || !File.Exists(System.IO.Path.Combine(Path!, "Engine", "Binaries", "ThirdParty", "Steamworks", "Steamv132", "Win64", "steam_api64.dll"));
+    public static bool IsCorrupted
+    {
+        get
+        {
+            if (!File.Exists(ExePath))
+                return true;
+
+            // ASE historically ships Steamworks files under Steamv132; ASA may not.
+            if (ActiveGameManager.Current.Id == GameCatalog.AseGameId)
+                return !File.Exists(System.IO.Path.Combine(Path, "Engine", "Binaries", "ThirdParty", "Steamworks", "Steamv132", "Win64", "steam_api64.dll"));
+
+            return false;
+        }
+    }
     /// <summary>Gets a value that indicates whether the game is running.</summary>
     public static bool IsRunning => Process.GetProcessesByName("ShooterGame").Length > 0;
     /// <summary>Gets or sets a value that indicates whether the game should be executed with administrator privileges.</summary>
@@ -33,28 +55,37 @@ static class Game
         get => _useSpacewar;
         set => _useSpacewar = value && CanUseSpacewar;
     }
-    public static bool CanUseSpacewar => LaunchCapabilities.SupportsSpoofAppId;
+    public static bool CanUseSpacewar => LaunchCapabilities.SupportsSpoofAppId && ActiveGameManager.Current.SupportsSpacewarSpoof;
+    public static uint SteamAppId => ActiveGameManager.Current.SteamAppId;
+    public static string SteamAppIdString => SteamAppId.ToString();
+    public static uint MainDepotId => ActiveGameManager.Current.MainDepotId;
+    public static uint WorkshopDepotId => ActiveGameManager.Current.WorkshopDepotId;
+    public static string SteamFolderName => ActiveGameManager.Current.SteamFolderName;
+    public static string ActiveGameId => ActiveGameManager.Current.Id;
+    public static string ActiveGameName => ActiveGameManager.Current.DisplayName;
     /// <summary>Gets or sets the index of the game localization to use.</summary>
     public static int Language { get; set; } = 4;
-    /// <summary>Gets or sets path to ShooterGame.exe.</summary>
-    public static string ExePath { get; private set; } = null!;
-    /// <summary>Gets or sets path to the root game folder.</summary>
-    public static string? Path { get; set; }
+    /// <summary>Gets path to game executable for active game context.</summary>
+    public static string ExePath => ResolveExecutablePath();
+    /// <summary>Gets path to the root game folder for active game context.</summary>
+    public static string Path => ActiveGameManager.Current.RootPath;
 
     static bool _useSpacewar;
-
-    public static void Initialize()
-    {
-        ExePath = System.IO.Path.Combine(Path!, "ShooterGame", "Binaries", "Win64", "ShooterGame.exe");
-    }
 
     /// <summary>Executes the game and optionally initiates connection to a server.</summary>
     /// <param name="server">Server to join, <see langword="null"/> if no server needs to be joined.</param>
     public static void Launch(Server? server)
     {
+        LauncherLog.Information("Launch requested. GameId={GameId}, GameName={GameName}, RootPath={RootPath}, ExePath={ExePath}, Server={Server}",
+            ActiveGameManager.Current.Id,
+            ActiveGameManager.Current.DisplayName,
+            Path,
+            ExePath,
+            server?.Address ?? "none");
+
         var launchLog = new StringBuilder();
         launchLog.AppendLine($"UTC: {DateTimeOffset.UtcNow:O}");
-        launchLog.AppendLine($"Game path: {Path ?? "<null>"}");
+        launchLog.AppendLine($"Game path: {Path}");
         launchLog.AppendLine($"Executable path: {ExePath}");
         launchLog.AppendLine($"Steam running: {Steam.App.IsRunning}");
         launchLog.AppendLine($"DirectX installed: {DirectXInstalled}");
@@ -62,21 +93,25 @@ static class Game
 
         if (IsCorrupted)
         {
+            LauncherLog.Warning("Launch blocked: files are considered corrupted. GameId={GameId}, ExePath={ExePath}", ActiveGameManager.Current.Id, ExePath);
             WriteLaunchAttemptLog(launchLog, "Launch blocked: game files look corrupted.");
             Messages.Show("common.error", Locale.Get("errors.launchFailCorrupted"));
         }
         else if (!Steam.App.IsRunning)
         {
+            LauncherLog.Warning("Launch blocked: Steam is not running");
             WriteLaunchAttemptLog(launchLog, "Launch blocked: Steam is not running.");
             Messages.Show("common.error", Locale.Get("errors.launchFailSteamNotRunning"));
         }
         else if (!DirectXInstalled)
         {
+            LauncherLog.Warning("Launch blocked: DirectX/runtime requirements are missing");
             WriteLaunchAttemptLog(launchLog, "Launch blocked: DirectX/runtime requirements are missing.");
             Messages.Show("common.error", string.Format(Locale.Get("errors.launchFailDirectXNotInstalled"), Locale.Get("errors.installDirectX")));
         }
         else if (server is not null && server.Map > MapCode.TheIsland && server.Map < MapCode.Mod && !DLC.Get(server.Map).IsInstalled)
         {
+            LauncherLog.Warning("Launch blocked: required DLC is missing for server join. Map={Map}", server.Map);
             WriteLaunchAttemptLog(launchLog, $"Launch blocked: DLC '{server.Map}' is missing for server join.");
             Messages.Show("common.warning", Locale.Get("errors.joinFailDLCMissing"));
         }
@@ -87,6 +122,7 @@ static class Game
             launchLog.AppendLine($"Game status: {Steam.App.CurrentUserStatus.GameStatus}");
             if (Steam.App.CurrentUserStatus.SteamId64 == 0)
             {
+                LauncherLog.Warning("Launch blocked: Steam user not logged in or unresolved");
                 WriteLaunchAttemptLog(launchLog, "Launch blocked: Steam user is not logged in or could not be resolved.");
                 Messages.Show("common.error", Locale.Get("errors.launchFailNotLoggedIntoSteam"));
                 return;
@@ -108,39 +144,53 @@ static class Game
                     instDlc.Add(dlc.AppId);
 
             uint spoofAppId = GetEffectiveSpoofAppId();
-            var settings = new TekGameRuntimeSettings("steam", 346110, spoofAppId, new Dictionary<uint, string>
+            bool? forceEgsAuth = null;
+            string? cfApiWrapper = null;
+            if (ActiveGameManager.Current.Id == GameCatalog.AsaGameId)
             {
-                [473850] = "The Center – ARK Expansion Map",
-                [508150] = "Primitive+ – ARK Total Conversion",
-                [512540] = "ARK: Scorched Earth – Expansion Pack",
-                [642250] = "Ragnarok – ARK Expansion Map",
-                [696680] = "ARK: Survival Evolved Season Pass",
-                [708770] = "ARK: Aberration – Expansion Pack",
-                [887380] = "ARK: Extinction – Expansion Pack",
-                [1100810] = "Valguero – ARK Expansion Map",
-                [1113410] = "ARK: Genesis Season Pass",
-                [1270830] = "Crystal Isles – ARK Expansion Map",
-                [1691800] = "Lost Island – ARK Expansion Map",
-                [1887560] = "Fjordur – ARK Expansion Map",
-                [3537070] = "Aquatica – ARK Expansion Map"
-            }, [.. instDlc], System.IO.Path.Combine(Path!, "Mods"), Path!);
+                if (Settings.AsaForceEgsAuth)
+                    forceEgsAuth = true;
 
-            var data = JsonSerializer.SerializeToUtf8Bytes(settings, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower });
+                if (!string.IsNullOrWhiteSpace(Settings.AsaCfApiWrapper))
+                    cfApiWrapper = Settings.AsaCfApiWrapper;
+            }
+
+            var settings = new TekGameRuntimeSettings("steam", ActiveGameManager.Current.RuntimeAppId, spoofAppId, new Dictionary<uint, string>(ActiveGameManager.Current.RuntimeDlcDisplayNames), [.. instDlc], ActiveGameManager.Current.WorkshopDir, Path, forceEgsAuth, cfApiWrapper);
+
+            var data = JsonSerializer.SerializeToUtf8Bytes(settings, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            });
             bool useHighProcessPriority = CanUseHighProcessPriority && HighProcessPriority;
             bool useRunAsAdmin = CanRunAsAdmin && RunAsAdmin;
+            LauncherLog.Debug(
+                "Preparing launch payload. RuntimeAppId={RuntimeAppId}, SpoofAppId={SpoofAppId}, InstalledDlcCount={InstalledDlcCount}, Args={Args}, HighPriority={HighPriority}, RunAsAdmin={RunAsAdmin}",
+                ActiveGameManager.Current.RuntimeAppId,
+                spoofAppId,
+                instDlc.Count,
+                string.Join(' ', args),
+                useHighProcessPriority,
+                useRunAsAdmin);
             launchLog.AppendLine($"High priority: {useHighProcessPriority}");
             launchLog.AppendLine($"Run as admin: {useRunAsAdmin}");
             launchLog.AppendLine($"Use Spacewar requested: {UseSpacewar}");
             launchLog.AppendLine($"Use Spacewar effective: {spoofAppId == 480}");
+            if (forceEgsAuth is true)
+                launchLog.AppendLine("ASA runtime option: force_egs_auth=true");
+            if (!string.IsNullOrWhiteSpace(cfApiWrapper))
+                launchLog.AppendLine($"ASA runtime option: cf_api_wrapper={cfApiWrapper}");
             launchLog.AppendLine($"Arguments: {string.Join(' ', args)}");
             var launchResult = LauncherServices.GameLauncher.Launch(new(ExePath, args, useHighProcessPriority, useRunAsAdmin, data));
             if (!launchResult.Success)
             {
+                LauncherLog.Error("Platform launcher failed. Error={Error}", launchResult.ErrorMessage ?? "unknown");
                 WriteLaunchAttemptLog(launchLog, $"Launch failed in platform launcher: {launchResult.ErrorMessage}");
                 Messages.Show("Error", launchResult.ErrorMessage!);
                 return;
             }
 
+            LauncherLog.Information("Launch submitted successfully. GameId={GameId}, Server={Server}", ActiveGameManager.Current.Id, server?.Address ?? "none");
             WriteLaunchAttemptLog(launchLog, "Launch request submitted successfully.");
             if (Settings.CloseOnGameLaunch)
                 LauncherServices.Lifetime.Shutdown();
@@ -163,6 +213,26 @@ static class Game
 
     static uint GetEffectiveSpoofAppId() => CanUseSpacewar && UseSpacewar ? 480u : 0;
 
+    static string ResolveExecutablePath()
+    {
+        string configuredPath = ActiveGameManager.Current.ExePath;
+        if (File.Exists(configuredPath))
+            return configuredPath;
+
+        if (!string.Equals(ActiveGameManager.Current.Id, GameCatalog.AsaGameId, StringComparison.OrdinalIgnoreCase))
+            return configuredPath;
+
+        string rootPath = ActiveGameManager.Current.RootPath;
+        foreach (string relativePath in s_asaExeFallbackRelativePaths)
+        {
+            string candidate = System.IO.Path.Combine(rootPath, relativePath.Replace('/', System.IO.Path.DirectorySeparatorChar));
+            if (File.Exists(candidate))
+                return candidate;
+        }
+
+        return configuredPath;
+    }
+
     /// <summary>Game ownership status used to initialize ARK Shellcode.</summary>
     public enum Status
     {
@@ -171,5 +241,5 @@ static class Game
         OwnedAndInstalled
     }
 
-    readonly record struct TekGameRuntimeSettings(string Store, uint AppId, uint SpoofAppId, Dictionary<uint, string> Dlc, uint[] InstalledDlc, string WorkshopDirPath, string WorkshopAmPath);
+    readonly record struct TekGameRuntimeSettings(string Store, uint AppId, uint SpoofAppId, Dictionary<uint, string> Dlc, uint[] InstalledDlc, string WorkshopDirPath, string WorkshopAmPath, bool? ForceEgsAuth, string? CfApiWrapper);
 }

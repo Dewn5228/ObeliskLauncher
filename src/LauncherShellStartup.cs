@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Linq;
 
 namespace TEKLauncher;
 
@@ -14,7 +15,8 @@ readonly record struct LauncherShellStatusSummary(
   string GameVersionText,
   LauncherShellTone GameVersionTone,
   bool GameUpdateAvailable,
-  bool DlcUpdatesAvailable);
+    bool DlcUpdatesAvailable,
+    string? CatalogWarning);
 
 readonly record struct LauncherShellStartupResult(
   string GameVersionText,
@@ -22,60 +24,60 @@ readonly record struct LauncherShellStartupResult(
   bool LauncherUpdateAvailable,
   bool GameUpdateAvailable,
   bool DlcUpdatesAvailable,
+    string? CatalogWarning,
   bool BeginInstallation,
   TekSteamClientBootstrapResult BootstrapResult);
 
 static class LauncherShellStartup
 {
-    static readonly Dictionary<uint, ulong> s_preAquaticaDlcManifests = new()
-    {
-        [346114] = 5573587184752106093,
-        [375351] = 8265777340034981821,
-        [375354] = 7952753366101555648,
-        [375357] = 1447242805278740772,
-        [473851] = 2551727096735353757,
-        [473854] = 847717640995143866,
-        [473857] = 1054814513659387220,
-        [1318685] = 8189621638927588129,
-        [1691801] = 3147973472387347535,
-        [1887561] = 580528532335699271
-    };
-
     public static async Task<LauncherShellStartupResult> InitializeAsync(bool beginInstallation)
     {
+        IGameContext game = ActiveGameManager.Current;
         string gameVersionText = Locale.Get(Game.IsCorrupted ? "?None?" : "common.na");
         var gameVersionTone = Game.IsCorrupted ? LauncherShellTone.Error : LauncherShellTone.Neutral;
 
         bool launcherUpdateAvailable = await CheckLauncherUpdateAsync();
 
-        var bootstrapResult = await LauncherServices.TekSteamClientBootstrap.InitializeAsync(Game.Path!);
+        var bootstrapResult = await LauncherServices.TekSteamClientBootstrap.InitializeAsync(game.RootPath);
         if (!bootstrapResult.Success || bootstrapResult.RestartRequired || bootstrapResult.DownloadName is not null)
-            return new(gameVersionText, gameVersionTone, launcherUpdateAvailable, false, false, beginInstallation, bootstrapResult);
+            return new(gameVersionText, gameVersionTone, launcherUpdateAvailable, false, false, null, beginInstallation, bootstrapResult);
 
         var statusSummary = await GetStatusSummaryAsync(beginInstallation);
         gameVersionText = statusSummary.GameVersionText;
         gameVersionTone = statusSummary.GameVersionTone;
 
-        return new(gameVersionText, gameVersionTone, launcherUpdateAvailable, statusSummary.GameUpdateAvailable, statusSummary.DlcUpdatesAvailable, beginInstallation, bootstrapResult);
+        return new(gameVersionText, gameVersionTone, launcherUpdateAvailable, statusSummary.GameUpdateAvailable, statusSummary.DlcUpdatesAvailable, statusSummary.CatalogWarning, beginInstallation, bootstrapResult);
     }
 
     public static async Task<LauncherShellStatusSummary> GetStatusSummaryAsync(bool beginInstallation)
     {
+        IGameContext game = ActiveGameManager.Current;
         string gameVersionText = Locale.Get(Game.IsCorrupted ? "?None?" : "common.na");
         var gameVersionTone = Game.IsCorrupted ? LauncherShellTone.Error : LauncherShellTone.Neutral;
         bool gameUpdateAvailable = false;
         bool dlcUpdatesAvailable = false;
+        string? catalogWarning = null;
 
         if (!beginInstallation && await Task.Run(() => LauncherServices.TekSteamClient.CheckForUpdates(20000).Success))
             unsafe
             {
-                static TEKSteamClient.AmItemDesc* GetDesc(uint depotId)
+                static TEKSteamClient.AmItemDesc* GetDesc(uint appId, uint depotId)
                 {
-                    var itemId = new TEKSteamClient.ItemId { AppId = 346110, DepotId = depotId, WorkshopItemId = 0 };
-                    return LauncherServices.TekSteamClient.GetItemDesc((TEKSteamClient.ItemId*)Unsafe.AsPointer(ref itemId));
+                    if (!LauncherServices.TekSteamClient.IsLoaded)
+                        return null;
+
+                    var itemId = new TEKSteamClient.ItemId { AppId = appId, DepotId = depotId, WorkshopItemId = 0 };
+                    try
+                    {
+                        return LauncherServices.TekSteamClient.GetItemDesc((TEKSteamClient.ItemId*)Unsafe.AsPointer(ref itemId));
+                    }
+                    catch (NullReferenceException)
+                    {
+                        return null;
+                    }
                 }
 
-                var desc = GetDesc(346111);
+                var desc = GetDesc(game.SteamAppId, game.MainDepotId);
                 if (desc != null && desc->CurrentManifestId != 0)
                 {
                     gameUpdateAvailable = IsGameUpdateAvailable(desc);
@@ -89,7 +91,7 @@ static class LauncherShellStartup
                     if (dlc.CurrentStatus != ARK.DLC.Status.Installed)
                         continue;
 
-                    desc = GetDesc(dlc.DepotId);
+                    desc = GetDesc(game.SteamAppId, dlc.DepotId);
                     if (desc == null)
                         continue;
 
@@ -98,10 +100,10 @@ static class LauncherShellStartup
                     dlc.CurrentStatus = updateAvailable ? ARK.DLC.Status.UpdateAvailable : ARK.DLC.Status.Installed;
                 }
 
-                dlcUpdatesAvailable = Array.Exists(ARK.DLC.List, d => d.CurrentStatus == ARK.DLC.Status.UpdateAvailable);
+                dlcUpdatesAvailable = ARK.DLC.List.Any(d => d.CurrentStatus == ARK.DLC.Status.UpdateAvailable);
             }
 
-        return new(gameVersionText, gameVersionTone, gameUpdateAvailable, dlcUpdatesAvailable);
+        return new(gameVersionText, gameVersionTone, gameUpdateAvailable, dlcUpdatesAvailable, catalogWarning);
     }
 
     static async Task<bool> CheckLauncherUpdateAsync()
@@ -112,7 +114,7 @@ static class LauncherShellStartup
 
         if (versionString is null)
         {
-            var release = await Downloader.DownloadJsonAsync<Release>("https://api.github.com/repos/Nuclearistt/TEKLauncher/releases/latest");
+            var release = await Downloader.DownloadJsonAsync<Release>("https://api.github.com/repos/Dewn5228/TEKLauncher/releases/latest");
             versionString = release.TagName?[1..];
         }
 
@@ -122,16 +124,16 @@ static class LauncherShellStartup
     }
 
     static unsafe bool IsGameUpdateAvailable(TEKSteamClient.AmItemDesc* desc)
-      => Settings.PreAquatica
+            => Settings.PreAquatica && ActiveGameManager.Current.Id == GameCatalog.AseGameId
         ? desc->CurrentManifestId != UI.GameUpdateWorkflow.PreAquaticaManifestId
         : desc->Status.HasFlag(TEKSteamClient.AmItemStatus.UpdAvailable);
 
     static unsafe bool IsDlcUpdateAvailable(TEKSteamClient.AmItemDesc* desc, uint depotId)
     {
-        if (!Settings.PreAquatica)
+        if (!Settings.PreAquatica || ActiveGameManager.Current.Id != GameCatalog.AseGameId)
             return desc->Status.HasFlag(TEKSteamClient.AmItemStatus.UpdAvailable);
 
-        if (!s_preAquaticaDlcManifests.TryGetValue(depotId, out ulong expectedManifestId))
+        if (!ActiveGameManager.Current.PreAquaticaManifestOverrides.TryGetValue(depotId, out ulong expectedManifestId))
             return false;
 
         return desc->CurrentManifestId != expectedManifestId;

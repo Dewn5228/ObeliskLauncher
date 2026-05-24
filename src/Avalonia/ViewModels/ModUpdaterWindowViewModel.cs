@@ -41,7 +41,11 @@ internal sealed class ModUpdaterWindowViewModel : SteamTaskUpdaterWindowViewMode
 
     protected override string ThreadName => $"ModUpdater-{_details.Id}";
 
-    protected override TEKSteamClient.ItemId CreateItemId() => new() { AppId = 346110, DepotId = 346110, WorkshopItemId = _details.Id };
+    protected override TEKSteamClient.ItemId CreateItemId()
+    {
+        IGameContext game = ActiveGameManager.Current;
+        return new() { AppId = game.SteamAppId, DepotId = game.WorkshopDepotId, WorkshopItemId = _details.Id };
+    }
 
     protected override ulong GetManifestId() => 0;
 

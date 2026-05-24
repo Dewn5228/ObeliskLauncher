@@ -11,7 +11,9 @@ namespace TEKLauncher.Avalonia.Views;
 public partial class FirstLaunchWindow : Window
 {
     string? _existingInstallPath;
+    string _existingGameId = GameCatalog.AseGameId;
     string? _installPath;
+    string _installGameId = GameCatalog.AseGameId;
     bool _preAquatica = true;
 
     public event EventHandler<bool>? WorkflowCompleted;
@@ -20,9 +22,10 @@ public partial class FirstLaunchWindow : Window
     {
         InitializeComponent();
 
-        string? suggestedGamePath = FirstLaunchWorkflow.SuggestedGamePath;
-        if (!string.IsNullOrWhiteSpace(suggestedGamePath))
-            ExistingPathBox.Text = suggestedGamePath;
+        ApplyDetectedInstallDefaults();
+
+        SyncExistingSuggestedPath();
+        UpdateInstallVersionToggle();
 
         UpdateRequiredSpaceText();
     }
@@ -46,7 +49,7 @@ public partial class FirstLaunchWindow : Window
         if (string.IsNullOrWhiteSpace(_existingInstallPath))
             return;
 
-        FirstLaunchWorkflow.ApplySelection(_existingInstallPath, _preAquatica);
+        FirstLaunchWorkflow.ApplySelection(_existingGameId, _existingInstallPath, _preAquatica);
         WorkflowCompleted?.Invoke(this, false);
     }
 
@@ -55,7 +58,7 @@ public partial class FirstLaunchWindow : Window
         if (string.IsNullOrWhiteSpace(_installPath))
             return;
 
-        FirstLaunchWorkflow.ApplySelection(_installPath, _preAquatica);
+        FirstLaunchWorkflow.ApplySelection(_installGameId, _installPath, _preAquatica);
         WorkflowCompleted?.Invoke(this, true);
     }
 
@@ -75,7 +78,7 @@ public partial class FirstLaunchWindow : Window
         if (validation.FilesExist)
         {
             _existingInstallPath = path;
-            _preAquatica = validation.IsPreAquatica;
+            _preAquatica = _existingGameId == GameCatalog.AseGameId && validation.IsPreAquatica;
             SetStatus(ExistingStatusText, Locale.Get("status.gameFilesFound"), "#0AA63E");
         }
         else
@@ -97,9 +100,23 @@ public partial class FirstLaunchWindow : Window
 
     void ShowStartFlow(object? sender, RoutedEventArgs e) => SetPanelVisibility();
 
+    void ExistingGameChanged(object? sender, RoutedEventArgs e)
+    {
+        _existingGameId = ExistingAsaRadio.IsChecked == true ? GameCatalog.AsaGameId : GameCatalog.AseGameId;
+        SyncExistingSuggestedPath();
+        ExistingPathChanged(null, e);
+    }
+
+    void InstallGameChanged(object? sender, RoutedEventArgs e)
+    {
+        _installGameId = InstallAsaRadio.IsChecked == true ? GameCatalog.AsaGameId : GameCatalog.AseGameId;
+        UpdateInstallVersionToggle();
+        RefreshInstallState();
+    }
+
     void VersionChanged(object? sender, RoutedEventArgs e)
     {
-        _preAquatica = PreAquaticaRadio.IsChecked == true;
+        _preAquatica = _installGameId == GameCatalog.AseGameId && PreAquaticaRadio.IsChecked == true;
         UpdateRequiredSpaceText();
         RefreshInstallState();
     }
@@ -164,4 +181,51 @@ public partial class FirstLaunchWindow : Window
     }
 
     void UpdateRequiredSpaceText() => RequiredSpaceText.Text = $"{Locale.Get("gameOptionsTab.requiredDiskSpace")}: {FirstLaunchWorkflow.GetRequiredGigabytes(_preAquatica)} GB";
+
+    void ApplyDetectedInstallDefaults()
+    {
+        IReadOnlyList<DetectedGameInstall> detected = FirstLaunchWorkflow.DetectInstallPaths();
+        DetectedGameInstall? preferred = FirstLaunchWorkflow.ResolvePreferredDetectedInstall(detected);
+        if (preferred is null)
+            return;
+
+        bool asa = preferred.Value.GameId == GameCatalog.AsaGameId;
+        _existingGameId = preferred.Value.GameId;
+        _installGameId = preferred.Value.GameId;
+        _preAquatica = preferred.Value.GameId == GameCatalog.AseGameId && preferred.Value.Validation.IsPreAquatica;
+
+        ExistingAsaRadio.IsChecked = asa;
+        ExistingAseRadio.IsChecked = !asa;
+        InstallAsaRadio.IsChecked = asa;
+        InstallAseRadio.IsChecked = !asa;
+
+        if (!string.IsNullOrWhiteSpace(preferred.Value.Path))
+            ExistingPathBox.Text = preferred.Value.Path;
+    }
+
+    void SyncExistingSuggestedPath()
+    {
+        if (!string.IsNullOrWhiteSpace(ExistingPathBox.Text))
+            return;
+
+        string? suggestedGamePath = FirstLaunchWorkflow.GetSuggestedGamePath(_existingGameId);
+        if (!string.IsNullOrWhiteSpace(suggestedGamePath))
+            ExistingPathBox.Text = suggestedGamePath;
+    }
+
+    void UpdateInstallVersionToggle()
+    {
+        bool ase = _installGameId == GameCatalog.AseGameId;
+        PreAquaticaRadio.IsEnabled = ase;
+        LatestRadio.IsEnabled = ase;
+        if (!ase)
+        {
+            _preAquatica = false;
+            LatestRadio.IsChecked = true;
+        }
+        else if (PreAquaticaRadio.IsChecked != true && LatestRadio.IsChecked != true)
+            PreAquaticaRadio.IsChecked = true;
+
+        UpdateRequiredSpaceText();
+    }
 }

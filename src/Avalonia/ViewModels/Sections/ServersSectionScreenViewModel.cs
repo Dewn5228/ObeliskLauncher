@@ -284,7 +284,11 @@ public sealed class ServersSectionScreenViewModel : LauncherSectionScreenViewMod
         }
     }
 
-    public Task JoinAsync(ServerRowViewModel row) => Task.Run(() => Game.Launch(row.Server));
+    public Task JoinAsync(ServerRowViewModel row)
+    {
+        Game.Launch(row.Server);
+        return Task.CompletedTask;
+    }
 
     public void SelectCluster(ServersClusterRowViewModel row)
     {
@@ -392,6 +396,10 @@ public sealed class ServersSectionScreenViewModel : LauncherSectionScreenViewMod
             return;
         }
 
+        HashSet<Servers.Server> favoriteServers;
+        lock (Servers.Cluster.Favorites.Servers)
+            favoriteServers = [.. Servers.Cluster.Favorites.Servers];
+
         List<ServerRowViewModel> servers;
         lock (SelectedCluster.Cluster.Servers)
             servers = [.. SelectedCluster.Cluster.Servers.Select(server => new ServerRowViewModel
@@ -404,7 +412,7 @@ public sealed class ServersSectionScreenViewModel : LauncherSectionScreenViewMod
         HosterText = SelectedCluster.Cluster.IsSpecialCluster && !string.IsNullOrWhiteSpace(server.Info?.HosterName)
           ? string.Format(Locale.Get("serversTab.hostedBy"), server.Info!.HosterName)
           : null,
-        IsFavorite = Servers.Cluster.Favorites.Servers.Contains(server),
+        IsFavorite = favoriteServers.Contains(server),
         IsPvE = server.IsPvE,
         MaxNumPlayers = server.MaxNumPlayers,
         ModIds = server.ModIds,

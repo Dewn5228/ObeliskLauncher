@@ -2,28 +2,49 @@ namespace TEKLauncher.Avalonia.ViewModels;
 
 public sealed class LauncherSettingsSectionScreenViewModel : LauncherSectionScreenViewModel
 {
-    string _gamePath;
+    const string AseScopeId = GameCatalog.AseGameId;
+    const string AsaScopeId = GameCatalog.AsaGameId;
+
+    string _aseGamePath;
+    string _asaGamePath;
     string _linuxLaunchPresetName = string.Empty;
     IReadOnlyList<LinuxLaunchPreset> _linuxLaunchPresets;
     IReadOnlyList<LinuxLaunchToolOption> _linuxLaunchTools;
     LinuxLaunchPreset? _selectedLinuxLaunchPreset;
-    LinuxLaunchToolOption? _selectedLinuxLaunchTool;
 
     public LauncherSettingsSectionScreenViewModel()
       : base(LauncherSection.LauncherSettings)
     {
-        _gamePath = Game.Path ?? string.Empty;
-        _linuxLaunchTools = LinuxLaunchToolResolver.GetAvailableOptions(Settings.LinuxLaunchTool, Game.Path, Settings.CustomLinuxLaunchToolIds);
-        _selectedLinuxLaunchTool = ResolveSelectedLinuxLaunchTool(_linuxLaunchTools);
+        _aseGamePath = Settings.AseGamePath;
+        _asaGamePath = Settings.AsaGamePath;
+        _linuxLaunchTools = LinuxLaunchToolResolver.GetAvailableOptions(Settings.GetLinuxLaunchTool(AseScopeId), GetConfiguredRootPathOrFallback(), Settings.CustomLinuxLaunchToolIds);
         _linuxLaunchPresets = [.. Settings.LinuxLaunchPresets];
         _selectedLinuxLaunchPreset = _linuxLaunchPresets.Count > 0 ? _linuxLaunchPresets[0] : null;
     }
 
-    public string GamePath
+
+
+    public string AseGamePath
     {
-        get => _gamePath;
-        set => SetProperty(ref _gamePath, value);
+        get => _aseGamePath;
+        set
+        {
+            if (_aseGamePath == value)
+                return;
+
+            _aseGamePath = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(PreAquaticaVisible));
+        }
     }
+
+    public string AsaGamePath
+    {
+        get => _asaGamePath;
+        set => SetProperty(ref _asaGamePath, value);
+    }
+
+    public bool PreAquaticaVisible => !string.IsNullOrWhiteSpace(AseGamePath);
 
     public bool CloseOnGameLaunch
     {
@@ -57,188 +78,413 @@ public sealed class LauncherSettingsSectionScreenViewModel : LauncherSectionScre
 
     public string LinuxLaunchToolNote => Locale.Get("launcherSettingsTab.linuxLaunchToolNote");
 
-    public string LinuxCustomPrefixPath
+    public LinuxLaunchToolOption? SelectedAseLinuxLaunchTool
     {
-        get => Settings.LinuxCompatDataPath;
+        get => ResolveSelectedLinuxLaunchTool(LinuxLaunchTools, AseScopeId);
+        set
+        {
+            if (value is null)
+                return;
+
+            string currentTool = LinuxLaunchToolResolver.NormalizeSelection(Settings.GetLinuxLaunchTool(AseScopeId));
+            if (currentTool == value.Id)
+                return;
+
+            Settings.RegisterCustomLinuxLaunchTool(value.Id);
+            Settings.SetLinuxLaunchTool(value.Id, AseScopeId);
+            RefreshLinuxLaunchTools();
+            OnPropertyChanged();
+            PersistSettings();
+        }
+    }
+
+    public LinuxLaunchToolOption? SelectedAsaLinuxLaunchTool
+    {
+        get => ResolveSelectedLinuxLaunchTool(LinuxLaunchTools, AsaScopeId);
+        set
+        {
+            if (value is null)
+                return;
+
+            string currentTool = LinuxLaunchToolResolver.NormalizeSelection(Settings.GetLinuxLaunchTool(AsaScopeId));
+            if (currentTool == value.Id)
+                return;
+
+            Settings.RegisterCustomLinuxLaunchTool(value.Id);
+            Settings.SetLinuxLaunchTool(value.Id, AsaScopeId);
+            RefreshLinuxLaunchTools();
+            OnPropertyChanged();
+            PersistSettings();
+        }
+    }
+
+    public string AseLinuxCustomPrefixPath
+    {
+        get => Settings.GetLinuxCompatDataPath(AseScopeId);
         set
         {
             string normalized = value.Trim();
-            if (Settings.LinuxCompatDataPath == normalized)
+            if (Settings.GetLinuxCompatDataPath(AseScopeId) == normalized)
                 return;
 
-            Settings.LinuxCompatDataPath = normalized;
+            Settings.SetLinuxCompatDataPath(normalized, AseScopeId);
             OnPropertyChanged();
             PersistSettings();
         }
     }
 
-    public string LinuxExtraEnvironmentVariables
+    public string AsaLinuxCustomPrefixPath
     {
-        get => Settings.LinuxExtraEnvironmentVariables;
+        get => Settings.GetLinuxCompatDataPath(AsaScopeId);
         set
         {
             string normalized = value.Trim();
-            if (Settings.LinuxExtraEnvironmentVariables == normalized)
+            if (Settings.GetLinuxCompatDataPath(AsaScopeId) == normalized)
                 return;
 
-            Settings.LinuxExtraEnvironmentVariables = normalized;
+            Settings.SetLinuxCompatDataPath(normalized, AsaScopeId);
             OnPropertyChanged();
             PersistSettings();
         }
     }
 
-    public string LinuxLaunchWrappers
+    public string AseLinuxExtraEnvironmentVariables
     {
-        get => Settings.LinuxLaunchWrappers;
+        get => Settings.GetLinuxExtraEnvironmentVariables(AseScopeId);
         set
         {
             string normalized = value.Trim();
-            if (Settings.LinuxLaunchWrappers == normalized)
+            if (Settings.GetLinuxExtraEnvironmentVariables(AseScopeId) == normalized)
                 return;
 
-            Settings.LinuxLaunchWrappers = normalized;
+            Settings.SetLinuxExtraEnvironmentVariables(normalized, AseScopeId);
             OnPropertyChanged();
             PersistSettings();
         }
     }
 
-    public bool LinuxUseGameMode
+    public string AsaLinuxExtraEnvironmentVariables
     {
-        get => Settings.LinuxUseGameMode;
-        set
-        {
-            if (Settings.LinuxUseGameMode == value)
-                return;
-
-            Settings.LinuxUseGameMode = value;
-            OnPropertyChanged();
-            PersistSettings();
-        }
-    }
-
-    public bool LinuxUseGamescope
-    {
-        get => Settings.LinuxUseGamescope;
-        set
-        {
-            if (Settings.LinuxUseGamescope == value)
-                return;
-
-            Settings.LinuxUseGamescope = value;
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(LinuxGamescopeOptionsVisible));
-            PersistSettings();
-        }
-    }
-
-    public string LinuxGamescopeArguments
-    {
-        get => Settings.LinuxGamescopeArguments;
+        get => Settings.GetLinuxExtraEnvironmentVariables(AsaScopeId);
         set
         {
             string normalized = value.Trim();
-            if (Settings.LinuxGamescopeArguments == normalized)
+            if (Settings.GetLinuxExtraEnvironmentVariables(AsaScopeId) == normalized)
                 return;
 
-            Settings.LinuxGamescopeArguments = normalized;
+            Settings.SetLinuxExtraEnvironmentVariables(normalized, AsaScopeId);
             OnPropertyChanged();
             PersistSettings();
         }
     }
 
-    public bool LinuxUseGamescopeFsr
+    public string AseLinuxLaunchWrappers
     {
-        get => Settings.LinuxUseGamescopeFsr;
-        set
-        {
-            if (Settings.LinuxUseGamescopeFsr == value)
-                return;
-
-            Settings.LinuxUseGamescopeFsr = value;
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(LinuxGamescopeFsrOptionsVisible));
-            PersistSettings();
-        }
-    }
-
-    public string LinuxGamescopeSharpness
-    {
-        get => Settings.LinuxGamescopeSharpness;
+        get => Settings.GetLinuxLaunchWrappers(AseScopeId);
         set
         {
             string normalized = value.Trim();
-            if (Settings.LinuxGamescopeSharpness == normalized)
+            if (Settings.GetLinuxLaunchWrappers(AseScopeId) == normalized)
                 return;
 
-            Settings.LinuxGamescopeSharpness = normalized;
+            Settings.SetLinuxLaunchWrappers(normalized, AseScopeId);
             OnPropertyChanged();
             PersistSettings();
         }
     }
 
-    public bool LinuxUseMangoHud
+    public string AsaLinuxLaunchWrappers
     {
-        get => Settings.LinuxUseMangoHud;
-        set
-        {
-            if (Settings.LinuxUseMangoHud == value)
-                return;
-
-            Settings.LinuxUseMangoHud = value;
-            OnPropertyChanged();
-            PersistSettings();
-        }
-    }
-
-    public bool LinuxUseVkBasalt
-    {
-        get => Settings.LinuxUseVkBasalt;
-        set
-        {
-            if (Settings.LinuxUseVkBasalt == value)
-                return;
-
-            Settings.LinuxUseVkBasalt = value;
-            OnPropertyChanged();
-            PersistSettings();
-        }
-    }
-
-    public bool LinuxUseWineFullscreenFsr
-    {
-        get => Settings.LinuxUseWineFullscreenFsr;
-        set
-        {
-            if (Settings.LinuxUseWineFullscreenFsr == value)
-                return;
-
-            Settings.LinuxUseWineFullscreenFsr = value;
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(LinuxWineFsrOptionsVisible));
-            PersistSettings();
-        }
-    }
-
-    public string LinuxWineFullscreenFsrStrength
-    {
-        get => Settings.LinuxWineFullscreenFsrStrength;
+        get => Settings.GetLinuxLaunchWrappers(AsaScopeId);
         set
         {
             string normalized = value.Trim();
-            if (Settings.LinuxWineFullscreenFsrStrength == normalized)
+            if (Settings.GetLinuxLaunchWrappers(AsaScopeId) == normalized)
                 return;
 
-            Settings.LinuxWineFullscreenFsrStrength = normalized;
+            Settings.SetLinuxLaunchWrappers(normalized, AsaScopeId);
             OnPropertyChanged();
             PersistSettings();
         }
     }
 
-    public bool LinuxGamescopeOptionsVisible => LinuxUseGamescope;
+    public bool AseLinuxUseGameMode
+    {
+        get => Settings.GetLinuxUseGameMode(AseScopeId);
+        set
+        {
+            if (Settings.GetLinuxUseGameMode(AseScopeId) == value)
+                return;
 
-    public bool LinuxGamescopeFsrOptionsVisible => LinuxUseGamescope;
+            Settings.SetLinuxUseGameMode(value, AseScopeId);
+            OnPropertyChanged();
+            PersistSettings();
+        }
+    }
 
-    public bool LinuxWineFsrOptionsVisible => LinuxUseWineFullscreenFsr;
+    public bool AsaLinuxUseGameMode
+    {
+        get => Settings.GetLinuxUseGameMode(AsaScopeId);
+        set
+        {
+            if (Settings.GetLinuxUseGameMode(AsaScopeId) == value)
+                return;
+
+            Settings.SetLinuxUseGameMode(value, AsaScopeId);
+            OnPropertyChanged();
+            PersistSettings();
+        }
+    }
+
+    public bool AseLinuxUseGamescope
+    {
+        get => Settings.GetLinuxUseGamescope(AseScopeId);
+        set
+        {
+            if (Settings.GetLinuxUseGamescope(AseScopeId) == value)
+                return;
+
+            Settings.SetLinuxUseGamescope(value, AseScopeId);
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(AseLinuxGamescopeOptionsVisible));
+            PersistSettings();
+        }
+    }
+
+    public bool AsaLinuxUseGamescope
+    {
+        get => Settings.GetLinuxUseGamescope(AsaScopeId);
+        set
+        {
+            if (Settings.GetLinuxUseGamescope(AsaScopeId) == value)
+                return;
+
+            Settings.SetLinuxUseGamescope(value, AsaScopeId);
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(AsaLinuxGamescopeOptionsVisible));
+            PersistSettings();
+        }
+    }
+
+    public string AseLinuxGamescopeArguments
+    {
+        get => Settings.GetLinuxGamescopeArguments(AseScopeId);
+        set
+        {
+            string normalized = value.Trim();
+            if (Settings.GetLinuxGamescopeArguments(AseScopeId) == normalized)
+                return;
+
+            Settings.SetLinuxGamescopeArguments(normalized, AseScopeId);
+            OnPropertyChanged();
+            PersistSettings();
+        }
+    }
+
+    public string AsaLinuxGamescopeArguments
+    {
+        get => Settings.GetLinuxGamescopeArguments(AsaScopeId);
+        set
+        {
+            string normalized = value.Trim();
+            if (Settings.GetLinuxGamescopeArguments(AsaScopeId) == normalized)
+                return;
+
+            Settings.SetLinuxGamescopeArguments(normalized, AsaScopeId);
+            OnPropertyChanged();
+            PersistSettings();
+        }
+    }
+
+    public bool AseLinuxUseGamescopeFsr
+    {
+        get => Settings.GetLinuxUseGamescopeFsr(AseScopeId);
+        set
+        {
+            if (Settings.GetLinuxUseGamescopeFsr(AseScopeId) == value)
+                return;
+
+            Settings.SetLinuxUseGamescopeFsr(value, AseScopeId);
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(AseLinuxGamescopeFsrOptionsVisible));
+            PersistSettings();
+        }
+    }
+
+    public bool AsaLinuxUseGamescopeFsr
+    {
+        get => Settings.GetLinuxUseGamescopeFsr(AsaScopeId);
+        set
+        {
+            if (Settings.GetLinuxUseGamescopeFsr(AsaScopeId) == value)
+                return;
+
+            Settings.SetLinuxUseGamescopeFsr(value, AsaScopeId);
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(AsaLinuxGamescopeFsrOptionsVisible));
+            PersistSettings();
+        }
+    }
+
+    public string AseLinuxGamescopeSharpness
+    {
+        get => Settings.GetLinuxGamescopeSharpness(AseScopeId);
+        set
+        {
+            string normalized = value.Trim();
+            if (Settings.GetLinuxGamescopeSharpness(AseScopeId) == normalized)
+                return;
+
+            Settings.SetLinuxGamescopeSharpness(normalized, AseScopeId);
+            OnPropertyChanged();
+            PersistSettings();
+        }
+    }
+
+    public string AsaLinuxGamescopeSharpness
+    {
+        get => Settings.GetLinuxGamescopeSharpness(AsaScopeId);
+        set
+        {
+            string normalized = value.Trim();
+            if (Settings.GetLinuxGamescopeSharpness(AsaScopeId) == normalized)
+                return;
+
+            Settings.SetLinuxGamescopeSharpness(normalized, AsaScopeId);
+            OnPropertyChanged();
+            PersistSettings();
+        }
+    }
+
+    public bool AseLinuxUseMangoHud
+    {
+        get => Settings.GetLinuxUseMangoHud(AseScopeId);
+        set
+        {
+            if (Settings.GetLinuxUseMangoHud(AseScopeId) == value)
+                return;
+
+            Settings.SetLinuxUseMangoHud(value, AseScopeId);
+            OnPropertyChanged();
+            PersistSettings();
+        }
+    }
+
+    public bool AsaLinuxUseMangoHud
+    {
+        get => Settings.GetLinuxUseMangoHud(AsaScopeId);
+        set
+        {
+            if (Settings.GetLinuxUseMangoHud(AsaScopeId) == value)
+                return;
+
+            Settings.SetLinuxUseMangoHud(value, AsaScopeId);
+            OnPropertyChanged();
+            PersistSettings();
+        }
+    }
+
+    public bool AseLinuxUseVkBasalt
+    {
+        get => Settings.GetLinuxUseVkBasalt(AseScopeId);
+        set
+        {
+            if (Settings.GetLinuxUseVkBasalt(AseScopeId) == value)
+                return;
+
+            Settings.SetLinuxUseVkBasalt(value, AseScopeId);
+            OnPropertyChanged();
+            PersistSettings();
+        }
+    }
+
+    public bool AsaLinuxUseVkBasalt
+    {
+        get => Settings.GetLinuxUseVkBasalt(AsaScopeId);
+        set
+        {
+            if (Settings.GetLinuxUseVkBasalt(AsaScopeId) == value)
+                return;
+
+            Settings.SetLinuxUseVkBasalt(value, AsaScopeId);
+            OnPropertyChanged();
+            PersistSettings();
+        }
+    }
+
+    public bool AseLinuxUseWineFullscreenFsr
+    {
+        get => Settings.GetLinuxUseWineFullscreenFsr(AseScopeId);
+        set
+        {
+            if (Settings.GetLinuxUseWineFullscreenFsr(AseScopeId) == value)
+                return;
+
+            Settings.SetLinuxUseWineFullscreenFsr(value, AseScopeId);
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(AseLinuxWineFsrOptionsVisible));
+            PersistSettings();
+        }
+    }
+
+    public bool AsaLinuxUseWineFullscreenFsr
+    {
+        get => Settings.GetLinuxUseWineFullscreenFsr(AsaScopeId);
+        set
+        {
+            if (Settings.GetLinuxUseWineFullscreenFsr(AsaScopeId) == value)
+                return;
+
+            Settings.SetLinuxUseWineFullscreenFsr(value, AsaScopeId);
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(AsaLinuxWineFsrOptionsVisible));
+            PersistSettings();
+        }
+    }
+
+    public string AseLinuxWineFullscreenFsrStrength
+    {
+        get => Settings.GetLinuxWineFullscreenFsrStrength(AseScopeId);
+        set
+        {
+            string normalized = value.Trim();
+            if (Settings.GetLinuxWineFullscreenFsrStrength(AseScopeId) == normalized)
+                return;
+
+            Settings.SetLinuxWineFullscreenFsrStrength(normalized, AseScopeId);
+            OnPropertyChanged();
+            PersistSettings();
+        }
+    }
+
+    public string AsaLinuxWineFullscreenFsrStrength
+    {
+        get => Settings.GetLinuxWineFullscreenFsrStrength(AsaScopeId);
+        set
+        {
+            string normalized = value.Trim();
+            if (Settings.GetLinuxWineFullscreenFsrStrength(AsaScopeId) == normalized)
+                return;
+
+            Settings.SetLinuxWineFullscreenFsrStrength(normalized, AsaScopeId);
+            OnPropertyChanged();
+            PersistSettings();
+        }
+    }
+
+    public bool AseLinuxGamescopeOptionsVisible => AseLinuxUseGamescope;
+
+    public bool AsaLinuxGamescopeOptionsVisible => AsaLinuxUseGamescope;
+
+    public bool AseLinuxGamescopeFsrOptionsVisible => AseLinuxUseGamescope;
+
+    public bool AsaLinuxGamescopeFsrOptionsVisible => AsaLinuxUseGamescope;
+
+    public bool AseLinuxWineFsrOptionsVisible => AseLinuxUseWineFullscreenFsr;
+
+    public bool AsaLinuxWineFsrOptionsVisible => AsaLinuxUseWineFullscreenFsr;
+
+
 
     public string LinuxLaunchPresetName
     {
@@ -279,47 +525,54 @@ public sealed class LauncherSettingsSectionScreenViewModel : LauncherSectionScre
         private set => SetProperty(ref _linuxLaunchTools, value);
     }
 
-    public LinuxLaunchToolOption? SelectedLinuxLaunchTool
-    {
-        get => _selectedLinuxLaunchTool;
-        set
-        {
-            if (value is null || _selectedLinuxLaunchTool?.Id == value.Id)
-                return;
 
-            _selectedLinuxLaunchTool = value;
-            Settings.RegisterCustomLinuxLaunchTool(value.Id);
-            Settings.LinuxLaunchTool = value.Id;
-            OnPropertyChanged();
-            PersistSettings();
-        }
-    }
 
     public override void Activate()
     {
-        GamePath = Game.Path ?? string.Empty;
+        AseGamePath = Settings.AseGamePath;
+        AsaGamePath = Settings.AsaGamePath;
         RefreshLinuxLaunchTools();
         RefreshLinuxLaunchPresets();
+        OnPropertyChanged(nameof(AseGamePath));
+        OnPropertyChanged(nameof(AsaGamePath));
+        OnPropertyChanged(nameof(SelectedAseLinuxLaunchTool));
+        OnPropertyChanged(nameof(SelectedAsaLinuxLaunchTool));
+        OnPropertyChanged(nameof(AseLinuxCustomPrefixPath));
+        OnPropertyChanged(nameof(AsaLinuxCustomPrefixPath));
+        OnPropertyChanged(nameof(AseLinuxExtraEnvironmentVariables));
+        OnPropertyChanged(nameof(AsaLinuxExtraEnvironmentVariables));
+        OnPropertyChanged(nameof(AseLinuxLaunchWrappers));
+        OnPropertyChanged(nameof(AsaLinuxLaunchWrappers));
+        OnPropertyChanged(nameof(AseLinuxUseGameMode));
+        OnPropertyChanged(nameof(AsaLinuxUseGameMode));
+        OnPropertyChanged(nameof(AseLinuxUseGamescope));
+        OnPropertyChanged(nameof(AsaLinuxUseGamescope));
+        OnPropertyChanged(nameof(AseLinuxGamescopeArguments));
+        OnPropertyChanged(nameof(AsaLinuxGamescopeArguments));
+        OnPropertyChanged(nameof(AseLinuxUseGamescopeFsr));
+        OnPropertyChanged(nameof(AsaLinuxUseGamescopeFsr));
+        OnPropertyChanged(nameof(AseLinuxGamescopeSharpness));
+        OnPropertyChanged(nameof(AsaLinuxGamescopeSharpness));
+        OnPropertyChanged(nameof(AseLinuxUseMangoHud));
+        OnPropertyChanged(nameof(AsaLinuxUseMangoHud));
+        OnPropertyChanged(nameof(AseLinuxUseVkBasalt));
+        OnPropertyChanged(nameof(AsaLinuxUseVkBasalt));
+        OnPropertyChanged(nameof(AseLinuxUseWineFullscreenFsr));
+        OnPropertyChanged(nameof(AsaLinuxUseWineFullscreenFsr));
+        OnPropertyChanged(nameof(AseLinuxWineFullscreenFsrStrength));
+        OnPropertyChanged(nameof(AsaLinuxWineFullscreenFsrStrength));
+        OnPropertyChanged(nameof(AseLinuxGamescopeOptionsVisible));
+        OnPropertyChanged(nameof(AsaLinuxGamescopeOptionsVisible));
+        OnPropertyChanged(nameof(AseLinuxGamescopeFsrOptionsVisible));
+        OnPropertyChanged(nameof(AsaLinuxGamescopeFsrOptionsVisible));
+        OnPropertyChanged(nameof(AseLinuxWineFsrOptionsVisible));
+        OnPropertyChanged(nameof(AsaLinuxWineFsrOptionsVisible));
         OnPropertyChanged(nameof(CloseOnGameLaunch));
-        OnPropertyChanged(nameof(LinuxCustomPrefixPath));
-        OnPropertyChanged(nameof(LinuxExtraEnvironmentVariables));
-        OnPropertyChanged(nameof(LinuxGamescopeArguments));
-        OnPropertyChanged(nameof(LinuxGamescopeFsrOptionsVisible));
-        OnPropertyChanged(nameof(LinuxGamescopeOptionsVisible));
-        OnPropertyChanged(nameof(LinuxGamescopeSharpness));
         OnPropertyChanged(nameof(LinuxLaunchPresetName));
         OnPropertyChanged(nameof(LinuxLaunchToolNote));
         OnPropertyChanged(nameof(LinuxLaunchToolVisible));
-        OnPropertyChanged(nameof(LinuxLaunchWrappers));
-        OnPropertyChanged(nameof(LinuxUseGameMode));
-        OnPropertyChanged(nameof(LinuxUseGamescope));
-        OnPropertyChanged(nameof(LinuxUseGamescopeFsr));
-        OnPropertyChanged(nameof(LinuxUseMangoHud));
-        OnPropertyChanged(nameof(LinuxUseVkBasalt));
-        OnPropertyChanged(nameof(LinuxUseWineFullscreenFsr));
-        OnPropertyChanged(nameof(LinuxWineFullscreenFsrStrength));
-        OnPropertyChanged(nameof(LinuxWineFsrOptionsVisible));
         OnPropertyChanged(nameof(PreAquatica));
+        OnPropertyChanged(nameof(PreAquaticaVisible));
     }
 
     public override void RefreshLocale()
@@ -328,24 +581,19 @@ public sealed class LauncherSettingsSectionScreenViewModel : LauncherSectionScre
         OnPropertyChanged(nameof(LinuxLaunchPresetName));
     }
 
-    public void ApplySelectedLinuxPreset()
-    {
-        if (SelectedLinuxLaunchPreset is null)
-            return;
 
-        Settings.ApplyLinuxLaunchPreset(SelectedLinuxLaunchPreset);
-        RefreshLinuxLaunchTools();
-        RaiseLinuxLaunchConfigurationChanged();
-        PersistSettings();
-    }
 
-    public void ImportCustomLinuxLaunchTool(LinuxLaunchToolKind kind, string executablePath)
+
+
+    public void ImportCustomLinuxLaunchToolForGame(string gameId, LinuxLaunchToolKind kind, string executablePath)
     {
         string normalizedPath = Path.GetFullPath(executablePath);
         string toolId = $"{(kind == LinuxLaunchToolKind.Proton ? "proton" : "wine")}:{normalizedPath}";
         Settings.RegisterCustomLinuxLaunchTool(toolId);
-        Settings.LinuxLaunchTool = toolId;
+        Settings.SetLinuxLaunchTool(toolId, gameId);
         RefreshLinuxLaunchTools();
+        OnPropertyChanged(nameof(SelectedAseLinuxLaunchTool));
+        OnPropertyChanged(nameof(SelectedAsaLinuxLaunchTool));
         PersistSettings();
     }
 
@@ -358,6 +606,59 @@ public sealed class LauncherSettingsSectionScreenViewModel : LauncherSectionScre
         Settings.SaveLinuxLaunchPreset(Settings.CreateLinuxLaunchPreset(presetName));
         RefreshLinuxLaunchPresets(presetName);
         PersistSettings();
+    }
+
+    public void ApplySelectedLinuxPreset()
+    {
+        if (SelectedLinuxLaunchPreset is null)
+            return;
+
+        LinuxLaunchPreset preset = SelectedLinuxLaunchPreset;
+        foreach (string gameId in new[] { AseScopeId, AsaScopeId })
+        {
+            Settings.SetLinuxLaunchTool(preset.LaunchTool, gameId);
+            Settings.RegisterCustomLinuxLaunchTool(preset.LaunchTool);
+            Settings.SetLinuxCompatDataPath(preset.PrefixPath ?? string.Empty, gameId);
+            Settings.SetLinuxExtraEnvironmentVariables(preset.ExtraEnvironmentVariables ?? string.Empty, gameId);
+            Settings.SetLinuxLaunchWrappers(preset.LaunchWrappers ?? string.Empty, gameId);
+            Settings.SetLinuxUseGameMode(preset.UseGameMode, gameId);
+            Settings.SetLinuxUseGamescope(preset.UseGamescope, gameId);
+            Settings.SetLinuxGamescopeArguments(preset.GamescopeArguments ?? string.Empty, gameId);
+            Settings.SetLinuxUseGamescopeFsr(preset.UseGamescopeFsr, gameId);
+            Settings.SetLinuxGamescopeSharpness(preset.GamescopeSharpness ?? string.Empty, gameId);
+            Settings.SetLinuxUseMangoHud(preset.UseMangoHud, gameId);
+            Settings.SetLinuxUseVkBasalt(preset.UseVkBasalt, gameId);
+            Settings.SetLinuxUseWineFullscreenFsr(preset.UseWineFullscreenFsr, gameId);
+            Settings.SetLinuxWineFullscreenFsrStrength(preset.WineFullscreenFsrStrength ?? string.Empty, gameId);
+        }
+        RefreshLinuxLaunchTools();
+        PersistSettings();
+        OnPropertyChanged(nameof(SelectedAseLinuxLaunchTool));
+        OnPropertyChanged(nameof(SelectedAsaLinuxLaunchTool));
+        OnPropertyChanged(nameof(AseLinuxCustomPrefixPath));
+        OnPropertyChanged(nameof(AsaLinuxCustomPrefixPath));
+        OnPropertyChanged(nameof(AseLinuxExtraEnvironmentVariables));
+        OnPropertyChanged(nameof(AsaLinuxExtraEnvironmentVariables));
+        OnPropertyChanged(nameof(AseLinuxGamescopeArguments));
+        OnPropertyChanged(nameof(AsaLinuxGamescopeArguments));
+        OnPropertyChanged(nameof(AseLinuxLaunchWrappers));
+        OnPropertyChanged(nameof(AsaLinuxLaunchWrappers));
+        OnPropertyChanged(nameof(AseLinuxUseGameMode));
+        OnPropertyChanged(nameof(AsaLinuxUseGameMode));
+        OnPropertyChanged(nameof(AseLinuxUseGamescope));
+        OnPropertyChanged(nameof(AsaLinuxUseGamescope));
+        OnPropertyChanged(nameof(AseLinuxUseGamescopeFsr));
+        OnPropertyChanged(nameof(AsaLinuxUseGamescopeFsr));
+        OnPropertyChanged(nameof(AseLinuxGamescopeSharpness));
+        OnPropertyChanged(nameof(AsaLinuxGamescopeSharpness));
+        OnPropertyChanged(nameof(AseLinuxUseMangoHud));
+        OnPropertyChanged(nameof(AsaLinuxUseMangoHud));
+        OnPropertyChanged(nameof(AseLinuxUseVkBasalt));
+        OnPropertyChanged(nameof(AsaLinuxUseVkBasalt));
+        OnPropertyChanged(nameof(AseLinuxUseWineFullscreenFsr));
+        OnPropertyChanged(nameof(AsaLinuxUseWineFullscreenFsr));
+        OnPropertyChanged(nameof(AseLinuxWineFullscreenFsrStrength));
+        OnPropertyChanged(nameof(AsaLinuxWineFullscreenFsrStrength));
     }
 
     public bool DeleteSelectedLinuxPreset()
@@ -378,30 +679,81 @@ public sealed class LauncherSettingsSectionScreenViewModel : LauncherSectionScre
         return deleted;
     }
 
-    void RefreshLinuxLaunchTools()
+    public bool TryValidateGameSelection(out string? errorMessage)
     {
-        LinuxLaunchTools = LinuxLaunchToolResolver.GetAvailableOptions(Settings.LinuxLaunchTool, Game.Path, Settings.CustomLinuxLaunchToolIds);
-        _selectedLinuxLaunchTool = ResolveSelectedLinuxLaunchTool(LinuxLaunchTools);
-        OnPropertyChanged(nameof(SelectedLinuxLaunchTool));
+        errorMessage = null;
+
+        string normalizedAsePath = NormalizeDirectoryPath(AseGamePath);
+        string normalizedAsaPath = NormalizeDirectoryPath(AsaGamePath);
+        if (string.IsNullOrWhiteSpace(normalizedAsePath) && string.IsNullOrWhiteSpace(normalizedAsaPath))
+        {
+            errorMessage = Locale.Get("errors.noPathSelected");
+            return false;
+        }
+
+        return true;
     }
 
-    void RaiseLinuxLaunchConfigurationChanged()
+    public void SaveGamePathDrafts()
     {
-        OnPropertyChanged(nameof(LinuxCustomPrefixPath));
-        OnPropertyChanged(nameof(LinuxExtraEnvironmentVariables));
-        OnPropertyChanged(nameof(LinuxGamescopeArguments));
-        OnPropertyChanged(nameof(LinuxGamescopeSharpness));
-        OnPropertyChanged(nameof(LinuxLaunchWrappers));
-        OnPropertyChanged(nameof(LinuxUseGameMode));
-        OnPropertyChanged(nameof(LinuxUseGamescope));
-        OnPropertyChanged(nameof(LinuxUseGamescopeFsr));
-        OnPropertyChanged(nameof(LinuxUseMangoHud));
-        OnPropertyChanged(nameof(LinuxUseVkBasalt));
-        OnPropertyChanged(nameof(LinuxUseWineFullscreenFsr));
-        OnPropertyChanged(nameof(LinuxWineFullscreenFsrStrength));
-        OnPropertyChanged(nameof(LinuxGamescopeOptionsVisible));
-        OnPropertyChanged(nameof(LinuxGamescopeFsrOptionsVisible));
-        OnPropertyChanged(nameof(LinuxWineFsrOptionsVisible));
+        ApplyGamePathSettings();
+        PersistSettings();
+    }
+
+    public void ApplyGameSelection()
+    {
+        ApplyGamePathSettings();
+
+        if (ActiveGameManager.IsConfigured)
+        {
+            string activeGameId = ActiveGameManager.Current.Id;
+            string activePath = Settings.GetGamePath(activeGameId);
+
+            if (!string.IsNullOrWhiteSpace(activePath))
+                ActiveGameManager.Configure(activeGameId, activePath);
+            else if (!string.IsNullOrWhiteSpace(Settings.GetGamePath(AseScopeId)))
+                ActiveGameManager.Configure(AseScopeId, Settings.GetGamePath(AseScopeId));
+            else if (!string.IsNullOrWhiteSpace(Settings.GetGamePath(AsaScopeId)))
+                ActiveGameManager.Configure(AsaScopeId, Settings.GetGamePath(AsaScopeId));
+        }
+        else if (!string.IsNullOrWhiteSpace(Settings.GetGamePath(AseScopeId)))
+            ActiveGameManager.Configure(AseScopeId, Settings.GetGamePath(AseScopeId));
+        else if (!string.IsNullOrWhiteSpace(Settings.GetGamePath(AsaScopeId)))
+            ActiveGameManager.Configure(AsaScopeId, Settings.GetGamePath(AsaScopeId));
+
+        PersistSettings();
+    }
+
+    public bool IsGameSelectionChanged()
+    {
+        string normalizedAsePath = NormalizeDirectoryPath(AseGamePath);
+        string normalizedAsaPath = NormalizeDirectoryPath(AsaGamePath);
+
+        bool draftChanged = !string.Equals(normalizedAsePath, Settings.AseGamePath, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(normalizedAsaPath, Settings.AsaGamePath, StringComparison.OrdinalIgnoreCase);
+
+        if (!ActiveGameManager.IsConfigured)
+            return draftChanged || !string.IsNullOrWhiteSpace(normalizedAsePath) || !string.IsNullOrWhiteSpace(normalizedAsaPath);
+
+        string expectedActivePath = ActiveGameManager.Current.Id == AsaScopeId ? normalizedAsaPath : normalizedAsePath;
+        bool activePathChanged = !string.IsNullOrWhiteSpace(expectedActivePath)
+            && !string.Equals(expectedActivePath, ActiveGameManager.Current.RootPath, StringComparison.OrdinalIgnoreCase);
+
+        return draftChanged || activePathChanged;
+    }
+
+    void ApplyGamePathSettings()
+    {
+        Settings.AseGamePath = NormalizeDirectoryPath(AseGamePath);
+        Settings.AsaGamePath = NormalizeDirectoryPath(AsaGamePath);
+        if (Settings.PreAquatica && string.IsNullOrWhiteSpace(Settings.AseGamePath))
+            Settings.PreAquatica = false;
+    }
+
+    void RefreshLinuxLaunchTools()
+    {
+        LinuxLaunchTools = LinuxLaunchToolResolver.GetAvailableOptions(Settings.GetLinuxLaunchTool(AseScopeId), GetConfiguredRootPathOrFallback(), Settings.CustomLinuxLaunchToolIds);
+        OnPropertyChanged(nameof(PreAquaticaVisible));
     }
 
     static void PersistSettings() => Settings.Save();
@@ -413,9 +765,9 @@ public sealed class LauncherSettingsSectionScreenViewModel : LauncherSectionScre
         SelectedLinuxLaunchPreset = ResolveSelectedLinuxLaunchPreset(LinuxLaunchPresets, targetName);
     }
 
-    static LinuxLaunchToolOption? ResolveSelectedLinuxLaunchTool(IReadOnlyList<LinuxLaunchToolOption> options)
+    static LinuxLaunchToolOption? ResolveSelectedLinuxLaunchTool(IReadOnlyList<LinuxLaunchToolOption> options, string gameId)
     {
-        string selectedId = LinuxLaunchToolResolver.NormalizeSelection(Settings.LinuxLaunchTool);
+        string selectedId = LinuxLaunchToolResolver.NormalizeSelection(Settings.GetLinuxLaunchTool(gameId));
         foreach (LinuxLaunchToolOption option in options)
             if (option.Id.Equals(selectedId, StringComparison.OrdinalIgnoreCase))
                 return option;
@@ -431,5 +783,34 @@ public sealed class LauncherSettingsSectionScreenViewModel : LauncherSectionScre
                     return option;
 
         return options.Count > 0 ? options[0] : null;
+    }
+
+    static string NormalizeDirectoryPath(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return string.Empty;
+
+        try
+        {
+            return Path.GetFullPath(value.Trim());
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
+    static string GetConfiguredRootPathOrFallback()
+    {
+        if (ActiveGameManager.IsConfigured)
+            return ActiveGameManager.Current.RootPath;
+
+        if (!string.IsNullOrWhiteSpace(Settings.AseGamePath))
+            return Settings.AseGamePath;
+
+        if (!string.IsNullOrWhiteSpace(Settings.AsaGamePath))
+            return Settings.AsaGamePath;
+
+        return string.Empty;
     }
 }

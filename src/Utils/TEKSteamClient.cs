@@ -70,6 +70,8 @@ static partial class TEKSteamClient
     private static partial void ReleaseMsgs(ref ErrorMessages errMsgs);
     [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_s3c_sync_manifest", StringMarshalling = StringMarshalling.Utf8)]
     private static partial Error S3CSyncManifest(nint libCtx, string url, int timeoutMs);
+    [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_s3c_get_srv_for_mrc", StringMarshalling = StringMarshalling.Utf8)]
+    private static partial nint S3CGetServerForManifestRequestCode(nint libCtx, uint appId, uint depotId);
     [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_dd_estimate_disk_space")]
     public static partial long DeltaEstimateDiskSpace(nint delta);
     [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_am_create", StringMarshalling = StringMarshalling.Utf16)]
@@ -241,6 +243,12 @@ static partial class TEKSteamClient
         }
 
         public Error SyncS3Manifest(string url) => S3CSyncManifest(handle, url, 16000);
+
+        public string? GetServerForManifestRequestCode(uint appId, uint depotId)
+        {
+            nint serverPtr = S3CGetServerForManifestRequestCode(handle, appId, depotId);
+            return serverPtr == 0 ? null : Marshal.PtrToStringUTF8(serverPtr);
+        }
     }
     public class AppManager : SafeHandle
     {

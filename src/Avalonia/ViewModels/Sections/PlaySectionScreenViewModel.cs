@@ -52,7 +52,7 @@ public sealed class PlaySectionScreenViewModel : LauncherSectionScreenViewModel
         (_launcherLanguages, _launcherLanguageMap) = BuildLauncherLanguageOptions();
     }
 
-    public string CurrentGamePath => Game.Path ?? Locale.Get("errors.noPathSelected");
+    public string CurrentGamePath => ActiveGameManager.Current.RootPath;
 
     public string? HeroImagePath => null;
 
@@ -111,9 +111,13 @@ public sealed class PlaySectionScreenViewModel : LauncherSectionScreenViewModel
         set => Game.UseSpacewar = value;
     }
 
-    public bool UseSpacewarVisible => Game.CanUseSpacewar && Steam.App.CurrentUserStatus.GameStatus != Game.Status.NotOwned;
+    public bool UseSpacewarVisible => Game.CanUseSpacewar;
 
-    public Task LaunchAsync() => Task.Run(() => Game.Launch(null));
+    public Task LaunchAsync()
+    {
+        Game.Launch(null);
+        return Task.CompletedTask;
+    }
 
     public override void Activate()
     {

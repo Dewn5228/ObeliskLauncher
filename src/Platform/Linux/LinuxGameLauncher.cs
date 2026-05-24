@@ -9,22 +9,46 @@ namespace TEKLauncher.Platform;
 
 sealed class LinuxGameLauncher : IGameLauncher
 {
-    const string ArkAppId = "346110";
-
     public GameLaunchCapabilities Capabilities { get; } = new(false, false, true);
 
     public bool DirectXInstalled => true;
 
     public GameLaunchResult Launch(in GameLaunchRequest request)
     {
+        var launchStopwatch = Stopwatch.StartNew();
+        LauncherLog.Information("Linux launch entry. Exe={ExePath}", request.ExecutablePath);
         if (!File.Exists(request.ExecutablePath))
+        {
+            LauncherLog.Error("Linux launch aborted: executable missing at {ExePath}", request.ExecutablePath);
             return new(false, $"ARK executable was not found at '{request.ExecutablePath}'.");
+        }
 
         if (TryCreateLaunchContext(request, out var context, out string? errorMessage))
         {
+            LauncherLog.Debug("Linux launch context resolved. GameId={GameId}, SteamAppId={SteamAppId}, Tool={ToolKind}:{ToolPath}, CompatData={CompatDataPath}, CompatTool={CompatTool}",
+                context.GameId,
+                context.SteamAppId,
+                context.LaunchTool.Kind,
+                context.LaunchTool.ExecutablePath,
+                context.CompatDataPath,
+                context.CompatTool);
+
+            LauncherLog.Debug("Linux launch selection. ConfiguredToolId={ConfiguredToolId}, ResolvedToolId={ResolvedToolId}",
+                context.ConfiguredToolId,
+                context.LaunchTool.Id);
+
+            PromoteResolvedToolSelection(context);
+
+            var acquireStopwatch = Stopwatch.StartNew();
+            LauncherLog.Debug("Linux launch acquiring runtime assets...");
             var acquireResult = GameRuntimeBootstrap.Acquire();
+            acquireStopwatch.Stop();
+            LauncherLog.Debug("Linux launch runtime asset acquisition completed in {ElapsedMs} ms", acquireStopwatch.ElapsedMilliseconds);
             if (acquireResult.Assets is not { } assets)
+            {
+                LauncherLog.Error("Linux launch aborted: failed to acquire runtime assets. Error={Error}", acquireResult.ErrorMessage ?? "unknown");
                 return new(false, acquireResult.ErrorMessage ?? "Failed to prepare Proton launch assets.");
+            }
 
             string settingsPath;
             try
@@ -33,6 +57,7 @@ sealed class LinuxGameLauncher : IGameLauncher
             }
             catch (Exception ex)
             {
+                LauncherLog.Error(ex, "Linux launch aborted: failed to write runtime settings file");
                 return new(false, $"Failed to prepare TEK Game Runtime settings for Proton launch: {ex.Message}");
             }
 
@@ -40,22 +65,43 @@ sealed class LinuxGameLauncher : IGameLauncher
               ? CreateWineStartInfo(context, assets, request, settingsPath)
               : CreateProtonStartInfo(context, assets, request, settingsPath);
 
-            ApplyConfiguredEnvironment(startInfo);
-            startInfo = WrapLaunchStartInfo(startInfo);
+            ApplyConfiguredEnvironment(startInfo, context.GameId);
+            startInfo = WrapLaunchStartInfo(startInfo, context.GameId);
 
             WriteLaunchDebugInfo(context, assets, request, settingsPath, startInfo);
 
+            startInfo.RedirectStandardOutput = true;
+            startInfo.RedirectStandardError = true;
+            LauncherLog.Debug("Linux launch command prepared. FileName={FileName}, WorkingDirectory={WorkingDirectory}, Args={Args}",
+                startInfo.FileName,
+                startInfo.WorkingDirectory,
+                string.Join(' ', startInfo.ArgumentList));
+
             try
             {
-                Process.Start(startInfo);
+                Process? process = Process.Start(startInfo);
+                if (process is null)
+                {
+                    LauncherLog.Error("Linux launch failed: Process.Start returned null");
+                    return new(false, "Failed to launch ARK through Proton and TEK Injector: Process.Start returned null.");
+                }
+
+                LauncherLog.Information("Linux launch process started. PID={Pid}, ProcessName={ProcessName}", process.Id, process.ProcessName);
+                AttachProcessOutputLogging(process, context.GameId);
+                _ = Task.Run(() => LogEarlyProcessOutcome(process));
+                launchStopwatch.Stop();
+                LauncherLog.Debug("Linux launch pipeline finished in {ElapsedMs} ms", launchStopwatch.ElapsedMilliseconds);
                 return new(true, null);
             }
             catch (Exception ex)
             {
+                LauncherLog.Error(ex, "Linux launch failed during Process.Start");
                 return new(false, $"Failed to launch ARK through Proton and TEK Injector: {ex.Message}");
             }
         }
 
+        launchStopwatch.Stop();
+        LauncherLog.Error("Linux launch failed: could not create launch context. Error={Error}", errorMessage ?? "unknown");
         return new(false, errorMessage ?? "Could not prepare a Linux Proton launch context for ARK.");
     }
 
@@ -79,10 +125,13 @@ sealed class LinuxGameLauncher : IGameLauncher
         }
 
         string? libraryRoot = LinuxCompatDataResolver.TryGetSteamLibraryRoot(gameRoot);
-        string compatDataPath = LinuxCompatDataResolver.GetResolvedCompatDataPath(gameRoot);
+        string steamAppId = ResolveSteamAppIdString(request.RuntimeSettings);
+        string gameId = Settings.GetGameIdBySteamAppId(steamAppId);
+        string compatDataPath = LinuxCompatDataResolver.GetResolvedCompatDataPath(gameRoot, steamAppId);
 
-        string? compatToolName = TryGetCompatToolName(steamInstallPath);
-        if (!LinuxLaunchToolResolver.TryResolve(Settings.LinuxLaunchTool, steamInstallPath, libraryRoot ?? string.Empty, compatToolName, out LinuxLaunchToolOption? launchTool, out errorMessage)
+        string? compatToolName = TryGetCompatToolName(steamInstallPath, steamAppId);
+        string configuredToolId = LinuxLaunchToolResolver.NormalizeSelection(Settings.GetLinuxLaunchTool(gameId));
+        if (!LinuxLaunchToolResolver.TryResolve(configuredToolId, steamInstallPath, libraryRoot ?? string.Empty, compatToolName, out LinuxLaunchToolOption? launchTool, out errorMessage)
             || launchTool is null)
         {
             return false;
@@ -90,7 +139,7 @@ sealed class LinuxGameLauncher : IGameLauncher
 
         Directory.CreateDirectory(compatDataPath);
 
-        context = new(launchTool, steamInstallPath, gameRoot, libraryRoot, compatDataPath, compatToolName ?? "Unknown");
+        context = new(launchTool, steamInstallPath, gameRoot, libraryRoot, compatDataPath, compatToolName ?? "Unknown", steamAppId, gameId, configuredToolId);
         return true;
     }
 
@@ -140,8 +189,8 @@ sealed class LinuxGameLauncher : IGameLauncher
         };
 
         startInfo.Environment["WINEPREFIX"] = Path.Combine(context.CompatDataPath, "pfx");
-        startInfo.Environment["SteamAppId"] = ArkAppId;
-        startInfo.Environment["SteamGameId"] = ArkAppId;
+        startInfo.Environment["SteamAppId"] = context.SteamAppId;
+        startInfo.Environment["SteamGameId"] = context.SteamAppId;
 
         startInfo.ArgumentList.Add(assets.InjectorExecutablePath);
         startInfo.ArgumentList.Add("--ti-exe-path");
@@ -200,25 +249,26 @@ sealed class LinuxGameLauncher : IGameLauncher
         settings[propertyName] = ToWinePath(path);
     }
 
-    static void ApplyConfiguredEnvironment(ProcessStartInfo startInfo)
+    static void ApplyConfiguredEnvironment(ProcessStartInfo startInfo, string gameId)
     {
-        if (Settings.LinuxUseVkBasalt)
+        if (Settings.GetLinuxUseVkBasalt(gameId))
             startInfo.Environment["ENABLE_VKBASALT"] = "1";
 
-        if (Settings.LinuxUseWineFullscreenFsr)
+        if (Settings.GetLinuxUseWineFullscreenFsr(gameId))
         {
             startInfo.Environment["WINE_FULLSCREEN_FSR"] = "1";
-            if (!string.IsNullOrWhiteSpace(Settings.LinuxWineFullscreenFsrStrength))
-                startInfo.Environment["WINE_FULLSCREEN_FSR_STRENGTH"] = Settings.LinuxWineFullscreenFsrStrength.Trim();
+            string fsrStrength = Settings.GetLinuxWineFullscreenFsrStrength(gameId);
+            if (!string.IsNullOrWhiteSpace(fsrStrength))
+                startInfo.Environment["WINE_FULLSCREEN_FSR_STRENGTH"] = fsrStrength.Trim();
         }
 
-        foreach (KeyValuePair<string, string> variable in ParseEnvironmentVariables(Settings.LinuxExtraEnvironmentVariables))
+        foreach (KeyValuePair<string, string> variable in ParseEnvironmentVariables(Settings.GetLinuxExtraEnvironmentVariables(gameId)))
             startInfo.Environment[variable.Key] = variable.Value;
     }
 
-    static ProcessStartInfo WrapLaunchStartInfo(ProcessStartInfo startInfo)
+    static ProcessStartInfo WrapLaunchStartInfo(ProcessStartInfo startInfo, string gameId)
     {
-        List<LaunchWrapper> wrappers = BuildLaunchWrappers();
+        List<LaunchWrapper> wrappers = BuildLaunchWrappers(gameId);
         if (wrappers.Count == 0)
             return startInfo;
 
@@ -264,29 +314,30 @@ sealed class LinuxGameLauncher : IGameLauncher
         return wrappedStartInfo;
     }
 
-    static List<LaunchWrapper> BuildLaunchWrappers()
+    static List<LaunchWrapper> BuildLaunchWrappers(string gameId)
     {
         var wrappers = new List<LaunchWrapper>();
-        if (Settings.LinuxUseGameMode)
+        if (Settings.GetLinuxUseGameMode(gameId))
             wrappers.Add(new("gamemoderun", [], false, null));
-        if (Settings.LinuxUseMangoHud)
+        if (Settings.GetLinuxUseMangoHud(gameId))
             wrappers.Add(new("mangohud", [], false, null));
 
-        foreach (LaunchWrapper wrapper in ParseWrapperCommands(Settings.LinuxLaunchWrappers))
+        foreach (LaunchWrapper wrapper in ParseWrapperCommands(Settings.GetLinuxLaunchWrappers(gameId)))
             wrappers.Add(wrapper);
 
-        if (Settings.LinuxUseGamescope)
+        if (Settings.GetLinuxUseGamescope(gameId))
         {
             var gamescopeArguments = new List<string> { "-f" };
-            gamescopeArguments.AddRange(ParseCommandLine(Settings.LinuxGamescopeArguments));
-            if (Settings.LinuxUseGamescopeFsr)
+            gamescopeArguments.AddRange(ParseCommandLine(Settings.GetLinuxGamescopeArguments(gameId)));
+            if (Settings.GetLinuxUseGamescopeFsr(gameId))
             {
                 gamescopeArguments.Add("-F");
                 gamescopeArguments.Add("fsr");
-                if (!string.IsNullOrWhiteSpace(Settings.LinuxGamescopeSharpness))
+                string sharpness = Settings.GetLinuxGamescopeSharpness(gameId);
+                if (!string.IsNullOrWhiteSpace(sharpness))
                 {
                     gamescopeArguments.Add("--sharpness");
-                    gamescopeArguments.Add(Settings.LinuxGamescopeSharpness.Trim());
+                    gamescopeArguments.Add(sharpness.Trim());
                 }
             }
 
@@ -391,7 +442,7 @@ sealed class LinuxGameLauncher : IGameLauncher
         return $"Z:{fullPath.Replace('/', '\\')}";
     }
 
-    static string? TryGetCompatToolName(string? steamInstallPath)
+    static string? TryGetCompatToolName(string? steamInstallPath, string steamAppId)
     {
         if (string.IsNullOrEmpty(steamInstallPath))
             return null;
@@ -405,8 +456,22 @@ sealed class LinuxGameLauncher : IGameLauncher
             return null;
 
         using var reader = new StreamReader(localConfigPath);
-        var mapping = new VDFNode(reader)["UserLocalConfigStore"]?["Software"]?["Valve"]?["Steam"]?["CompatToolMapping"]?[ArkAppId];
+        var mapping = new VDFNode(reader)["UserLocalConfigStore"]?["Software"]?["Valve"]?["Steam"]?["CompatToolMapping"]?[steamAppId];
         return mapping?["name"]?.Value ?? mapping?["config"]?.Value;
+    }
+
+    static string ResolveSteamAppIdString(byte[] runtimeSettings)
+    {
+        try
+        {
+            if (JsonNode.Parse(runtimeSettings)?["app_id"]?.GetValue<uint>() is uint appId && appId > 0)
+                return appId.ToString();
+        }
+        catch
+        {
+        }
+
+        return ActiveGameManager.Current.SteamAppId.ToString();
     }
 
     static void WriteLaunchDebugInfo(in LinuxLaunchContext context, in GameRuntimeAssets assets, in GameLaunchRequest request, string settingsPath, ProcessStartInfo startInfo)
@@ -425,18 +490,19 @@ sealed class LinuxGameLauncher : IGameLauncher
             writer.WriteLine($"Steam library root: {context.LibraryRoot ?? "<managed by launcher>"}");
             writer.WriteLine($"Compat data path: {context.CompatDataPath}");
             writer.WriteLine($"Steam compat tool: {context.CompatTool}");
-            writer.WriteLine($"Configured custom prefix: {Settings.LinuxCompatDataPath}");
-            writer.WriteLine($"Configured extra env vars: {Settings.LinuxExtraEnvironmentVariables}");
-            writer.WriteLine($"Configured wrappers: {Settings.LinuxLaunchWrappers}");
-            writer.WriteLine($"Use GameMode: {Settings.LinuxUseGameMode}");
-            writer.WriteLine($"Use Gamescope: {Settings.LinuxUseGamescope}");
-            writer.WriteLine($"Gamescope args: {Settings.LinuxGamescopeArguments}");
-            writer.WriteLine($"Use Gamescope FSR: {Settings.LinuxUseGamescopeFsr}");
-            writer.WriteLine($"Gamescope sharpness: {Settings.LinuxGamescopeSharpness}");
-            writer.WriteLine($"Use MangoHud: {Settings.LinuxUseMangoHud}");
-            writer.WriteLine($"Use vkBasalt: {Settings.LinuxUseVkBasalt}");
-            writer.WriteLine($"Use Wine FSR: {Settings.LinuxUseWineFullscreenFsr}");
-            writer.WriteLine($"Wine FSR strength: {Settings.LinuxWineFullscreenFsrStrength}");
+            writer.WriteLine($"Steam app ID: {context.SteamAppId}");
+            writer.WriteLine($"Configured custom prefix: {Settings.GetLinuxCompatDataPath(context.GameId)}");
+            writer.WriteLine($"Configured extra env vars: {Settings.GetLinuxExtraEnvironmentVariables(context.GameId)}");
+            writer.WriteLine($"Configured wrappers: {Settings.GetLinuxLaunchWrappers(context.GameId)}");
+            writer.WriteLine($"Use GameMode: {Settings.GetLinuxUseGameMode(context.GameId)}");
+            writer.WriteLine($"Use Gamescope: {Settings.GetLinuxUseGamescope(context.GameId)}");
+            writer.WriteLine($"Gamescope args: {Settings.GetLinuxGamescopeArguments(context.GameId)}");
+            writer.WriteLine($"Use Gamescope FSR: {Settings.GetLinuxUseGamescopeFsr(context.GameId)}");
+            writer.WriteLine($"Gamescope sharpness: {Settings.GetLinuxGamescopeSharpness(context.GameId)}");
+            writer.WriteLine($"Use MangoHud: {Settings.GetLinuxUseMangoHud(context.GameId)}");
+            writer.WriteLine($"Use vkBasalt: {Settings.GetLinuxUseVkBasalt(context.GameId)}");
+            writer.WriteLine($"Use Wine FSR: {Settings.GetLinuxUseWineFullscreenFsr(context.GameId)}");
+            writer.WriteLine($"Wine FSR strength: {Settings.GetLinuxWineFullscreenFsrStrength(context.GameId)}");
             writer.WriteLine($"Injector path: {assets.InjectorExecutablePath}");
             writer.WriteLine($"Runtime path: {assets.RuntimeLibraryPath}");
             writer.WriteLine($"Settings path: {settingsPath}");
@@ -450,7 +516,109 @@ sealed class LinuxGameLauncher : IGameLauncher
         }
     }
 
-    readonly record struct LinuxLaunchContext(LinuxLaunchToolOption LaunchTool, string SteamInstallPath, string GameRoot, string? LibraryRoot, string CompatDataPath, string CompatTool);
+    static void LogEarlyProcessOutcome(Process process)
+    {
+        try
+        {
+            if (process.WaitForExit(15000))
+            {
+                LauncherLog.Warning("Linux launch process exited early. PID={Pid}, ExitCode={ExitCode}", process.Id, process.ExitCode);
+                return;
+            }
+
+            LauncherLog.Information("Linux launch process is still running after startup window. PID={Pid}", process.Id);
+        }
+        catch (Exception ex)
+        {
+            LauncherLog.Warning("Failed to inspect launch process outcome. Reason={Reason}", ex.Message);
+        }
+        finally
+        {
+            try
+            {
+                process.Dispose();
+            }
+            catch
+            {
+            }
+        }
+    }
+
+    static void PromoteResolvedToolSelection(in LinuxLaunchContext context)
+    {
+        if (!context.ConfiguredToolId.Equals(LinuxLaunchToolResolver.AutomaticId, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        if (context.LaunchTool.Id.Equals(LinuxLaunchToolResolver.AutomaticId, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        try
+        {
+            Settings.RegisterCustomLinuxLaunchTool(context.LaunchTool.Id);
+            Settings.SetLinuxLaunchTool(context.LaunchTool.Id, context.GameId);
+            Settings.Save();
+            LauncherLog.Information("Linux launch auto-selection promoted to persisted tool. GameId={GameId}, ToolId={ToolId}", context.GameId, context.LaunchTool.Id);
+        }
+        catch (Exception ex)
+        {
+            LauncherLog.Warning("Failed to persist resolved Linux launch tool. GameId={GameId}, ToolId={ToolId}, Reason={Reason}", context.GameId, context.LaunchTool.Id, ex.Message);
+        }
+    }
+
+    static void AttachProcessOutputLogging(Process process, string gameId)
+    {
+        try
+        {
+            string logsDir = Path.Combine(LauncherPlatform.Current.AppDataFolder, "logs");
+            Directory.CreateDirectory(logsDir);
+            string filePath = Path.Combine(logsDir, $"launch-child-{DateTime.Now:yyyyMMdd-HHmmss}-{gameId}.log");
+
+            var writer = new StreamWriter(filePath, false) { AutoFlush = true };
+            object gate = new();
+
+            void WriteLine(string channel, string? line)
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                    return;
+
+                lock (gate)
+                    writer.WriteLine($"[{DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss.fff zzz}] [{channel}] {line}");
+            }
+
+            process.OutputDataReceived += (_, args) => WriteLine("OUT", args.Data);
+            process.ErrorDataReceived += (_, args) => WriteLine("ERR", args.Data);
+
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    process.WaitForExit();
+                }
+                catch
+                {
+                }
+                finally
+                {
+                    lock (gate)
+                    {
+                        writer.WriteLine($"[{DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss.fff zzz}] [SYS] Child process finished.");
+                        writer.Dispose();
+                    }
+                }
+            });
+
+            LauncherLog.Information("Linux launch child output capture enabled. File={FilePath}", filePath);
+        }
+        catch (Exception ex)
+        {
+            LauncherLog.Warning("Failed to enable child output capture: {Reason}", ex.Message);
+        }
+    }
+
+    readonly record struct LinuxLaunchContext(LinuxLaunchToolOption LaunchTool, string SteamInstallPath, string GameRoot, string? LibraryRoot, string CompatDataPath, string CompatTool, string SteamAppId, string GameId, string ConfiguredToolId);
 
     readonly record struct LaunchWrapper(string FileName, string[] Arguments, bool RequiresCommandSeparator, string? CommandArgumentName);
 }

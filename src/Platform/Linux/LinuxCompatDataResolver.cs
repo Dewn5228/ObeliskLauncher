@@ -4,26 +4,31 @@ namespace TEKLauncher.Platform;
 
 static class LinuxCompatDataResolver
 {
-    const string ArkAppId = "346110";
-
-    public static string GetManagedCompatDataPath(string gameRoot)
+    public static string GetManagedCompatDataPath(string gameRoot, string? steamAppId = null)
     {
         string normalizedPath = Path.GetFullPath(gameRoot).TrimEnd(Path.DirectorySeparatorChar);
         int hash = StringComparer.OrdinalIgnoreCase.GetHashCode(normalizedPath);
-        string folderName = $"{ArkAppId}-{hash:X8}";
+        string folderName = $"{NormalizeSteamAppId(steamAppId)}-{hash:X8}";
         return Path.Combine(LauncherBootstrap.AppDataFolder, "compatdata", folderName);
     }
 
-    public static string GetResolvedCompatDataPath(string gameRoot)
+    public static string GetResolvedCompatDataPath(string gameRoot, string? steamAppId = null)
     {
-        if (!string.IsNullOrWhiteSpace(Settings.LinuxCompatDataPath))
-            return Path.GetFullPath(Settings.LinuxCompatDataPath);
+        string gameId = string.IsNullOrWhiteSpace(steamAppId) ? GameCatalog.DefaultGameId : Settings.GetGameIdBySteamAppId(steamAppId!);
+        if (!string.IsNullOrWhiteSpace(Settings.GetLinuxCompatDataPath(gameId)))
+            return Path.GetFullPath(Settings.GetLinuxCompatDataPath(gameId));
 
+        string appId = NormalizeSteamAppId(steamAppId);
         string? libraryRoot = TryGetSteamLibraryRoot(gameRoot);
         return libraryRoot is not null
-          ? Path.Combine(libraryRoot, "steamapps", "compatdata", ArkAppId)
-          : GetManagedCompatDataPath(gameRoot);
+          ? Path.Combine(libraryRoot, "steamapps", "compatdata", appId)
+          : GetManagedCompatDataPath(gameRoot, appId);
     }
+
+    static string NormalizeSteamAppId(string? steamAppId)
+      => uint.TryParse(steamAppId, out uint appId) && appId > 0
+        ? appId.ToString()
+                : ActiveGameManager.Current.SteamAppId.ToString();
 
     public static string? TryGetSteamLibraryRoot(string gameRoot)
     {

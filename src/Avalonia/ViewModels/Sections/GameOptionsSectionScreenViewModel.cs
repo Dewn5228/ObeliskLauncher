@@ -58,7 +58,7 @@ public sealed class GameOptionsSectionScreenViewModel : LauncherSectionScreenVie
         Activate();
     }
 
-    public string CurrentGamePath => Game.Path ?? Locale.Get("errors.noPathSelected");
+    public string CurrentGamePath => ActiveGameManager.Current.RootPath;
 
     public bool DirectXStatusVisible => Game.CanRunAsAdmin || Game.CanUseHighProcessPriority;
 
@@ -112,6 +112,8 @@ public sealed class GameOptionsSectionScreenViewModel : LauncherSectionScreenVie
 
     public bool CanRunMaintenance => !IsBusy;
 
+    public bool PredefinedLaunchParametersVisible => GameOptionsWorkflow.HasPredefinedLaunchParameters;
+
     public GameOptionsLaunchParameterViewModel[] LaunchParameters { get; }
 
     public string MaintenanceNote => OperatingSystem.IsLinux()
@@ -140,6 +142,7 @@ public sealed class GameOptionsSectionScreenViewModel : LauncherSectionScreenVie
 
     public override void Activate()
     {
+        GameOptionsWorkflow.EnforcePredefinedLaunchParameterPolicy();
         CustomLaunchParameters = GameOptionsWorkflow.GetCustomLaunchParametersText();
         _highProcessPriority = Game.HighProcessPriority;
         OnPropertyChanged(nameof(HighProcessPriority));
@@ -149,6 +152,7 @@ public sealed class GameOptionsSectionScreenViewModel : LauncherSectionScreenVie
         OnPropertyChanged(nameof(DirectXMissing));
         OnPropertyChanged(nameof(DirectXMissingVisible));
         OnPropertyChanged(nameof(DirectXStatusVisible));
+        OnPropertyChanged(nameof(PredefinedLaunchParametersVisible));
         foreach (var parameter in LaunchParameters)
             parameter.Refresh();
         OnPropertyChanged(nameof(HighProcessPriorityVisible));

@@ -106,7 +106,7 @@ sealed class LinuxLauncherPlatform : ILauncherPlatform
 
     static IEnumerable<string> GetProtonSavedRootCandidates(string gamePath)
     {
-        string compatPath = LinuxCompatDataResolver.GetResolvedCompatDataPath(gamePath);
+        string compatPath = LinuxCompatDataResolver.GetResolvedCompatDataPath(gamePath, ActiveGameManager.Current.SteamAppId.ToString());
 
         string[] userNames = ["steamuser", Environment.UserName];
         string[] appNames = ["ARK", "ShooterGame"];

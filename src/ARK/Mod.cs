@@ -41,6 +41,7 @@ class Mod
     /// <param name="id">Steam published file ID of the mod.</param>
     public Mod(ulong id)
     {
+        IGameContext game = ActiveGameManager.Current;
         Id = id;
         CompressedFolderPath = Path.Combine(CompressedModsDirectory!, id.ToString());
         string modInfoFile = Path.Combine(CompressedFolderPath, "mod.info");
@@ -58,13 +59,14 @@ class Mod
         }
         else
             Name = string.Empty;
-        ModsFolderPath = Path.Combine(Game.Path!, "ShooterGame", "Content", "Mods", Id.ToString());
+        ModsFolderPath = Path.Combine(game.RootPath, "ShooterGame", "Content", "Mods", Id.ToString());
         ModFilePath = string.Concat(ModsFolderPath, ".mod");
     }
     /// <summary>Uninstalls the mod.</summary>
     public unsafe void Delete()
     {
-        var itemId = new TEKSteamClient.ItemId { AppId = 346110, DepotId = 346110, WorkshopItemId = Id };
+        IGameContext game = ActiveGameManager.Current;
+        var itemId = new TEKSteamClient.ItemId { AppId = game.SteamAppId, DepotId = game.WorkshopDepotId, WorkshopItemId = Id };
         var desc = LauncherServices.TekSteamClient.GetItemDesc(&itemId);
         var prevStatus = _status;
         CurrentStatus = Status.Deleting;
@@ -99,11 +101,15 @@ class Mod
     /// <summary>Finds all installed mods, gets their details, checks for updates and populates the <see cref="List"/>.</summary>
     public static unsafe void InitializeList()
     {
+        IGameContext game = ActiveGameManager.Current;
+        lock (List)
+            List.Clear();
+
         //Set up Mods directory
-        CompressedModsDirectory = Path.Combine(Game.Path!, "Mods");
+        CompressedModsDirectory = game.WorkshopDir;
         if (!Directory.Exists(CompressedModsDirectory))
         {
-            string workshopDirectory = Path.GetFullPath(Path.Combine(Game.Path!, "..", "..", "workshop", "content", "346110"));
+            string workshopDirectory = Path.GetFullPath(Path.Combine(game.RootPath, "..", "..", "workshop", "content", game.SteamAppId.ToString()));
             if (Directory.Exists(workshopDirectory))
                 Directory.CreateSymbolicLink(CompressedModsDirectory, workshopDirectory);
             else
@@ -141,7 +147,7 @@ class Mod
             if (LauncherServices.TekSteamClient.IsLoaded)
                 foreach (var mod in List)
                 {
-                    var id = new TEKSteamClient.ItemId { AppId = 346110, DepotId = 346110, WorkshopItemId = mod.Id };
+                    var id = new TEKSteamClient.ItemId { AppId = game.SteamAppId, DepotId = game.WorkshopDepotId, WorkshopItemId = mod.Id };
                     var desc = LauncherServices.TekSteamClient.GetItemDesc(&id);
                     if (desc != null && desc->Status.HasFlag(TEKSteamClient.AmItemStatus.UpdAvailable))
                     {
