@@ -5,6 +5,8 @@ VisualStudioVersion = 17.4.33110.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TEKLauncher", "TEKLauncher.csproj", "{4D2764D0-FFB4-4595-80FB-93E461ECA63E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TEKLauncher.Tests", "TEKLauncher.Tests\TEKLauncher.Tests.csproj", "{50B43FDE-FDF5-47EF-B620-FBC64DCF8A4A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,18 @@ Global
 		{4D2764D0-FFB4-4595-80FB-93E461ECA63E}.Release|x64.Build.0 = Release|Any CPU
 		{4D2764D0-FFB4-4595-80FB-93E461ECA63E}.Release|x86.ActiveCfg = Release|Any CPU
 		{4D2764D0-FFB4-4595-80FB-93E461ECA63E}.Release|x86.Build.0 = Release|Any CPU
+		{50B43FDE-FDF5-47EF-B620-FBC64DCF8A4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50B43FDE-FDF5-47EF-B620-FBC64DCF8A4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50B43FDE-FDF5-47EF-B620-FBC64DCF8A4A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{50B43FDE-FDF5-47EF-B620-FBC64DCF8A4A}.Debug|x64.Build.0 = Debug|Any CPU
+		{50B43FDE-FDF5-47EF-B620-FBC64DCF8A4A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{50B43FDE-FDF5-47EF-B620-FBC64DCF8A4A}.Debug|x86.Build.0 = Debug|Any CPU
+		{50B43FDE-FDF5-47EF-B620-FBC64DCF8A4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50B43FDE-FDF5-47EF-B620-FBC64DCF8A4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50B43FDE-FDF5-47EF-B620-FBC64DCF8A4A}.Release|x64.ActiveCfg = Release|Any CPU
+		{50B43FDE-FDF5-47EF-B620-FBC64DCF8A4A}.Release|x64.Build.0 = Release|Any CPU
+		{50B43FDE-FDF5-47EF-B620-FBC64DCF8A4A}.Release|x86.ActiveCfg = Release|Any CPU
+		{50B43FDE-FDF5-47EF-B620-FBC64DCF8A4A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -40,7 +40,7 @@
       "mb": "MB",
       "gb": "GB"
     },
-    "updating": "Updating"
+    "updating": "正在更新…"
   },
   "time": {
     "second": "秒",
@@ -76,8 +76,8 @@
     "highProcessPriorityDesc": "以更高 CPU 优先级运行游戏。",
     "runGameAsAdmin": "以管理员身份运行",
     "useSpacewar": "使用 Spacewar",
-    "launchBehaviorNoteLinux": "Linux launches ARK through Steam/Proton. Windows-only elevation behavior is not used on this platform.",
-    "launcherLanguageAvailabilityNote": "Additional launcher translations are unavailable in this build because the localization files are missing."
+    "launcherLanguageAvailabilityNote": "由于缺少语言包文件，此版本无法提供额外的启动器翻译。",
+    "launchBehaviorNoteLinux": "Linux 环境下通过 Steam/Proton 启动 ARK。此平台不使用仅限 Windows 的权限提升行为。"
   },
   "gameOptionsTab": {
     "install": "安装",
@@ -102,16 +102,17 @@
     "cleanDownloadCacheSuccess": "下载缓存已成功清理。",
     "steamUpdater": "Steam 提供游戏更新。",
     "enablingAnselSupport": "启用 Ansel 支持将禁用在线模式的反作弊功能。",
-    "maintenanceNoteLinux": "Game maintenance actions run natively on Linux, while game launch goes through Steam/Proton. Windows-only priority and DirectX checks are hidden on this platform.",
-    "maintenanceNoteWindows": "Game update, validation, and file maintenance run directly from the current launcher shell."
+    "maintenanceNoteLinux": "游戏维护操作在 Linux 上原生运行，而游戏启动则通过 Steam/Proton。此平台隐藏了 Windows 专有的优先级和 DirectX 检查。",
+    "maintenanceNoteWindows": "游戏更新、验证和文件维护直接通过当前启动器外壳运行。"
   },
   "dlcTab": {
     "tabTitle": "DLC",
     "dlcUpdatesAvailable": "有可用的 DLC 更新。",
-    "sectionNote": "Install, update, validate, and delete DLC content from the native launcher. Operations use the shared Steam task backend and refresh launcher status when they finish."
+    "sectionNote": "通过原生启动器安装、更新、验证和删除 DLC 内容。操作使用共享的 Steam 任务后端，并在完成后刷新启动器状态。"
   },
   "modsTab": {
     "installMod": "安装模组",
+    "installingFiles": "正在安装文件…",
     "unpackingModFiles": "正在解压模组文件…",
     "modInfoFileMissing": "mod.info 文件缺失或损坏。",
     "notAnARKMod": "所选文件夹不是有效的 ARK 模组。",
@@ -157,9 +158,9 @@
     "noModSelectedForPreview": "未选择模组进行预览。",
     "workshopPage": "创意工坊页面",
     "adlerHashMismatch": "文件哈希不匹配——文件可能在列表生成后被修改。",
-    "alreadyInstalled": "{0} is already installed.",
-    "failedToLoadWorkshopModList": "Failed to load workshop mod list.",
-    "readyToInstall": "{0} ready to install."
+    "failedToLoadWorkshopModList": "加载创意工坊模组列表失败。",
+    "readyToInstall": "{0} 已准备好安装。",
+    "alreadyInstalled": "{0} 已经安装。"
   },
   "serversTab": {
     "tabTitle": "服务器",
@@ -180,13 +181,15 @@
   },
   "launcherSettingsTab": {
     "closeOnGameLaunch": "启动游戏后关闭启动器",
+    "aseGamePath": "ASE 游戏路径",
+    "asaGamePath": "ASA 游戏路径",
     "linuxLaunchSettings": "Linux 启动设置",
     "launcherLanguage": "启动器语言",
     "gameLanguage": "游戏语言",
     "useGlobalFonts": "使用全局字体",
     "keyFeatures": "核心功能",
     "keyFeaturesHeader": "Arsenal 核心功能：",
-    "linuxLaunchToolNote": "Choose which Windows compatibility runtime launches ARK on Linux. Automatic follows Steam's assigned Proton tool when possible, then falls back to the best discovered Proton or Wine build."
+    "linuxLaunchToolNote": "选择在 Linux 上启动 ARK 的 Windows 兼容运行时。“自动”模式将尽可能遵循 Steam 分配的 Proton 工具，否则将回退到发现的最优 Proton 或 Wine 版本。"
   },
   "downloads": {
     "downloading": "下载中…",
@@ -223,6 +226,7 @@
     "unlockSkinsSuccess": "皮肤已成功解锁。",
     "unlockSkinsFail": "解锁皮肤失败。请确认游戏路径设置正确。",
     "noPathSelected": "未选择路径。",
+    "gamePathNotConfigured": "未配置 {0} 路径。请在启动器设置中进行设置。",
     "languageChangeInfo": "重启启动器以完全应用语言更改。",
     "anotherInstanceRunning": "启动器已有另一个实例在运行。",
     "steamMissing": "未安装或未检测到 Steam。",
@@ -234,8 +238,8 @@
     "launcherCloseWarning": "未保存的数据将丢失。",
     "deleteLauncherSettings": "删除启动器设置",
     "deleteLauncherSettingsPrompt": "是否永久删除所有启动器设置？",
-    "downloadFailed": "Download failed: ",
-    "steamClientBootstrapFailed": "tek-steamclient bootstrap failed"
+    "downloadFailed": "下载失败：",
+    "steamClientBootstrapFailed": "tek-steamclient 引导程序启动失败"
   },
   "version": {
     "launcherVersion": "启动器版本",
@@ -250,15 +254,15 @@
     "downloading": "下载中…",
     "gameFilesFound": "已找到游戏文件。",
     "gameFilesNotFound": "未找到游戏文件。",
-    "manageArkInstalls": "Manage ARK installs, DLC, mods, servers, and launch behavior from the native launcher shell.",
-    "preparingInstallation": "Preparing first-launch installation tasks for ARK.",
-    "restartRequiredForSteamClient": "Launcher has to be restarted to load new version of tek-steamclient"
+    "manageArkInstalls": "通过原生启动器外壳管理 ARK 安装、DLC、模组、服务器和启动行为。",
+    "preparingInstallation": "正在为 ARK 准备首次运行的安装任务。",
+    "restartRequiredForSteamClient": "启动器必须重启以加载新版本的 tek-steamclient"
   },
   "launchOptimization": {
     "noRHIThread": "无 RHI 线程",
     "noRHIThreadDesc": "禁用渲染硬件接口（RHI）线程以提升部分系统的性能。",
     "lowMemoryMode": "低内存模式",
-    "lowMemoryModeDesc": "为低配置系统启用内存优化。",
+    "lowMemoryModeDesc": "将游戏内存使用限制为 4 GB。除非你的系统只有 4 GB 内存，否则请保持关闭。",
     "useDirectX10": "使用 DirectX 10",
     "useDirectX10Desc": "强制游戏使用 DirectX 10 以兼容旧硬件。",
     "noSplashScreen": "跳过启动画面",
@@ -268,7 +272,7 @@
     "noMemoryBias": "无内存偏置",
     "noMemoryBiasDesc": "禁用内存偏置优化。",
     "disableSPHibernation": "禁用单人休眠",
-    "disableSPHibernationDesc": "防止窗口失焦时在单人模式下挂起游戏。",
+    "disableSPHibernationDesc": "关闭单人休眠后，模拟会在整张地图持续运行。这会显著增加 CPU 和内存占用；除非某个模组明确需要全图恐龙数据，否则请保持关闭。",
     "disableVSync": "禁用垂直同步",
     "disableVSyncDesc": "关闭垂直同步以解除帧率限制。",
     "enableAnselSupport": "启用 Ansel 支持",
@@ -384,7 +388,7 @@
     "launcherUpdateAvailable": "有新的启动器更新可用——重启以安装。",
     "launcherUpdateFail": "下载启动器更新失败。",
     "updating": "更新中…",
-    "linuxFallbackNote": "Windows 版本可以原地替换启动器。Linux 版本目前在发布 Linux 构建前，需手动前往发布页面下载更新。"
+    "linuxFallbackNote": "Windows 版本可以原地替换启动器可执行文件。Linux 版本目前在发布原生构建前，需手动前往发布页面下载更新。"
   },
   "dlcUpdaterWindow": {
     "tabTitle": "更新 DLC",
@@ -401,6 +405,6 @@
   "gameUpdaterWindow": {
     "tabTitle": "更新游戏"
   },
-  "gameUpdateAvailable": "Game update is available.",
-  "updateFinished": "Update finished."
+  "gameUpdateAvailable": "游戏更新可用。",
+  "updateFinished": "更新完成。"
 }

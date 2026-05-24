@@ -6,6 +6,7 @@ global using System.Net;
 global using System.Text;
 global using System.Text.Json;
 global using System.Threading.Tasks;
+global using TEKLauncher;
 global using TEKLauncher.ARK;
 global using TEKLauncher.Data;
 global using TEKLauncher.Platform;

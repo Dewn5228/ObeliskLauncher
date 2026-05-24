@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.Json.Serialization;
 using System.Text.Json.Nodes;
+using TEKLauncher.Steam.CM;
 
 namespace TEKLauncher.ARK;
 
@@ -470,6 +471,8 @@ static class GameCatalog
 
             var runtimeNames = new Dictionary<string, string>();
             var dlcCatalog = new List<CatalogDlc>();
+
+            var dlcEntries = new List<(uint appId, string name)>();
             foreach ((string appIdText, JsonNode? nameNode) in dlcObject.OrderBy(static x => x.Key, StringComparer.Ordinal))
             {
                 if (!uint.TryParse(appIdText, out uint dlcAppId) || dlcAppId == 0)
@@ -479,8 +482,30 @@ static class GameCatalog
                 if (string.IsNullOrWhiteSpace(name))
                     name = $"Unknown DLC {dlcAppId}";
 
+                dlcEntries.Add((dlcAppId, name));
+            }
+
+            HashSet<uint>? appsWithDepots = null;
+            if (dlcEntries.Count > 0)
+            {
+                try { appsWithDepots = Client.GetAppsWithDepots([.. dlcEntries.Select(static e => e.appId)]); }
+                catch { }
+            }
+
+            var existingDepotIds = asaSource.DlcCatalog
+              .GroupBy(static dlc => dlc.AppId)
+              .ToDictionary(static group => group.Key, static group => group.Last().DepotId);
+
+            foreach ((uint dlcAppId, string name) in dlcEntries)
+            {
+                uint depotId;
+                if (appsWithDepots is null)
+                    depotId = existingDepotIds.GetValueOrDefault(dlcAppId, 0u);
+                else
+                    depotId = appsWithDepots.Contains(dlcAppId) ? dlcAppId : 0u;
+
                 runtimeNames[dlcAppId.ToString(CultureInfo.InvariantCulture)] = name;
-                dlcCatalog.Add(new CatalogDlc(name, dlcAppId, dlcAppId, false, false, "Mod", null, null, null));
+                dlcCatalog.Add(new CatalogDlc(name, dlcAppId, depotId, false, false, "Mod", null, null, null));
             }
 
             if (dlcCatalog.Count == 0)

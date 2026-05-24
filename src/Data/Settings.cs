@@ -19,7 +19,7 @@ static class Settings
     public static IReadOnlyDictionary<string, string> GamePaths => s_gamePaths;
     public static bool PreAquatica { get; set; }
     public static bool AsaForceEgsAuth { get; set; }
-    public static string AsaCfApiWrapper { get; set; } = string.Empty;
+    public static string AsaCfApiWrapper { get; set; } = "https://83374.apiw.nuclearist.ru/";
     public static string AseGamePath
     {
         get => GetGamePath(GameCatalog.AseGameId);

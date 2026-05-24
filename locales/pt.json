@@ -40,7 +40,7 @@
       "mb": "MB",
       "gb": "GB"
     },
-    "updating": "Updating"
+    "updating": "Atualizando"
   },
   "time": {
     "second": "s",
@@ -76,8 +76,8 @@
     "highProcessPriorityDesc": "Executar o jogo com prioridade de CPU mais alta.",
     "runGameAsAdmin": "Executar como administrador",
     "useSpacewar": "Usar Spacewar",
-    "launchBehaviorNoteLinux": "Linux launches ARK through Steam/Proton. Windows-only elevation behavior is not used on this platform.",
-    "launcherLanguageAvailabilityNote": "Additional launcher translations are unavailable in this build because the localization files are missing."
+    "launcherLanguageAvailabilityNote": "Traduções adicionais do launcher não estão disponíveis nesta versão porque os arquivos de localização estão ausentes.",
+    "launchBehaviorNoteLinux": "O Linux inicia o ARK via Steam/Proton. Comportamentos de elevação exclusivos do Windows não são usados nesta plataforma."
   },
   "gameOptionsTab": {
     "install": "Instalar",
@@ -102,16 +102,17 @@
     "cleanDownloadCacheSuccess": "Cache de download limpo com sucesso.",
     "steamUpdater": "A Steam gerencia as atualizações do jogo.",
     "enablingAnselSupport": "Habilitar o suporte a Ansel desativa os recursos anti-cheat nos modos online.",
-    "maintenanceNoteLinux": "Game maintenance actions run natively on Linux, while game launch goes through Steam/Proton. Windows-only priority and DirectX checks are hidden on this platform.",
-    "maintenanceNoteWindows": "Game update, validation, and file maintenance run directly from the current launcher shell."
+    "maintenanceNoteLinux": "As ações de manutenção do jogo são executadas nativamente no Linux, enquanto a inicialização ocorre via Steam/Proton. Verificações de prioridade e DirectX exclusivas do Windows estão ocultas nesta plataforma.",
+    "maintenanceNoteWindows": "A atualização, validação e manutenção de arquivos do jogo são executadas diretamente pelo launcher atual."
   },
   "dlcTab": {
     "tabTitle": "DLC",
     "dlcUpdatesAvailable": "Atualizações de DLC disponíveis.",
-    "sectionNote": "Install, update, validate, and delete DLC content from the native launcher. Operations use the shared Steam task backend and refresh launcher status when they finish."
+    "sectionNote": "Instale, atualize, valide e exclua conteúdo de DLC pelo launcher nativo. As operações usam o backend de tarefas compartilhado da Steam e atualizam o status do launcher ao finalizar."
   },
   "modsTab": {
     "installMod": "Instalar Mod",
+    "installingFiles": "Instalando arquivos…",
     "unpackingModFiles": "Descompactando arquivos do mod…",
     "modInfoFileMissing": "O arquivo mod.info está faltando ou corrompido.",
     "notAnARKMod": "A pasta selecionada não é um mod válido de ARK.",
@@ -136,7 +137,7 @@
     "writingPatchChunks": "Escrevendo blocos do patch…",
     "writingRelocs": "Escrevendo realocações…",
     "readingValidationCache": "Lendo cache de validação…",
-    "validating": "Validating…",
+    "validating": "Validando…",
     "finalizing": "Finalizando…",
     "incompleteDownload": "Download incompleto",
     "archiveCorrupted": "Arquivo corrompido",
@@ -156,10 +157,10 @@
     "failedToLoadPreview": "Falha ao carregar prévia.",
     "noModSelectedForPreview": "Nenhum mod selecionado para visualização.",
     "workshopPage": "Página da Workshop",
-    "adlerHashMismatch": "Hash de arquivo incompatível — o arquivo pode ter sido modificado.",
-    "alreadyInstalled": "{0} is already installed.",
-    "failedToLoadWorkshopModList": "Failed to load workshop mod list.",
-    "readyToInstall": "{0} ready to install."
+    "adlerHashMismatch": "Hash de arquivo incompatível — o arquivo pode ter sido modificado após a geração da lista.",
+    "alreadyInstalled": "{0} já está instalado.",
+    "failedToLoadWorkshopModList": "Falha ao carregar a lista de mods da Workshop.",
+    "readyToInstall": "{0} pronto para instalar."
   },
   "serversTab": {
     "tabTitle": "Servidores",
@@ -188,7 +189,7 @@
     "useGlobalFonts": "Usar fontes globais",
     "keyFeatures": "Recursos Principais",
     "keyFeaturesHeader": "Recursos do Arsenal Principal:",
-    "linuxLaunchToolNote": "Choose which Windows compatibility runtime launches ARK on Linux. Automatic follows Steam's assigned Proton tool when possible, then falls back to the best discovered Proton or Wine build."
+    "linuxLaunchToolNote": "Escolha qual runtime de compatibilidade do Windows inicia o ARK no Linux. O modo Automático segue a ferramenta Proton atribuída pela Steam quando possível, caso contrário, utiliza a melhor versão de Proton ou Wine encontrada."
   },
   "downloads": {
     "downloading": "Baixando…",
@@ -237,8 +238,8 @@
     "launcherCloseWarning": "Dados não salvos serão perdidos.",
     "deleteLauncherSettings": "Excluir configurações do launcher",
     "deleteLauncherSettingsPrompt": "Deseja excluir permanentemente todas as configurações do launcher?",
-    "downloadFailed": "Download failed: ",
-    "steamClientBootstrapFailed": "tek-steamclient bootstrap failed"
+    "downloadFailed": "Falha no download: ",
+    "steamClientBootstrapFailed": "falha no bootstrap do tek-steamclient"
   },
   "version": {
     "launcherVersion": "Versão do launcher",
@@ -253,15 +254,15 @@
     "downloading": "Baixando…",
     "gameFilesFound": "Arquivos do jogo encontrados.",
     "gameFilesNotFound": "Arquivos do jogo não encontrados.",
-    "manageArkInstalls": "Manage ARK installs, DLC, mods, servers, and launch behavior from the native launcher shell.",
-    "preparingInstallation": "Preparing first-launch installation tasks for ARK.",
-    "restartRequiredForSteamClient": "Launcher has to be restarted to load new version of tek-steamclient"
+    "manageArkInstalls": "Gerencie instalações de ARK, DLCs, mods, servidores e comportamento de inicialização a partir do launcher.",
+    "preparingInstallation": "Preparando tarefas de instalação de primeira inicialização para o ARK.",
+    "restartRequiredForSteamClient": "O launcher precisa ser reiniciado para carregar a nova versão do tek-steamclient"
   },
   "launchOptimization": {
     "noRHIThread": "Sem Thread RHI",
     "noRHIThreadDesc": "Desabilita a thread da Interface de Hardware de Renderização para melhorar o desempenho.",
     "lowMemoryMode": "Modo Baixa Memória",
-    "lowMemoryModeDesc": "Ativa otimizações de memória para sistemas com poucos recursos.",
+    "lowMemoryModeDesc": "Limita o uso de memória do jogo a 4 GB. Deixe desativado, a menos que o seu sistema tenha apenas 4 GB de RAM.",
     "useDirectX10": "Usar DirectX 10",
     "useDirectX10Desc": "Força o jogo a usar DirectX 10 para compatibilidade com hardware mais antigo.",
     "noSplashScreen": "Sem Tela de Abertura",
@@ -271,7 +272,7 @@
     "noMemoryBias": "Sem Viés de Memória",
     "noMemoryBiasDesc": "Desabilita a otimização de viés de memória.",
     "disableSPHibernation": "Desabilitar Hibernação do Singleplayer",
-    "disableSPHibernationDesc": "Impede que o jogo suspenda quando a janela perde o foco no singleplayer.",
+    "disableSPHibernationDesc": "Desativa a hibernação no singleplayer para que a simulação rode em todo o mapa. Isso pode aumentar muito o uso de CPU e RAM; deixe desativado, a menos que um mod exija dados de dinos do mapa inteiro.",
     "disableVSync": "Desabilitar VSync",
     "disableVSyncDesc": "Remove o limite de quadros por segundo.",
     "enableAnselSupport": "Habilitar Suporte a Ansel",
@@ -391,19 +392,19 @@
   },
   "dlcUpdaterWindow": {
     "tabTitle": "Atualizar DLC",
-    "closeNote": "Feche a janela após pausar ou quando a tarefa terminar."
+    "closeNote": "Feche a janela após pausar ou quando a tarefa terminar. O backend da tarefa Steam é o mesmo utilizado no atualizador antigo."
   },
   "serverModsUpdaterWindow": {
     "tabTitle": "Mods do Servidor",
-    "closeNote": "Pause antes de fechar se o trabalho ainda estiver em execução."
+    "closeNote": "Pause antes de fechar se o trabalho ainda estiver em execução, ou aguarde a validação terminar."
   },
   "modUpdaterWindow": {
     "tabTitle": "Atualizar Mods",
-    "closeNote": "Pause antes de fechar se o trabalho ainda estiver em execução."
+    "closeNote": "Pause antes de fechar se o trabalho ainda estiver em execução, ou aguarde a tarefa terminar."
   },
   "gameUpdaterWindow": {
     "tabTitle": "Atualizar Jogo"
   },
-  "gameUpdateAvailable": "Game update is available.",
-  "updateFinished": "Update finished."
+  "gameUpdateAvailable": "Uma atualização do jogo está disponível.",
+  "updateFinished": "Atualização finalizada."
 }

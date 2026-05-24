@@ -100,8 +100,8 @@
             <WrapPanel>
               <Button Content="{u:Tr mainWindow.update}" Click="UpdateBaseGame" IsEnabled="{Binding CanRunMaintenance}" />
               <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.validate}" Click="ValidateBaseGame" IsEnabled="{Binding CanRunMaintenance}" />
-              <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.fixBloom}" Click="FixGameBloom" />
-              <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.unlockSkins}" Click="UnlockGameSkins" IsEnabled="{Binding CanRunMaintenance}" />
+              <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.fixBloom}" Click="FixGameBloom" IsVisible="{Binding FixBloomAndSkinsVisible}" IsEnabled="{Binding CanRunMaintenance}" />
+              <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.unlockSkins}" Click="UnlockGameSkins" IsVisible="{Binding FixBloomAndSkinsVisible}" IsEnabled="{Binding CanRunMaintenance}" />
             </WrapPanel>
           </StackPanel>
         </Border>

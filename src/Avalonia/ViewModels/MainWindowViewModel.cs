@@ -93,6 +93,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     bool _shouldRestartAfterInitialization;
     bool _shouldStartInstallationAfterInitialization;
     string _subtitle;
+    Task<bool>? _reloadAfterSwitchTask;
+    Task<string?>? _navigationSwitchTask;
 
     public string Title => "TEK Launcher";
 
@@ -123,6 +125,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public string? DownloadFailureName => _downloadFailureName;
 
     public string? DownloadFailureUrl => _downloadFailureUrl;
+
+    public string? LastBootstrapErrorMessage => _bootstrapErrorMessage;
 
     public ShellNoticeViewModel[] Notices
     {
@@ -251,52 +255,97 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         return true;
     }
 
-    public async Task<string?> TrySelectNavigationNodeAsync(LauncherNavNodeViewModel node)
+    public Task<string?> TrySelectNavigationNodeAsync(LauncherNavNodeViewModel node)
     {
-        if (!string.IsNullOrWhiteSpace(node.GameId))
+        Task<string?>? inFlight = _navigationSwitchTask;
+        if (inFlight is not null && !inFlight.IsCompleted)
         {
-            string targetPath = Settings.GetGamePath(node.GameId!);
-            if (string.IsNullOrWhiteSpace(targetPath))
-                return string.Format(Locale.Get("errors.gamePathNotConfigured"), node.GameId);
+            LauncherLog.Debug("TrySelectNavigationNodeAsync: reusing in-flight navigation switch task.");
+            return inFlight;
+        }
 
-            bool switchingGame = !ActiveGameManager.IsConfigured || !string.Equals(ActiveGameManager.Current.Id, node.GameId, StringComparison.OrdinalIgnoreCase);
-            if (switchingGame)
+        Task<string?> task = TrySelectNavigationNodeCoreAsync(node);
+        _navigationSwitchTask = task;
+        return task;
+    }
+
+    async Task<string?> TrySelectNavigationNodeCoreAsync(LauncherNavNodeViewModel node)
+    {
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(node.GameId))
             {
-                string? previousGameId = ActiveGameManager.IsConfigured ? ActiveGameManager.Current.Id : null;
-                string? previousGamePath = ActiveGameManager.IsConfigured ? ActiveGameManager.Current.RootPath : null;
-                bool previousPreAquatica = Settings.PreAquatica;
+                string targetPath = Settings.GetGamePath(node.GameId!);
+                if (string.IsNullOrWhiteSpace(targetPath))
+                    return string.Format(Locale.Get("errors.gamePathNotConfigured"), node.GameId);
 
-                ActiveGameManager.Configure(node.GameId!, targetPath);
-                Settings.Save();
-
-                if (_bootstrapSuccess && LauncherServices.TekSteamClient.IsLoaded)
+                bool switchingGame = !ActiveGameManager.IsConfigured || !string.Equals(ActiveGameManager.Current.Id, node.GameId, StringComparison.OrdinalIgnoreCase);
+                if (switchingGame)
                 {
-                    bool reloaded = await ReloadAfterGameSwitchAsync();
-                    if (!reloaded)
-                    {
-                        if (!string.IsNullOrWhiteSpace(previousGameId) && !string.IsNullOrWhiteSpace(previousGamePath))
-                        {
-                            ActiveGameManager.Configure(previousGameId, previousGamePath);
-                            Settings.PreAquatica = previousPreAquatica;
-                            Settings.Save();
-                            await ReloadAfterGameSwitchAsync();
-                        }
+                    string? previousGameId = ActiveGameManager.IsConfigured ? ActiveGameManager.Current.Id : null;
+                    string? previousGamePath = ActiveGameManager.IsConfigured ? ActiveGameManager.Current.RootPath : null;
+                    bool previousPreAquatica = Settings.PreAquatica;
 
-                        RefreshNavigationGroups();
-                        return Locale.Get("errors.steamClientBootstrapFailed");
+                    ActiveGameManager.Configure(node.GameId!, targetPath);
+                    Settings.Save();
+
+                    if (_bootstrapSuccess && LauncherServices.TekSteamClient.IsLoaded)
+                    {
+                        bool reloaded = await ReloadAfterGameSwitchAsync();
+                        if (!reloaded)
+                        {
+                            if (string.IsNullOrWhiteSpace(_bootstrapErrorMessage))
+                            {
+                                LauncherLog.Warning("TrySelectNavigationNodeAsync: first game switch reload failed with no bootstrap error; retrying once. TargetGameId={TargetGameId}", node.GameId);
+                                await Task.Delay(500);
+                                reloaded = await ReloadAfterGameSwitchAsync();
+                            }
+
+                            if (reloaded)
+                            {
+                                LauncherLog.Information("TrySelectNavigationNodeAsync: game switch reload recovered on retry. TargetGameId={TargetGameId}", node.GameId);
+                                Steam.App.UpdateUserStatus();
+                            }
+                            else
+                            {
+                                LauncherLog.Warning(
+                                    "TrySelectNavigationNodeAsync: game switch reload failed. TargetGameId={TargetGameId}, TargetPath={TargetPath}, PreviousGameId={PreviousGameId}, PreviousPath={PreviousPath}, BootstrapError={BootstrapError}",
+                                    node.GameId,
+                                    targetPath,
+                                    previousGameId ?? "<none>",
+                                    previousGamePath ?? "<none>",
+                                    _bootstrapErrorMessage ?? "<none>");
+
+                                if (!string.IsNullOrWhiteSpace(previousGameId) && !string.IsNullOrWhiteSpace(previousGamePath))
+                                {
+                                    ActiveGameManager.Configure(previousGameId, previousGamePath);
+                                    Settings.PreAquatica = previousPreAquatica;
+                                    Settings.Save();
+                                    await ReloadAfterGameSwitchAsync();
+                                }
+
+                                RefreshNavigationGroups();
+                                return _bootstrapErrorMessage ?? "Game switch is still in progress. Please try again in a moment.";
+                            }
+                        }
                     }
                 }
             }
+
+            if (LauncherShellNavigation.RequiresSpacewarWarning(node.Section) && Steam.App.CurrentUserStatus.GameStatus == Game.Status.OwnedAndInstalled && !Game.UseSpacewar)
+                return Locale.Get("modsTab.modsOnSteamWarning");
+
+            SelectSectionInternal(node.Section, node.Key);
+            RefreshNavigationGroups();
+            OnPropertyChanged(nameof(SelectedSectionTitle));
+            OnPropertyChanged(nameof(SelectedSectionDescription));
+            return null;
         }
-
-        if (LauncherShellNavigation.RequiresSpacewarWarning(node.Section) && Steam.App.CurrentUserStatus.GameStatus == Game.Status.OwnedAndInstalled && !Game.UseSpacewar)
-            return Locale.Get("modsTab.modsOnSteamWarning");
-
-        SelectSectionInternal(node.Section, node.Key);
-        RefreshNavigationGroups();
-        OnPropertyChanged(nameof(SelectedSectionTitle));
-        OnPropertyChanged(nameof(SelectedSectionDescription));
-        return null;
+        finally
+        {
+            if (_navigationSwitchTask?.IsCompleted == true)
+                _navigationSwitchTask = null;
+        }
     }
 
     public void RefreshNavigation()
@@ -322,20 +371,54 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         ApplyNotices(BuildDynamicNotices(_gameUpdateAvailable, _dlcUpdatesAvailable));
     }
 
-    public async Task<bool> ReloadAfterGameSwitchAsync()
+    public Task<bool> ReloadAfterGameSwitchAsync()
     {
-        if (IsBusy)
-            return false;
+        Task<bool>? inFlight = _reloadAfterSwitchTask;
+        if (inFlight is not null && !inFlight.IsCompleted)
+        {
+            LauncherLog.Debug("ReloadAfterGameSwitchAsync: reusing in-flight reload task.");
+            return inFlight;
+        }
 
-        IsBusy = true;
+        Task<bool> task = ReloadAfterGameSwitchCoreAsync();
+        _reloadAfterSwitchTask = task;
+        return task;
+    }
+
+    async Task<bool> ReloadAfterGameSwitchCoreAsync()
+    {
+        bool acquiredBusy = !IsBusy;
+        if (acquiredBusy)
+            IsBusy = true;
+        else
+            LauncherLog.Debug("ReloadAfterGameSwitchCoreAsync: proceeding while shell is already busy.");
+
         try
         {
             LauncherServices.ServerBrowser.Shutdown();
             LauncherServices.TekSteamClient.Close();
             Steam.CM.Client.Disconnect();
             Steam.App.UpdateUserStatus();
+            await Task.Delay(250);
 
-            var bootstrapResult = await LauncherServices.TekSteamClientBootstrap.InitializeAsync(ActiveGameManager.Current.RootPath);
+            TekSteamClientBootstrapResult bootstrapResult = default;
+            for (int attempt = 1; attempt <= 3; attempt++)
+            {
+                bootstrapResult = await LauncherServices.TekSteamClientBootstrap.InitializeAsync(ActiveGameManager.Current.RootPath);
+                if (bootstrapResult.Success && !bootstrapResult.RestartRequired && bootstrapResult.DownloadName is null)
+                    break;
+
+                LauncherLog.Warning(
+                    "ReloadAfterGameSwitchAsync: tek-steamclient bootstrap attempt {Attempt} failed. Success={Success}, RestartRequired={RestartRequired}, DownloadName={DownloadName}, Error={Error}",
+                    attempt,
+                    bootstrapResult.Success,
+                    bootstrapResult.RestartRequired,
+                    bootstrapResult.DownloadName ?? "<none>",
+                    bootstrapResult.ErrorMessage ?? "<none>");
+                if (attempt < 3)
+                    await Task.Delay(250 * attempt);
+            }
+
             _bootstrapSuccess = bootstrapResult.Success;
             _bootstrapRestartRequired = bootstrapResult.RestartRequired;
             _bootstrapWarningMessage = bootstrapResult.WarningMessage;
@@ -344,6 +427,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
             if (!bootstrapResult.Success || bootstrapResult.RestartRequired || bootstrapResult.DownloadName is not null)
             {
+                LauncherLog.Warning(
+                    "ReloadAfterGameSwitchCoreAsync: bootstrap returned non-ready state. Success={Success}, RestartRequired={RestartRequired}, DownloadName={DownloadName}, Error={Error}",
+                    bootstrapResult.Success,
+                    bootstrapResult.RestartRequired,
+                    bootstrapResult.DownloadName ?? "<none>",
+                    bootstrapResult.ErrorMessage ?? "<none>");
                 RebuildNotices();
                 return false;
             }
@@ -365,7 +454,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         }
         finally
         {
-            IsBusy = false;
+            if (acquiredBusy)
+                IsBusy = false;
+            if (_reloadAfterSwitchTask?.IsCompleted == true)
+                _reloadAfterSwitchTask = null;
         }
     }
 
@@ -482,8 +574,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
     void RefreshNavigationGroups()
     {
-        static IReadOnlyList<LauncherSection> CreateGameSections()
-          => [LauncherSection.Play, LauncherSection.Servers, LauncherSection.GameOptions, LauncherSection.DLC, LauncherSection.Mods];
+        static IReadOnlyList<LauncherSection> CreateGameSections(string? gameId)
+        {
+            var sections = new List<LauncherSection> { LauncherSection.Play, LauncherSection.GameOptions, LauncherSection.DLC };
+            bool isAsa = gameId == GameCatalog.AsaGameId;
+            if (!isAsa)
+                sections.Insert(1, LauncherSection.Servers);
+            if (!isAsa)
+                sections.Add(LauncherSection.Mods);
+            return sections;
+        }
 
         static LauncherNavNodeViewModel BuildNode(LauncherSection section, string? gameId, string selectedNodeKey)
         {
@@ -508,7 +608,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             {
                 Title = game.Id,
                 IsVisible = isVisible,
-                Children = [.. CreateGameSections().Select(section => BuildNode(section, game.Id, _selectedNodeKey))]
+                Children = [.. CreateGameSections(game.Id).Select(section => BuildNode(section, game.Id, _selectedNodeKey))]
             });
         }
 

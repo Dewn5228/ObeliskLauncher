@@ -40,7 +40,7 @@
       "mb": "МБ",
       "gb": "ГБ"
     },
-    "updating": "Updating"
+    "updating": "Обновление…"
   },
   "time": {
     "second": "с",
@@ -76,8 +76,8 @@
     "highProcessPriorityDesc": "Запуск игры с более высоким приоритетом CPU.",
     "runGameAsAdmin": "Запуск от имени администратора",
     "useSpacewar": "Использовать Spacewar",
-    "launchBehaviorNoteLinux": "Linux launches ARK through Steam/Proton. Windows-only elevation behavior is not used on this platform.",
-    "launcherLanguageAvailabilityNote": "Additional launcher translations are unavailable in this build because the localization files are missing."
+    "launchBehaviorNoteLinux": "На Linux ARK запускается через Steam/Proton. Специфичное для Windows поведение повышения прав здесь не используется.",
+    "launcherLanguageAvailabilityNote": "Дополнительные переводы лаунчера недоступны в этой сборке, так как файлы локализации отсутствуют."
   },
   "gameOptionsTab": {
     "install": "Установить",
@@ -102,16 +102,17 @@
     "cleanDownloadCacheSuccess": "Кэш загрузок успешно очищен.",
     "steamUpdater": "Steam предоставляет обновления игры.",
     "enablingAnselSupport": "Включение поддержки Ansel отключит античит в онлайн-режимах.",
-    "maintenanceNoteLinux": "Game maintenance actions run natively on Linux, while game launch goes through Steam/Proton. Windows-only priority and DirectX checks are hidden on this platform.",
-    "maintenanceNoteWindows": "Game update, validation, and file maintenance run directly from the current launcher shell."
+    "maintenanceNoteLinux": "Действия по обслуживанию игры запускаются на Linux нативно, в то время как запуск игры идет через Steam/Proton. Специфичные для Windows настройки приоритета и проверки DirectX скрыты на этой платформе.",
+    "maintenanceNoteWindows": "Обновление игры, проверка и обслуживание файлов запускаются напрямую из текущей оболочки лаунчера."
   },
   "dlcTab": {
     "tabTitle": "DLC",
     "dlcUpdatesAvailable": "Доступны обновления DLC.",
-    "sectionNote": "Install, update, validate, and delete DLC content from the native launcher. Operations use the shared Steam task backend and refresh launcher status when they finish."
+    "sectionNote": "Устанавливайте, обновляйте, проверяйте и удаляйте DLC через нативный лаунчер. Операции используют общий бэкэнд задач Steam и обновляют статус лаунчера по завершении."
   },
   "modsTab": {
     "installMod": "Установить мод",
+    "installingFiles": "Установка файлов…",
     "unpackingModFiles": "Распаковка файлов мода…",
     "modInfoFileMissing": "Файл mod.info отсутствует или поврежден.",
     "notAnARKMod": "Выбранная папка не является корректным модом ARK.",
@@ -157,9 +158,9 @@
     "noModSelectedForPreview": "Мод не выбран для предпросмотра.",
     "workshopPage": "Страница Workshop",
     "adlerHashMismatch": "Несовпадение хеша файла — файл мог быть изменен после генерации списка.",
-    "alreadyInstalled": "{0} is already installed.",
-    "failedToLoadWorkshopModList": "Failed to load workshop mod list.",
-    "readyToInstall": "{0} ready to install."
+    "failedToLoadWorkshopModList": "Не удалось загрузить список модов Workshop.",
+    "readyToInstall": "{0} готов к установке.",
+    "alreadyInstalled": "{0} уже установлен."
   },
   "serversTab": {
     "tabTitle": "Серверы",
@@ -180,13 +181,15 @@
   },
   "launcherSettingsTab": {
     "closeOnGameLaunch": "Закрывать лаунчер при запуске игры",
+    "aseGamePath": "Путь к игре ASE",
+    "asaGamePath": "Путь к игре ASA",
     "linuxLaunchSettings": "Настройки запуска в Linux",
     "launcherLanguage": "Язык лаунчера",
     "gameLanguage": "Язык игры",
     "useGlobalFonts": "Использовать глобальные шрифты",
     "keyFeatures": "Основные функции",
     "keyFeaturesHeader": "Ключевые возможности Arsenal:",
-    "linuxLaunchToolNote": "Choose which Windows compatibility runtime launches ARK on Linux. Automatic follows Steam's assigned Proton tool when possible, then falls back to the best discovered Proton or Wine build."
+    "linuxLaunchToolNote": "Выберите среду совместимости Windows для запуска ARK на Linux. «Автоматически» следует инструменту Proton, назначенному Steam, если это возможно, иначе выбирает лучшую найденную сборку Proton или Wine."
   },
   "downloads": {
     "downloading": "Загрузка…",
@@ -223,6 +226,7 @@
     "unlockSkinsSuccess": "Скины успешно разблокированы.",
     "unlockSkinsFail": "Не удалось разблокировать скины. Убедитесь, что папка игры указана верно.",
     "noPathSelected": "Путь не выбран.",
+    "gamePathNotConfigured": "Путь {0} не настроен. Укажите его в настройках лаунчера.",
     "languageChangeInfo": "Перезапустите лаунчер, чтобы изменения языка вступили в силу.",
     "anotherInstanceRunning": "Другая копия лаунчера уже запущена.",
     "steamMissing": "Steam не установлен или не обнаружен.",
@@ -234,8 +238,8 @@
     "launcherCloseWarning": "Несохраненные данные будут потеряны.",
     "deleteLauncherSettings": "Удалить настройки лаунчера",
     "deleteLauncherSettingsPrompt": "Вы хотите навсегда удалить все настройки лаунчера?",
-    "downloadFailed": "Download failed: ",
-    "steamClientBootstrapFailed": "tek-steamclient bootstrap failed"
+    "downloadFailed": "Загрузка не удалась: ",
+    "steamClientBootstrapFailed": "Ошибка инициализации (bootstrap) tek-steamclient"
   },
   "version": {
     "launcherVersion": "Версия лаунчера",
@@ -250,15 +254,15 @@
     "downloading": "Загрузка…",
     "gameFilesFound": "Файлы игры найдены.",
     "gameFilesNotFound": "Файлы игры не найдены.",
-    "manageArkInstalls": "Manage ARK installs, DLC, mods, servers, and launch behavior from the native launcher shell.",
-    "preparingInstallation": "Preparing first-launch installation tasks for ARK.",
-    "restartRequiredForSteamClient": "Launcher has to be restarted to load new version of tek-steamclient"
+    "preparingInstallation": "Подготовка задач по установке и первому запуску ARK.",
+    "manageArkInstalls": "Управляйте установками ARK, DLC, модами и серверами через нативную оболочку лаунчера.",
+    "restartRequiredForSteamClient": "Лаунчер необходимо перезапустить для загрузки новой версии tek-steamclient"
   },
   "launchOptimization": {
     "noRHIThread": "Без RHI-потока",
     "noRHIThreadDesc": "Отключить поток Render Hardware Interface для повышения производительности на некоторых системах.",
     "lowMemoryMode": "Режим низкой памяти",
-    "lowMemoryModeDesc": "Включить оптимизацию памяти для слабых ПК.",
+    "lowMemoryModeDesc": "Ограничивает использование памяти игрой до 4 ГБ. Оставьте опцию выключенной, если в системе больше 4 ГБ ОЗУ.",
     "useDirectX10": "Использовать DirectX 10",
     "useDirectX10Desc": "Принудительный запуск через DirectX 10 для совместимости со старым железом.",
     "noSplashScreen": "Без заставки",
@@ -268,7 +272,7 @@
     "noMemoryBias": "Без Memory Bias",
     "noMemoryBiasDesc": "Отключить оптимизацию смещения памяти.",
     "disableSPHibernation": "Отключить гибернацию в одиночной игре",
-    "disableSPHibernationDesc": "Предотвратить приостановку игры при потере фокуса окна в одиночном режиме.",
+    "disableSPHibernationDesc": "Отключает гибернацию в одиночной игре, чтобы симуляция работала по всей карте. Это может сильно увеличить нагрузку на CPU и RAM; оставляйте опцию выключенной, если модам не нужны данные динозавров со всей карты.",
     "disableVSync": "Отключить VSync",
     "disableVSyncDesc": "Выключить вертикальную синхронизацию, чтобы снять ограничение FPS.",
     "enableAnselSupport": "Включить поддержку Ansel",
@@ -401,6 +405,6 @@
   "gameUpdaterWindow": {
     "tabTitle": "Обновление игры"
   },
-  "gameUpdateAvailable": "Game update is available.",
-  "updateFinished": "Update finished."
+  "gameUpdateAvailable": "Доступно обновление игры.",
+  "updateFinished": "Обновление завершено."
 }

@@ -50,7 +50,21 @@
   <ItemGroup>
     <Protos Include="protos\**" />
   </ItemGroup>
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>TEKLauncher.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="TEKLauncher.Tests\**" />
+    <Compile Remove="src\Steam\CM\Messages\**\*.g.cs" />
+    <EmbeddedResource Remove="TEKLauncher.Tests\**" />
+    <None Remove="TEKLauncher.Tests\**" />
+  </ItemGroup>
+  <Target Name="GenerateProtobufSources" BeforeTargets="CoreCompile">
     <Exec Command="$(ProtocExecutable) --proto_path=$(ProtoRoot) --csharp_out=$(ProtoOutputDir) --csharp_opt=file_extension=.g.cs --csharp_opt=base_namespace=TEKLauncher %(Protos.Identity)" />
+    <ItemGroup>
+      <Compile Include="src\Steam\CM\Messages\**\*.g.cs" />
+    </ItemGroup>
   </Target>
 </Project>

@@ -451,12 +451,12 @@ sealed class LinuxGameLauncher : IGameLauncher
         if (steamId64 == 0)
             return null;
 
-        string localConfigPath = Path.Combine(steamInstallPath, "userdata", ((uint)steamId64).ToString(), "config", "localconfig.vdf");
+        string localConfigPath = Path.Combine(steamInstallPath, "userdata", steamId64.ToString(), "config", "localconfig.vdf");
         if (!File.Exists(localConfigPath))
             return null;
 
         using var reader = new StreamReader(localConfigPath);
-        var mapping = new VDFNode(reader)["UserLocalConfigStore"]?["Software"]?["Valve"]?["Steam"]?["CompatToolMapping"]?[steamAppId];
+        var mapping = VdfParser.Parse(reader.ReadToEnd())["UserLocalConfigStore"]?["Software"]?["Valve"]?["Steam"]?["CompatToolMapping"]?[steamAppId];
         return mapping?["name"]?.Value ?? mapping?["config"]?.Value;
     }
 

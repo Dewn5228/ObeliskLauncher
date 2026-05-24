@@ -40,7 +40,7 @@
       "mb": "MB",
       "gb": "GB"
     },
-    "updating": "Updating"
+    "updating": "Bijwerken..."
   },
   "time": {
     "second": "s",
@@ -76,8 +76,8 @@
     "highProcessPriorityDesc": "Start het spel met een hogere CPU-prioriteit.",
     "runGameAsAdmin": "Als administrator uitvoeren",
     "useSpacewar": "Spacewar gebruiken",
-    "launchBehaviorNoteLinux": "Linux launches ARK through Steam/Proton. Windows-only elevation behavior is not used on this platform.",
-    "launcherLanguageAvailabilityNote": "Additional launcher translations are unavailable in this build because the localization files are missing."
+    "launchBehaviorNoteLinux": "Linux start ARK via Steam/Proton. Windows-specifiek verhogingsgedrag (elevation) wordt niet gebruikt op dit platform.",
+    "launcherLanguageAvailabilityNote": "Extra launcher-vertalingen zijn niet beschikbaar in deze build omdat de lokalisatiebestanden ontbreken."
   },
   "gameOptionsTab": {
     "install": "Installeren",
@@ -102,16 +102,17 @@
     "cleanDownloadCacheSuccess": "Downloadcache succesvol opgeschoond.",
     "steamUpdater": "Steam levert spelupdates.",
     "enablingAnselSupport": "Ansel inschakelen schakelt anti-cheat uit in online modi.",
-    "maintenanceNoteLinux": "Game maintenance actions run natively on Linux, while game launch goes through Steam/Proton. Windows-only priority and DirectX checks are hidden on this platform.",
-    "maintenanceNoteWindows": "Game update, validation, and file maintenance run directly from the current launcher shell."
+    "maintenanceNoteLinux": "Onderhoudsacties voor het spel draaien systeemeigen op Linux, terwijl het spel wordt gestart via Steam/Proton. Windows-specifieke prioriteit- en DirectX-controles zijn verborgen op dit platform.",
+    "maintenanceNoteWindows": "Spelupdates, validatie en bestandsonderhoud worden direct vanuit de huidige launcher uitgevoerd."
   },
   "dlcTab": {
     "tabTitle": "DLC",
     "dlcUpdatesAvailable": "DLC-updates zijn beschikbaar.",
-    "sectionNote": "Install, update, validate, and delete DLC content from the native launcher. Operations use the shared Steam task backend and refresh launcher status when they finish."
+    "sectionNote": "Installeer, update, valideer en verwijder DLC-inhoud vanuit de systeemeigen launcher. Bewerkingen maken gebruik van de gedeelde Steam-taakbackend en verversen de launcher-status wanneer ze klaar zijn."
   },
   "modsTab": {
     "installMod": "Mod installeren",
+    "installingFiles": "Bestanden installeren...",
     "unpackingModFiles": "Modbestanden uitpakken…",
     "modInfoFileMissing": "mod.info-bestand ontbreekt of is beschadigd.",
     "notAnARKMod": "Geselecteerde map is geen geldige ARK-mod.",
@@ -157,9 +158,9 @@
     "noModSelectedForPreview": "Geen mod geselecteerd voor voorbeeld.",
     "workshopPage": "Workshop-pagina",
     "adlerHashMismatch": "Hash-fout — het bestand kan gewijzigd zijn nadat de lijst was gegenereerd.",
-    "alreadyInstalled": "{0} is already installed.",
-    "failedToLoadWorkshopModList": "Failed to load workshop mod list.",
-    "readyToInstall": "{0} ready to install."
+    "alreadyInstalled": "{0} is al geïnstalleerd.",
+    "failedToLoadWorkshopModList": "Laden van de Workshop mod-lijst mislukt.",
+    "readyToInstall": "{0} is klaar om te installeren."
   },
   "serversTab": {
     "tabTitle": "Servers",
@@ -180,13 +181,15 @@
   },
   "launcherSettingsTab": {
     "closeOnGameLaunch": "Launcher sluiten bij starten van spel",
+    "aseGamePath": "ASE spelpad",
+    "asaGamePath": "ASA spelpad",
     "linuxLaunchSettings": "Linux-startinstellingen",
     "launcherLanguage": "Launchertaal",
     "gameLanguage": "Speltaal",
     "useGlobalFonts": "Globale lettertypen gebruiken",
     "keyFeatures": "Belangrijkste functies",
     "keyFeaturesHeader": "Belangrijkste Arsenal-functies:",
-    "linuxLaunchToolNote": "Choose which Windows compatibility runtime launches ARK on Linux. Automatic follows Steam's assigned Proton tool when possible, then falls back to the best discovered Proton or Wine build."
+    "linuxLaunchToolNote": "Kies welke Windows-compatibiliteitsruntime ARK start op Linux. 'Automatisch' volgt indien mogelijk de door Steam toegewezen Proton-tool, en valt anders terug op de best gevonden Proton- of Wine-build."
   },
   "downloads": {
     "downloading": "Downloaden…",
@@ -223,6 +226,7 @@
     "unlockSkinsSuccess": "Skins succesvol ontgrendeld.",
     "unlockSkinsFail": "Kon skins niet ontgrendelen. Controleer of de spelmap correct is ingesteld.",
     "noPathSelected": "Geen pad geselecteerd.",
+    "gamePathNotConfigured": "{0} pad is niet geconfigureerd. Stel dit in bij Launcher-instellingen.",
     "languageChangeInfo": "Herstart de launcher om de taalwijziging volledig toe te passen.",
     "anotherInstanceRunning": "Er draait al een andere instantie van de launcher.",
     "steamMissing": "Steam is niet geïnstalleerd of kon niet worden gedetecteerd.",
@@ -234,8 +238,8 @@
     "launcherCloseWarning": "Niet-opgeslagen gegevens gaan verloren.",
     "deleteLauncherSettings": "Launcher-instellingen verwijderen",
     "deleteLauncherSettingsPrompt": "Wil je alle launcher-instellingen permanent verwijderen?",
-    "downloadFailed": "Download failed: ",
-    "steamClientBootstrapFailed": "tek-steamclient bootstrap failed"
+    "downloadFailed": "Download mislukt: ",
+    "steamClientBootstrapFailed": "tek-steamclient bootstrap mislukt"
   },
   "version": {
     "launcherVersion": "Launcher-versie",
@@ -250,15 +254,15 @@
     "downloading": "Downloaden…",
     "gameFilesFound": "Spelbestanden gevonden.",
     "gameFilesNotFound": "Spelbestanden niet gevonden.",
-    "manageArkInstalls": "Manage ARK installs, DLC, mods, servers, and launch behavior from the native launcher shell.",
-    "preparingInstallation": "Preparing first-launch installation tasks for ARK.",
-    "restartRequiredForSteamClient": "Launcher has to be restarted to load new version of tek-steamclient"
+    "preparingInstallation": "Voorbereiden van eerste installatietaken voor ARK.",
+    "manageArkInstalls": "Beheer ARK-installaties, DLC, mods, servers en startgedrag vanuit de systeemeigen launcher-shell.",
+    "restartRequiredForSteamClient": "De launcher moet opnieuw worden opgestart om de nieuwe versie van tek-steamclient te laden"
   },
   "launchOptimization": {
     "noRHIThread": "Geen RHI-thread",
     "noRHIThreadDesc": "Schakelt de Render Hardware Interface-thread uit voor betere prestaties op sommige systemen.",
     "lowMemoryMode": "Laag geheugenmodus",
-    "lowMemoryModeDesc": "Geheugenoptimalisaties voor systemen met lage specificaties.",
+    "lowMemoryModeDesc": "Beperkt het geheugengebruik van de game tot 4 GB. Laat dit uit, tenzij je systeem maar 4 GB RAM heeft.",
     "useDirectX10": "DirectX 10 gebruiken",
     "useDirectX10Desc": "Forceert DirectX 10 voor compatibiliteit met oudere hardware.",
     "noSplashScreen": "Geen opstartscherm",
@@ -268,7 +272,7 @@
     "noMemoryBias": "Geen geheugenbias",
     "noMemoryBiasDesc": "Schakelt geheugenbias-optimalisatie uit.",
     "disableSPHibernation": "Singleplayer-hibernatie uitschakelen",
-    "disableSPHibernationDesc": "Voorkomt dat het spel pauzeert wanneer het venster focus verliest in singleplayer.",
+    "disableSPHibernationDesc": "Schakelt hibernation in singleplayer uit zodat simulatie over de hele map blijft draaien. Dit kan CPU- en RAM-gebruik sterk verhogen; laat dit uit tenzij een mod expliciet dinosaurusgegevens van de hele map nodig heeft.",
     "disableVSync": "VSync uitschakelen",
     "disableVSyncDesc": "Schakel verticale synchronisatie uit om de FPS-limiet te verwijderen.",
     "enableAnselSupport": "Ansel-ondersteuning inschakelen",
@@ -401,6 +405,6 @@
   "gameUpdaterWindow": {
     "tabTitle": "Spel Bijwerken"
   },
-  "gameUpdateAvailable": "Game update is available.",
-  "updateFinished": "Update finished."
+  "gameUpdateAvailable": "Spelupdate is beschikbaar.",
+  "updateFinished": "Update voltooid."
 }

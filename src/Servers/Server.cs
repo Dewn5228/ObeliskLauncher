@@ -74,7 +74,8 @@ public class Server
             return false;
         }
 
-        //A2S_INFO
+        try
+        {
         Span<byte> request = stackalloc byte[]
         {
             0xFF, 0xFF, 0xFF, 0xFF, 0x54, 0x53, 0x6F, 0x75, 0x72, 0x63, 0x65, 0x20, 0x45, 0x6E,
@@ -219,6 +220,12 @@ public class Server
         s_infoCache[infoFileUrl] = info;
         Info = info;
         return true;
+        }
+        catch (Exception ex)
+        {
+            LauncherLog.Warning("Server query error for {Address}: {Error}", Address, ex.Message);
+            return false;
+        }
     }
 
     string ResolveDlcMapDisplayName(string fallback)

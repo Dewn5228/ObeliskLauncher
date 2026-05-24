@@ -82,6 +82,85 @@ static class Client
         }
         return result;
     }
+
+    /// <summary>Queries apps via PICS to determine which have real Steam depot content.</summary>
+    /// <param name="appIds">IDs of the apps to query.</param>
+    /// <returns>
+    ///   A set of app IDs that have at least one depot; returns <see langword="null"/> if the request failed.
+    /// </returns>
+    public static HashSet<uint>? GetAppsWithDepots(params uint[] appIds)
+    {
+        if (!WebSocketConnection.IsLoggedOn)
+            try { WebSocketConnection.Connect(); }
+            catch { return null; }
+
+        var tokenMessage = new Message<PicsAccessTokenRequest>(MessageType.PicsAccessTokenRequest);
+        tokenMessage.Body.AppIds.AddRange(appIds);
+        var tokenResponse = WebSocketConnection.GetMessage<PicsAccessTokenResponse>(tokenMessage, MessageType.PicsAccessTokenResponse);
+
+        var tokenMap = new Dictionary<uint, ulong>();
+        if (tokenResponse is not null)
+            foreach (var token in tokenResponse.Body.AppTokens)
+                if (token.HasAppId && token.HasAccessToken)
+                    tokenMap[token.AppId] = token.AccessToken;
+
+        var infoMessage = new Message<PicsProductInfoRequest>(MessageType.PicsProductInfoRequest);
+        foreach (uint appId in appIds)
+        {
+            var entry = new PicsProductInfoRequest.Types.App { AppId = appId };
+            if (tokenMap.TryGetValue(appId, out ulong token))
+                entry.AccessToken = token;
+            infoMessage.Body.Apps.Add(entry);
+        }
+
+        var responses = WebSocketConnection.GetMessages<PicsProductInfoResponse>(
+            infoMessage,
+            MessageType.PicsProductInfoResponse,
+            body => !body.ResponsePending);
+        if (responses is null)
+            return null;
+        var result = new HashSet<uint>();
+        foreach (var body in responses)
+            foreach (var app in body.Apps)
+            {
+                if (!app.HasAppId)
+                    continue;
+                if (app.HasBuffer && app.Buffer.Length > 0)
+                {
+                    string vdfText = Encoding.UTF8.GetString(app.Buffer.ToByteArray());
+                    var root = VdfParser.Parse(vdfText);
+                    VdfNode? depots = null;
+                    foreach (var child in root.Children.Values)
+                        depots ??= child["depots"];
+                    if (depots is not null && depots.Children.Count > 0)
+                        result.Add(app.AppId);
+                }
+                else if (app.HasSha && app.HasSize && app.Size > 0 && body.HasHttpHost)
+                {
+                    string sha = Convert.ToHexStringLower(app.Sha.ToByteArray());
+                    string url = $"http://{body.HttpHost}/appinfo/{app.AppId}/sha/{sha}.txt.gz";
+                    try
+                    {
+                        using var httpClient = new System.Net.Http.HttpClient();
+                        httpClient.Timeout = TimeSpan.FromSeconds(15);
+                        byte[] compressed = httpClient.GetByteArrayAsync(url).GetAwaiter().GetResult();
+                        using var compressedStream = new MemoryStream(compressed);
+                        using var gzipStream = new System.IO.Compression.GZipStream(compressedStream, System.IO.Compression.CompressionMode.Decompress);
+                        using var reader = new StreamReader(gzipStream, Encoding.UTF8);
+                        string vdfText = reader.ReadToEnd();
+                        var root = VdfParser.Parse(vdfText);
+                        VdfNode? depots = null;
+                        foreach (var child in root.Children.Values)
+                            depots ??= child["depots"];
+                        if (depots is not null && depots.Children.Count > 0)
+                            result.Add(app.AppId);
+                    }
+                    catch { }
+                }
+            }
+        return result;
+    }
+
     /// <summary>Represents Steam Web API CM server list response JSON object.</summary>
     readonly record struct CMListResponse
     {

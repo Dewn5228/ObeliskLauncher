@@ -96,6 +96,8 @@ public sealed class GameOptionsSectionScreenViewModel : LauncherSectionScreenVie
 
     public bool HighProcessPriorityVisible => Game.CanUseHighProcessPriority;
 
+    public bool FixBloomAndSkinsVisible => ActiveGameManager.Current.Id != GameCatalog.AsaGameId;
+
     public bool IsBusy
     {
         get => _isBusy;
@@ -156,6 +158,7 @@ public sealed class GameOptionsSectionScreenViewModel : LauncherSectionScreenVie
         foreach (var parameter in LaunchParameters)
             parameter.Refresh();
         OnPropertyChanged(nameof(HighProcessPriorityVisible));
+        OnPropertyChanged(nameof(FixBloomAndSkinsVisible));
     }
 
     public void ApplyCustomLaunchParameters()

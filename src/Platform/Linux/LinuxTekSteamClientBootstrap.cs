@@ -25,6 +25,7 @@ sealed class LinuxTekSteamClientBootstrap : ITekSteamClientBootstrap
                     null => "Linux tek-steamclient library was not found. Install the Linux `tek-steamclient` package or place the native library where the launcher can discover it.",
                     string tool => $"Found Linux TEK Steam Client tool at '{tool}', but no native `tek-steamclient` library was found yet. Install the shared library package or copy it into the launcher data directory."
                 };
+                LauncherLog.Error("LinuxTekSteamClientBootstrap failed before load: {Message}", message);
                 return new(false, false, message, acquireResult.DownloadName, acquireResult.DownloadUrl, null);
             }
         }
@@ -41,6 +42,7 @@ sealed class LinuxTekSteamClientBootstrap : ITekSteamClientBootstrap
         }
         catch (Exception ex)
         {
+            LauncherLog.Error(ex, "LinuxTekSteamClientBootstrap failed loading library. Path={LibraryPath}", loadedLibraryPath);
             return new(false, false, $"Failed to load Linux tek-steamclient library from '{loadedLibraryPath}': {ex.Message}", null, null, null);
         }
 
@@ -52,9 +54,13 @@ sealed class LinuxTekSteamClientBootstrap : ITekSteamClientBootstrap
         var appMng = new TEKSteamClient.AppManager(ctx, gamePath);
         if (appMng.IsInvalid)
         {
+            string appManagerError = string.IsNullOrWhiteSpace(appMng.CreationError.Message)
+                ? "tek-steamclient AppManager creation failed with no additional details."
+                : appMng.CreationError.Message;
+            LauncherLog.Error("LinuxTekSteamClientBootstrap failed creating AppManager. Error={Error}", appManagerError);
             appMng.Dispose();
             ctx.Dispose();
-            return new(false, false, appMng.CreationError.Message, null, null, null);
+            return new(false, false, appManagerError, null, null, null);
         }
 
         string modsDir = Path.Combine(gamePath, "Mods");
@@ -68,9 +74,13 @@ sealed class LinuxTekSteamClientBootstrap : ITekSteamClientBootstrap
         var workshopResult = appMng.SetWorkshopDir(modsDir);
         if (!workshopResult.Success)
         {
+            string workshopError = string.IsNullOrWhiteSpace(workshopResult.Message)
+                ? $"Failed to set workshop directory to '{modsDir}'."
+                : workshopResult.Message;
+            LauncherLog.Error("LinuxTekSteamClientBootstrap failed setting workshop dir. Error={Error}", workshopError);
             appMng.Dispose();
             ctx.Dispose();
-            return new(false, false, workshopResult.Message, null, null, null);
+            return new(false, false, workshopError, null, null, null);
         }
 
         var primaryS3Result = await Task.Run(() => ctx.SyncS3Manifest("https://api.teknology-hub.com/s3"));

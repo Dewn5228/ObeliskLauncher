@@ -20,7 +20,7 @@
       "isWindowsBuild": true,
       "runtimeDlcDisplayNames": {
         "473850": "The Center - ARK Expansion Map",
-        "508150": "Primitive+ - ARK Total Conversion",
+        "508150": "Primitive\u002B - ARK Total Conversion",
         "512540": "ARK: Scorched Earth - Expansion Pack",
         "642250": "Ragnarok - ARK Expansion Map",
         "696680": "ARK: Survival Evolved Season Pass",
@@ -95,7 +95,7 @@
           "mapCode": "Valguero"
         },
         {
-          "name": "Genesis Part 1 & 2",
+          "name": "Genesis Part 1 \u0026 2",
           "appId": 1113410,
           "depotId": 473857,
           "isModContent": false,
@@ -197,7 +197,7 @@
         {
           "name": "ARK: Bob\u0027s Tall Tales",
           "appId": 2881150,
-          "depotId": 2881150,
+          "depotId": 0,
           "isModContent": false,
           "hasPPostfix": false,
           "mapCode": "Mod"
@@ -205,7 +205,7 @@
         {
           "name": "ARK Fantastic Tames - Pyromane",
           "appId": 2972680,
-          "depotId": 2972680,
+          "depotId": 0,
           "isModContent": false,
           "hasPPostfix": false,
           "mapCode": "Mod"
@@ -221,7 +221,7 @@
         {
           "name": "ARK Fantastic Tames - Dreadmare",
           "appId": 3282470,
-          "depotId": 3282470,
+          "depotId": 0,
           "isModContent": false,
           "hasPPostfix": false,
           "mapCode": "Mod"
@@ -245,7 +245,7 @@
         {
           "name": "ARK Animated Series 109-Costumes Pack",
           "appId": 3571730,
-          "depotId": 3571730,
+          "depotId": 0,
           "isModContent": false,
           "hasPPostfix": false,
           "mapCode": "Mod"
@@ -269,7 +269,7 @@
         {
           "name": "ARK: Lost Colony Expansion Pass",
           "appId": 3720100,
-          "depotId": 3720100,
+          "depotId": 0,
           "isModContent": false,
           "hasPPostfix": false,
           "mapCode": "Mod"
@@ -277,7 +277,7 @@
         {
           "name": "ARK Fantastic Tames - Drakelings",
           "appId": 3720200,
-          "depotId": 3720200,
+          "depotId": 0,
           "isModContent": false,
           "hasPPostfix": false,
           "mapCode": "Mod"
@@ -285,7 +285,7 @@
         {
           "name": "ARK Fantastic Tames - Elderclaw",
           "appId": 3982300,
-          "depotId": 3982300,
+          "depotId": 0,
           "isModContent": false,
           "hasPPostfix": false,
           "mapCode": "Mod"
@@ -301,7 +301,7 @@
         {
           "name": "ARK Fantastic Tames Season 1",
           "appId": 4558510,
-          "depotId": 4558510,
+          "depotId": 0,
           "isModContent": false,
           "hasPPostfix": false,
           "mapCode": "Mod"

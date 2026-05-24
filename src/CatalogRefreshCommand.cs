@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Text.Json.Nodes;
+using TEKLauncher.Steam.CM;
 
 namespace TEKLauncher;
 
@@ -377,9 +378,23 @@ static class CatalogRefreshCommand
         asaGame["steamAppId"] = appId;
         asaGame["runtimeAppId"] = appId;
 
+        var existingDepotIds = new Dictionary<uint, uint>();
+        if (asaGame["dlcCatalog"] is JsonArray existingDlcCatalog)
+            foreach (JsonNode? item in existingDlcCatalog)
+            {
+                if (item is not JsonObject obj)
+                    continue;
+                if (!TryGetUInt(obj["appId"], out uint existingAppId) || existingAppId == 0)
+                    continue;
+                if (!TryGetUInt(obj["depotId"], out uint existingDepotId))
+                    continue;
+                existingDepotIds[existingAppId] = existingDepotId;
+            }
+
         var runtimeNames = new JsonObject();
         var dlcCatalog = new JsonArray();
 
+        var dlcEntries = new List<(uint appId, string name)>();
         foreach ((string appIdText, JsonNode? nameNode) in dlcNode.OrderBy(static x => x.Key, StringComparer.Ordinal))
         {
             if (!uint.TryParse(appIdText, out uint dlcAppId) || dlcAppId == 0)
@@ -389,12 +404,32 @@ static class CatalogRefreshCommand
             if (string.IsNullOrWhiteSpace(name))
                 name = $"Unknown DLC {dlcAppId}";
 
+            dlcEntries.Add((dlcAppId, name));
+        }
+
+        HashSet<uint>? appsWithDepots = null;
+        if (dlcEntries.Count > 0)
+        {
+            try { appsWithDepots = Client.GetAppsWithDepots([.. dlcEntries.Select(static e => e.appId)]); }
+            catch { }
+        }
+
+        foreach ((uint dlcAppId, string name) in dlcEntries)
+        {
+            uint depotId;
+            if (appsWithDepots is null)
+            {
+                depotId = existingDepotIds.GetValueOrDefault(dlcAppId, 0u);
+            }
+            else
+                depotId = appsWithDepots.Contains(dlcAppId) ? dlcAppId : 0u;
+
             runtimeNames[dlcAppId.ToString(CultureInfo.InvariantCulture)] = name;
             dlcCatalog.Add(new JsonObject
             {
                 ["name"] = name,
                 ["appId"] = dlcAppId,
-                ["depotId"] = dlcAppId,
+                ["depotId"] = depotId,
                 ["isModContent"] = false,
                 ["hasPPostfix"] = false,
                 ["mapCode"] = "Mod"

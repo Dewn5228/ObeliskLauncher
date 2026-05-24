@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package teklauncher.steam.cm.messages.bodies;
+
+option csharp_namespace = "TEKLauncher.Steam.CM.Messages.Bodies";
+
+message PicsAccessTokenRequest {
+  repeated uint32 package_ids = 1;
+  repeated uint32 app_ids = 2;
+}
+
+message PicsAccessTokenResponse {
+  message AppToken {
+    optional uint32 app_id = 1;
+    optional uint64 access_token = 2;
+  }
+  message PackageToken {
+    optional uint32 package_id = 1;
+    optional uint64 access_token = 2;
+  }
+  repeated PackageToken package_tokens = 1;
+  repeated uint32 denied_packages = 2;
+  repeated AppToken app_tokens = 3;
+  repeated uint32 denied_apps = 4;
+}

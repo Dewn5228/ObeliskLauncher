@@ -92,6 +92,8 @@ static class LauncherShellStartup
                         continue;
 
                     desc = GetDesc(game.SteamAppId, dlc.DepotId);
+                    if (desc == null && dlc.AppId != 0 && dlc.AppId != game.SteamAppId)
+                        desc = GetDesc(dlc.AppId, dlc.DepotId);
                     if (desc == null)
                         continue;
 
@@ -126,10 +128,11 @@ static class LauncherShellStartup
         if (!Settings.PreAquatica || ActiveGameManager.Current.Id != GameCatalog.AseGameId)
             return desc->Status.HasFlag(TEKSteamClient.AmItemStatus.UpdAvailable);
 
-        if (!ActiveGameManager.Current.PreAquaticaManifestOverrides.TryGetValue(depotId, out ulong expectedManifestId))
-            return false;
+        if (ActiveGameManager.Current.PreAquaticaManifestOverrides.TryGetValue(depotId, out ulong expectedManifestId))
+            return desc->CurrentManifestId != expectedManifestId;
 
-        return desc->CurrentManifestId != expectedManifestId;
+        LauncherLog.Warning("Pre-Aquatica mode: DepotId {DepotId} not in override dictionary, falling back to standard update check", depotId);
+        return desc->Status.HasFlag(TEKSteamClient.AmItemStatus.UpdAvailable);
     }
 
     readonly record struct Release

@@ -1,6 +1,7 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using TEKLauncher.ARK;
 using TEKLauncher.Steam.CM;
+using TEKLauncher.Utils;
 
 namespace TEKLauncher.Steam;
 
@@ -43,7 +44,7 @@ static class App
         if (File.Exists(configFile))
         {
             using var reader = new StreamReader(configFile);
-            var vdf = new VDFNode(reader)["Software"]?["Valve"]?["Steam"];
+            var vdf = VdfParser.Parse(reader.ReadToEnd())["Software"]?["Valve"]?["Steam"];
             if (vdf is not null)
             {
                 if (uint.TryParse(vdf["CurrentCellID"]?.Value, out uint cellId))
@@ -52,8 +53,9 @@ static class App
                 if (cmList?.Children is not null)
                 {
                     var urls = new Uri[cmList.Children.Count];
-                    for (int i = 0; i < urls.Length; i++)
-                        urls[i] = new($"wss://{cmList.Children[i].Key}/cmsocket/");
+                    int i = 0;
+                    foreach (string key in cmList.Children.Keys)
+                        urls[i++] = new($"wss://{key}/cmsocket/");
                     WebSocketConnection.ServerList = new(urls);
                 }
             }
@@ -86,14 +88,14 @@ static class App
         if (File.Exists(loginUsersFile))
         {
             using var reader = new StreamReader(loginUsersFile);
-            var users = new VDFNode(reader)?.Children;
-            if (users is not null)
-                foreach (var user in users)
-                    if (user["MostRecent"]?.Value == "1")
-                    {
-                        _ = ulong.TryParse(user.Key, out steamId64);
-                        break;
-                    }
+            var root = VdfParser.Parse(reader.ReadToEnd());
+            var users = root["users"];
+            foreach (var (key, user) in users?.Children ?? [])
+                if (user["MostRecent"]?.Value == "1")
+                {
+                    _ = ulong.TryParse(key, out steamId64);
+                    break;
+                }
         }
         if (steamId64 == 0)
         {
@@ -101,11 +103,11 @@ static class App
             return;
         }
         Game.Status status = Game.Status.NotOwned;
-        string configFile = Path.Combine(s_path, "userdata", ((uint)steamId64).ToString(), "config", "localconfig.vdf");
+        string configFile = Path.Combine(s_path, "userdata", steamId64.ToString(), "config", "localconfig.vdf");
         if (File.Exists(configFile))
         {
             using var reader = new StreamReader(configFile);
-            var vdf = new VDFNode(reader)["apptickets"]?[appId.ToString()];
+            var vdf = VdfParser.Parse(reader.ReadToEnd())["apptickets"]?[appId.ToString()];
             if (vdf is not null)
                 status = Game.Status.Owned;
         }
@@ -133,21 +135,20 @@ static class App
             return null;
 
         using var reader = new StreamReader(libraryFoldersFile);
-        var vdf = new VDFNode(reader);
-        if (vdf?.Children is null)
+        var vdf = VdfParser.Parse(reader.ReadToEnd());
+        if (vdf.Children.Count == 0)
             return null;
 
         string appIdString = appId.ToString();
-        foreach (var library in vdf.Children)
+        foreach (var (_, library) in vdf.Children)
         {
             string? libraryPath = library["path"]?.Value;
             var apps = library["apps"]?.Children;
             if (libraryPath is null || apps is null)
                 continue;
 
-            foreach (var app in apps)
-                if (app.Key == appIdString)
-                    return Path.Combine(NormalizeVdfPath(libraryPath), "steamapps", "common", steamFolderName);
+            if (apps.ContainsKey(appIdString))
+                return Path.Combine(NormalizeVdfPath(libraryPath), "steamapps", "common", steamFolderName);
         }
 
         return null;

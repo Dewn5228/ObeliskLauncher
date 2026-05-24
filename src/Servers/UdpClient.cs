@@ -41,7 +41,10 @@ static class UdpClient
                     completionSource.SetResult(buffer[..bytesRead].ToArray());
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            LauncherLog.Warning("UdpClient receive loop failed. Error={Error}", ex.Message);
+        }
     }
     /// <summary>Releases the underlying socket and cancels all its send and receive operations.</summary>
     public static void Dispose() => s_socket.Dispose();
@@ -55,7 +58,11 @@ static class UdpClient
         s_transactions[endpoint] = completionSource;
         lock (s_socket)
             try { s_socket.SendTo(request, endpoint); }
-            catch { return null; }
+            catch (Exception ex)
+            {
+                LauncherLog.Warning("UdpClient send to {Endpoint} failed. Error={Error}", endpoint, ex.Message);
+                return null;
+            }
         if (!completionSource.Task.Wait(2000))
         {
             s_transactions.Remove(endpoint, out _);

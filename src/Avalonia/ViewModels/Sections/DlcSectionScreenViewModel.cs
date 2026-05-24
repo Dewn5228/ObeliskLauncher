@@ -102,8 +102,11 @@ public sealed class DlcSectionScreenViewModel : LauncherSectionScreenViewModel
     public override void Activate()
     {
         Rows.Clear();
-        foreach (var dlc in DLC.List)
+        foreach (var dlc in DLC.List.Where(dlc => dlc.DepotId != 0))
+        {
+            dlc.SyncInstalledStatus();
             Rows.Add(new DlcRowViewModel(dlc));
+        }
 
         foreach (var row in Rows)
             row.Refresh();

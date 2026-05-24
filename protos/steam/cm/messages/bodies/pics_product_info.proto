@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package teklauncher.steam.cm.messages.bodies;
+
+option csharp_namespace = "TEKLauncher.Steam.CM.Messages.Bodies";
+
+message PicsProductInfoRequest {
+  message App {
+    optional uint32 app_id = 1;
+    optional uint64 access_token = 2;
+  }
+  message Package {
+    optional uint32 package_id = 1;
+    optional uint64 access_token = 2;
+  }
+  repeated Package packages = 1;
+  repeated App apps = 2;
+}
+
+message PicsProductInfoResponse {
+  message App {
+    optional uint32 app_id = 1;
+    optional bool missing_token = 3;
+    optional bytes sha = 4;
+    optional bytes buffer = 5;
+    optional uint32 size = 7;
+  }
+  message Package {
+    optional uint32 package_id = 1;
+    optional bool missing_token = 3;
+    optional bytes sha = 4;
+    optional bytes buffer = 5;
+    optional uint32 size = 6;
+  }
+  repeated App apps = 1;
+  repeated uint32 unknown_app_ids = 2;
+  repeated Package packages = 3;
+  repeated uint32 unknown_package_ids = 4;
+  optional bool response_pending = 6;
+  optional uint32 http_min_size = 7;
+  optional string http_host = 8;
+}

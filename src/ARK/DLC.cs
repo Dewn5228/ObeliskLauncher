@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using System.Linq;
 
 namespace TEKLauncher.ARK;
 
@@ -31,11 +32,101 @@ class DLC
         get
         {
             bool result = File.Exists(_umapPath);
-            if (Code == MapCode.Genesis) //Steam depot of Genesis DLC in fact includes 2 maps, we'll assume that it's installed if at least one of those maps is present
+            if (Code == MapCode.Genesis)
                 result |= File.Exists(Path.Combine(_rootPath, "ShooterGame", "Content", "Maps", "Genesis2", "Gen2.umap"));
+            if (!result && Code == MapCode.Mod && DepotId != 0)
+                result = IsInstalledByManifest();
+            if (!result)
+                result = HasInstalledFiles();
             return result;
         }
     }
+
+    unsafe bool IsInstalledByManifest()
+    {
+        try
+        {
+            var itemId = new TEKSteamClient.ItemId { AppId = ActiveGameManager.Current.SteamAppId, DepotId = DepotId, WorkshopItemId = 0 };
+            var desc = LauncherServices.TekSteamClient.GetItemDesc(&itemId);
+            if (desc is not null && desc->CurrentManifestId != 0)
+                return true;
+
+            if (AppId != 0 && AppId != itemId.AppId)
+            {
+                itemId.AppId = AppId;
+                desc = LauncherServices.TekSteamClient.GetItemDesc(&itemId);
+                if (desc is not null && desc->CurrentManifestId != 0)
+                    return true;
+            }
+        }
+        catch (Exception ex)
+        {
+            LauncherLog.Warning("DLC manifest query failed for AppId={AppId}, DepotId={DepotId}. Error={Error}", 
+                ActiveGameManager.Current.SteamAppId, DepotId, ex.Message);
+        }
+
+        try
+        {
+            string depotKey = DepotId.ToString(CultureInfo.InvariantCulture);
+            foreach (uint appId in GetManifestAppIdCandidates())
+            {
+                string appManifestPath = Path.GetFullPath(Path.Combine(_rootPath, "..", "..", $"appmanifest_{appId}.acf"));
+                if (!File.Exists(appManifestPath))
+                    continue;
+
+                string content = File.ReadAllText(appManifestPath);
+                var root = VdfParser.Parse(content);
+                if (root["AppState"]?["InstalledDepots"]?[depotKey] is not null)
+                    return true;
+            }
+
+            return false;
+        }
+        catch (Exception ex)
+        {
+            LauncherLog.Warning("DLC manifest file parse failed for DepotId={DepotId}. Error={Error}", DepotId, ex.Message);
+            return false;
+        }
+    }
+
+    IEnumerable<uint> GetManifestAppIdCandidates()
+    {
+        uint primary = ActiveGameManager.Current.SteamAppId;
+        yield return primary;
+        if (AppId != 0 && AppId != primary)
+            yield return AppId;
+    }
+
+    bool HasInstalledFiles()
+    {
+        try
+        {
+            if (Directory.Exists(_path))
+            {
+                if (Directory.EnumerateFiles(_path, "*.umap", SearchOption.AllDirectories).Any())
+                    return true;
+                if (Directory.EnumerateFiles(_path, "*.pak", SearchOption.AllDirectories).Any())
+                    return true;
+            }
+
+            if (Directory.Exists(_sfcPath) && Directory.EnumerateFiles(_sfcPath, "*.pak", SearchOption.AllDirectories).Any())
+                return true;
+        }
+        catch
+        {
+        }
+
+        return false;
+    }
+
+    public void SyncInstalledStatus()
+    {
+        if (_status is Status.Updating or Status.Deleting)
+            return;
+
+        CurrentStatus = IsInstalled ? Status.Installed : Status.NotInstalled;
+    }
+
     /// <summary>Gets the display name of the DLC.</summary>
     public string Name { get; }
     public event Action<DLC>? StatusChanged;

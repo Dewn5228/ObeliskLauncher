@@ -40,7 +40,7 @@
       "mb": "MB",
       "gb": "GB"
     },
-    "updating": "Updating"
+    "updating": "Actualizando…"
   },
   "time": {
     "second": "s",
@@ -76,8 +76,8 @@
     "highProcessPriorityDesc": "Ejecutar el juego con mayor prioridad de CPU.",
     "runGameAsAdmin": "Ejecutar como administrador",
     "useSpacewar": "Usar Spacewar",
-    "launchBehaviorNoteLinux": "Linux launches ARK through Steam/Proton. Windows-only elevation behavior is not used on this platform.",
-    "launcherLanguageAvailabilityNote": "Additional launcher translations are unavailable in this build because the localization files are missing."
+    "launcherLanguageAvailabilityNote": "Las traducciones adicionales del lanzador no están disponibles en esta versión porque faltan los archivos de localización.",
+    "launchBehaviorNoteLinux": "Linux inicia ARK a través de Steam/Proton. El comportamiento de elevación de privilegios de Windows no se utiliza en esta plataforma."
   },
   "gameOptionsTab": {
     "install": "Instalar",
@@ -102,16 +102,17 @@
     "cleanDownloadCacheSuccess": "Caché de descargas limpiada correctamente.",
     "steamUpdater": "Steam proporciona actualizaciones del juego.",
     "enablingAnselSupport": "Activar Ansel desactivará el anti-cheat en modos online.",
-    "maintenanceNoteLinux": "Game maintenance actions run natively on Linux, while game launch goes through Steam/Proton. Windows-only priority and DirectX checks are hidden on this platform.",
-    "maintenanceNoteWindows": "Game update, validation, and file maintenance run directly from the current launcher shell."
+    "maintenanceNoteLinux": "Las acciones de mantenimiento del juego se ejecutan de forma nativa en Linux, mientras que el inicio del juego se realiza a través de Steam/Proton. Los ajustes de prioridad y DirectX de Windows están ocultos en esta plataforma.",
+    "maintenanceNoteWindows": "La actualización, validación y mantenimiento de archivos se ejecutan directamente desde el lanzador."
   },
   "dlcTab": {
     "tabTitle": "DLC",
     "dlcUpdatesAvailable": "Hay actualizaciones de DLC disponibles.",
-    "sectionNote": "Install, update, validate, and delete DLC content from the native launcher. Operations use the shared Steam task backend and refresh launcher status when they finish."
+    "sectionNote": "Instala, actualiza, valida y elimina contenido DLC desde el lanzador nativo. Las operaciones utilizan el motor de tareas compartido de Steam y actualizan el estado al finalizar."
   },
   "modsTab": {
     "installMod": "Instalar mod",
+    "installingFiles": "Instalando archivos…",
     "unpackingModFiles": "Desempaquetando archivos del mod…",
     "modInfoFileMissing": "El archivo mod.info falta o está dañado.",
     "notAnARKMod": "La carpeta seleccionada no es un mod válido de ARK.",
@@ -157,9 +158,9 @@
     "noModSelectedForPreview": "No hay mod seleccionado para la vista previa.",
     "workshopPage": "Página del Workshop",
     "adlerHashMismatch": "Error de hash — el archivo puede haber sido modificado después de generar la lista.",
-    "alreadyInstalled": "{0} is already installed.",
-    "failedToLoadWorkshopModList": "Failed to load workshop mod list.",
-    "readyToInstall": "{0} ready to install."
+    "failedToLoadWorkshopModList": "Error al cargar la lista de mods del Workshop.",
+    "readyToInstall": "{0} listo para instalar.",
+    "alreadyInstalled": "{0} ya está instalado."
   },
   "serversTab": {
     "tabTitle": "Servidores",
@@ -180,13 +181,15 @@
   },
   "launcherSettingsTab": {
     "closeOnGameLaunch": "Cerrar el lanzador al iniciar el juego",
+    "aseGamePath": "Ruta de ARK: Survival Evolved",
+    "asaGamePath": "Ruta de ARK: Survival Ascended",
     "linuxLaunchSettings": "Ajustes de inicio en Linux",
     "launcherLanguage": "Idioma del lanzador",
     "gameLanguage": "Idioma del juego",
     "useGlobalFonts": "Usar fuentes globales",
     "keyFeatures": "Características clave",
     "keyFeaturesHeader": "Características principales de Arsenal:",
-    "linuxLaunchToolNote": "Choose which Windows compatibility runtime launches ARK on Linux. Automatic follows Steam's assigned Proton tool when possible, then falls back to the best discovered Proton or Wine build."
+    "linuxLaunchToolNote": "Selecciona el entorno de compatibilidad de Windows para iniciar ARK en Linux. 'Automático' usa la herramienta Proton asignada por Steam, o en su defecto la mejor versión de Proton/Wine detectada."
   },
   "downloads": {
     "downloading": "Descargando…",
@@ -223,6 +226,7 @@
     "unlockSkinsSuccess": "Skins desbloqueadas correctamente.",
     "unlockSkinsFail": "Error al desbloquear skins. Asegúrate de que la carpeta del juego es correcta.",
     "noPathSelected": "No se seleccionó ninguna ruta.",
+    "gamePathNotConfigured": "La ruta de {0} no está configurada. Establécela en los Ajustes del Lanzador.",
     "languageChangeInfo": "Reinicia el lanzador para aplicar completamente el cambio de idioma.",
     "anotherInstanceRunning": "Ya hay otra instancia del lanzador en ejecución.",
     "steamMissing": "Steam no está instalado o no se detecta.",
@@ -234,8 +238,8 @@
     "launcherCloseWarning": "Se perderán los datos no guardados.",
     "deleteLauncherSettings": "Eliminar configuración del lanzador",
     "deleteLauncherSettingsPrompt": "¿Quieres eliminar permanentemente toda la configuración del lanzador?",
-    "downloadFailed": "Download failed: ",
-    "steamClientBootstrapFailed": "tek-steamclient bootstrap failed"
+    "downloadFailed": "Descarga fallida: ",
+    "steamClientBootstrapFailed": "Fallo al iniciar tek-steamclient (bootstrap failed)"
   },
   "version": {
     "launcherVersion": "Versión del lanzador",
@@ -250,15 +254,15 @@
     "downloading": "Descargando…",
     "gameFilesFound": "Archivos del juego encontrados.",
     "gameFilesNotFound": "No se encontraron archivos del juego.",
-    "manageArkInstalls": "Manage ARK installs, DLC, mods, servers, and launch behavior from the native launcher shell.",
-    "preparingInstallation": "Preparing first-launch installation tasks for ARK.",
-    "restartRequiredForSteamClient": "Launcher has to be restarted to load new version of tek-steamclient"
+    "manageArkInstalls": "Gestiona instalaciones de ARK, DLC, mods y servidores desde el lanzador nativo.",
+    "preparingInstallation": "Preparando las tareas de instalación de primer inicio para ARK.",
+    "restartRequiredForSteamClient": "El lanzador debe reiniciarse para cargar la nueva versión de tek-steamclient"
   },
   "launchOptimization": {
     "noRHIThread": "Sin hilo RHI",
     "noRHIThreadDesc": "Desactiva el hilo de la interfaz de hardware de renderizado para mejorar el rendimiento en algunos sistemas.",
     "lowMemoryMode": "Modo de memoria baja",
-    "lowMemoryModeDesc": "Activa optimizaciones de memoria para sistemas de bajos recursos.",
+    "lowMemoryModeDesc": "Limita el uso de memoria del juego a 4 GB. Déjalo desactivado salvo que tu sistema solo tenga 4 GB de RAM.",
     "useDirectX10": "Usar DirectX 10",
     "useDirectX10Desc": "Fuerza el uso de DirectX 10 para compatibilidad con hardware antiguo.",
     "noSplashScreen": "Sin pantalla de inicio",
@@ -268,7 +272,7 @@
     "noMemoryBias": "Sin sesgo de memoria",
     "noMemoryBiasDesc": "Desactiva la optimización de sesgo de memoria.",
     "disableSPHibernation": "Desactivar hibernación en singleplayer",
-    "disableSPHibernationDesc": "Evita que el juego se suspenda al perder el foco en singleplayer.",
+    "disableSPHibernationDesc": "Desactiva la hibernación en singleplayer para que la simulación corra en todo el mapa. Esto puede aumentar mucho el uso de CPU y RAM; déjalo desactivado salvo que un mod necesite datos de dinos de todo el mapa.",
     "disableVSync": "Desactivar VSync",
     "disableVSyncDesc": "Desactiva la sincronización vertical para eliminar el límite de FPS.",
     "enableAnselSupport": "Activar soporte Ansel",
@@ -401,6 +405,6 @@
   "gameUpdaterWindow": {
     "tabTitle": "Actualizar juego"
   },
-  "gameUpdateAvailable": "Game update is available.",
-  "updateFinished": "Update finished."
+  "gameUpdateAvailable": "Hay una actualización del juego disponible.",
+  "updateFinished": "Actualización finalizada."
 }

@@ -263,7 +263,7 @@ public partial class MainWindow : Window
               : true;
             if (!rollbackReloaded)
             {
-                Messages.Show("common.warning", Locale.Get("errors.steamClientBootstrapFailed"));
+                Messages.Show("common.warning", viewModel.LastBootstrapErrorMessage ?? Locale.Get("errors.steamClientBootstrapFailed"));
                 return;
             }
 

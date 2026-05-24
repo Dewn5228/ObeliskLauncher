@@ -40,7 +40,7 @@
       "mb": "MB",
       "gb": "GB"
     },
-    "updating": "Updating"
+    "updating": "Ενημέρωση…"
   },
   "time": {
     "second": "δ",
@@ -76,8 +76,8 @@
     "highProcessPriorityDesc": "Εκτέλεση παιχνιδιού με υψηλότερη προτεραιότητα CPU.",
     "runGameAsAdmin": "Εκτέλεση ως διαχειριστής",
     "useSpacewar": "Χρήση Spacewar",
-    "launchBehaviorNoteLinux": "Linux launches ARK through Steam/Proton. Windows-only elevation behavior is not used on this platform.",
-    "launcherLanguageAvailabilityNote": "Additional launcher translations are unavailable in this build because the localization files are missing."
+    "launcherLanguageAvailabilityNote": "Πρόσθετες μεταφράσεις για τον launcher δεν είναι διαθέσιμες σε αυτήν την έκδοση επειδή λείπουν τα αρχεία τοπικοποίησης.",
+    "launchBehaviorNoteLinux": "Το Linux εκκινεί το ARK μέσω Steam/Proton. Η συμπεριφορά ανύψωσης δικαιωμάτων (elevation) των Windows δεν χρησιμοποιείται σε αυτήν την πλατφόρμα."
   },
   "gameOptionsTab": {
     "install": "Εγκατάσταση",
@@ -102,16 +102,17 @@
     "cleanDownloadCacheSuccess": "Η cache λήψεων καθαρίστηκε επιτυχώς.",
     "steamUpdater": "Το Steam παρέχει ενημερώσεις παιχνιδιού.",
     "enablingAnselSupport": "Η ενεργοποίηση Ansel απενεργοποιεί το anti-cheat σε online λειτουργίες.",
-    "maintenanceNoteLinux": "Game maintenance actions run natively on Linux, while game launch goes through Steam/Proton. Windows-only priority and DirectX checks are hidden on this platform.",
-    "maintenanceNoteWindows": "Game update, validation, and file maintenance run directly from the current launcher shell."
+    "maintenanceNoteLinux": "Οι ενέργειες συντήρησης του παιχνιδιού εκτελούνται εγγενώς στο Linux, ενώ η εκκίνηση του παιχνιδιού γίνεται μέσω Steam/Proton. Οι έλεγχοι προτεραιότητας και DirectX που αφορούν μόνο τα Windows είναι κρυμμένοι.",
+    "maintenanceNoteWindows": "Η ενημέρωση, η επικύρωση και η συντήρηση αρχείων εκτελούνται απευθείας από το κέλυφος του τρέχοντος launcher."
   },
   "dlcTab": {
     "tabTitle": "DLC",
     "dlcUpdatesAvailable": "Διαθέσιμες ενημερώσεις DLC.",
-    "sectionNote": "Install, update, validate, and delete DLC content from the native launcher. Operations use the shared Steam task backend and refresh launcher status when they finish."
+    "sectionNote": "Εγκαταστήστε, ενημερώστε, επικυρώστε και διαγράψτε περιεχόμενο DLC από τον εγγενή launcher. Οι λειτουργίες χρησιμοποιούν το σύστημα εργασιών του Steam και ανανεώνουν την κατάσταση του launcher μόλις ολοκληρωθούν."
   },
   "modsTab": {
     "installMod": "Εγκατάσταση Mod",
+    "installingFiles": "Εγκατάσταση αρχείων…",
     "unpackingModFiles": "Αποσυμπίεση αρχείων mod…",
     "modInfoFileMissing": "Το αρχείο mod.info λείπει ή είναι κατεστραμμένο.",
     "notAnARKMod": "Ο επιλεγμένος φάκελος δεν είναι έγκυρο ARK mod.",
@@ -157,9 +158,9 @@
     "noModSelectedForPreview": "Δεν επιλέχθηκε mod για προεπισκόπηση.",
     "workshopPage": "Σελίδα Workshop",
     "adlerHashMismatch": "Ασυμφωνία hash αρχείου — το αρχείο μπορεί να έχει τροποποιηθεί μετά τη δημιουργία της λίστας.",
-    "alreadyInstalled": "{0} is already installed.",
-    "failedToLoadWorkshopModList": "Failed to load workshop mod list.",
-    "readyToInstall": "{0} ready to install."
+    "failedToLoadWorkshopModList": "Αποτυχία φόρτωσης της λίστας workshop mods.",
+    "readyToInstall": "{0} έτοιμο για εγκατάσταση.",
+    "alreadyInstalled": "{0} είναι ήδη εγκατεστημένο."
   },
   "serversTab": {
     "tabTitle": "Servers",
@@ -180,13 +181,15 @@
   },
   "launcherSettingsTab": {
     "closeOnGameLaunch": "Κλείσιμο launcher κατά την εκκίνηση",
+    "aseGamePath": "Διαδρομή παιχνιδιού ASE",
+    "asaGamePath": "Διαδρομή παιχνιδιού ASA",
     "linuxLaunchSettings": "Ρυθμίσεις εκκίνησης Linux",
     "launcherLanguage": "Γλώσσα Launcher",
     "gameLanguage": "Γλώσσα παιχνιδιού",
     "useGlobalFonts": "Χρήση καθολικών γραμματοσειρών",
     "keyFeatures": "Κύρια χαρακτηριστικά",
     "keyFeaturesHeader": "Κύρια χαρακτηριστικά Arsenal:",
-    "linuxLaunchToolNote": "Choose which Windows compatibility runtime launches ARK on Linux. Automatic follows Steam's assigned Proton tool when possible, then falls back to the best discovered Proton or Wine build."
+    "linuxLaunchToolNote": "Επιλέξτε ποιο περιβάλλον συμβατότητας Windows θα εκκινεί το ARK στο Linux. Το 'Αυτόματο' ακολουθεί το εργαλείο Proton του Steam, διαφορετικά επιλέγει την καλύτερη έκδοση Proton ή Wine που βρέθηκε."
   },
   "downloads": {
     "downloading": "Λήψη…",
@@ -204,7 +207,7 @@
     "launchFailCorrupted": "Τα αρχεία παιχνιδιού φαίνονται κατεστραμμένα ή λείπουν.",
     "launchFailSteamNotRunning": "Το Steam δεν εκτελείται.",
     "launchFailDirectXNotInstalled": "Λείπει το απαραίτητο DirectX {0}.",
-    "launchFailNotLoggedIntoSteam": "Ο χρήστης Steam δεν είναι συνδεδεμένος ή δεν βρέθηκε.",
+    "launchFailNotLoggedIntoSteam": "Ο χρήστης Steam δεν είναι συνδεδεμένος.",
     "launchFailSteamApiCompromised": "Το Steam API φαίνεται να έχει παραβιαστεί.",
     "launchFailSteamCorrupted": "Η εγκατάσταση του Steam φαίνεται κατεστραμμένη.",
     "joinFailDLCMissing": "Λείπει απαραίτητο DLC για αυτόν τον server. Θέλετε να το εγκαταστήσετε;",
@@ -223,6 +226,7 @@
     "unlockSkinsSuccess": "Τα skins ξεκλειδώθηκαν επιτυχώς.",
     "unlockSkinsFail": "Αποτυχία ξεκλειδώματος skins. Βεβαιωθείτε ότι ο φάκελος παιχνιδιού είναι σωστός.",
     "noPathSelected": "Δεν επιλέχθηκε διαδρομή.",
+    "gamePathNotConfigured": "Η διαδρομή {0} δεν έχει ρυθμιστεί στις Ρυθμίσεις Launcher.",
     "languageChangeInfo": "Επανεκκινήστε τον launcher για πλήρη εφαρμογή της αλλαγής γλώσσας.",
     "anotherInstanceRunning": "Μια άλλη εκτέλεση του launcher είναι ήδη ανοιχτή.",
     "steamMissing": "Το Steam δεν είναι εγκατεστημένο ή δεν εντοπίστηκε.",
@@ -234,8 +238,8 @@
     "launcherCloseWarning": "Μη αποθηκευμένα δεδομένα θα χαθούν.",
     "deleteLauncherSettings": "Διαγραφή ρυθμίσεων launcher",
     "deleteLauncherSettingsPrompt": "Θέλετε να διαγράψετε μόνιμα όλες τις ρυθμίσεις του launcher;",
-    "downloadFailed": "Download failed: ",
-    "steamClientBootstrapFailed": "tek-steamclient bootstrap failed"
+    "downloadFailed": "Η λήψη απέτυχε: ",
+    "steamClientBootstrapFailed": "Η προετοιμασία (bootstrap) του tek-steamclient απέτυχε"
   },
   "version": {
     "launcherVersion": "Έκδοση launcher",
@@ -250,15 +254,15 @@
     "downloading": "Λήψη…",
     "gameFilesFound": "Βρέθηκαν αρχεία παιχνιδιού.",
     "gameFilesNotFound": "Δεν βρέθηκαν αρχεία παιχνιδιού.",
-    "manageArkInstalls": "Manage ARK installs, DLC, mods, servers, and launch behavior from the native launcher shell.",
-    "preparingInstallation": "Preparing first-launch installation tasks for ARK.",
-    "restartRequiredForSteamClient": "Launcher has to be restarted to load new version of tek-steamclient"
+    "preparingInstallation": "Προετοιμασία εργασιών εγκατάστασης πρώτης εκκίνησης για το ARK.",
+    "manageArkInstalls": "Διαχειριστείτε εγκαταστάσεις ARK, DLC, mods, servers και συμπεριφορά εκκίνησης από τον launcher.",
+    "restartRequiredForSteamClient": "Ο launcher πρέπει να επανεκκινηθεί για να φορτώσει τη νέα έκδοση του tek-steamclient"
   },
   "launchOptimization": {
     "noRHIThread": "Χωρίς RHI Thread",
     "noRHIThreadDesc": "Απενεργοποίηση του Render Hardware Interface thread για καλύτερη απόδοση σε ορισμένα συστήματα.",
     "lowMemoryMode": "Λειτουργία χαμηλής μνήμης",
-    "lowMemoryModeDesc": "Ενεργοποίηση βελτιστοποιήσεων μνήμης για συστήματα χαμηλών προδιαγραφών.",
+    "lowMemoryModeDesc": "Περιορίζει τη χρήση μνήμης του παιχνιδιού στα 4 GB. Αφήστε το απενεργοποιημένο, εκτός αν το σύστημά σας έχει μόνο 4 GB RAM.",
     "useDirectX10": "Χρήση DirectX 10",
     "useDirectX10Desc": "Εξαναγκασμός του παιχνιδιού σε DirectX 10 για συμβατότητα με παλαιότερο υλικό.",
     "noSplashScreen": "Χωρίς Splash Screen",
@@ -268,7 +272,7 @@
     "noMemoryBias": "Χωρίς Memory Bias",
     "noMemoryBiasDesc": "Απενεργοποίηση της βελτιστοποίησης memory bias.",
     "disableSPHibernation": "Απενεργοποίηση Hibernation στο Singleplayer",
-    "disableSPHibernationDesc": "Αποτροπή παύσης του παιχνιδιού όταν το παράθυρο χάνει την εστίαση στο singleplayer.",
+    "disableSPHibernationDesc": "Απενεργοποιεί το hibernation στο singleplayer ώστε η προσομοίωση να τρέχει σε όλο τον χάρτη. Αυτό μπορεί να αυξήσει πολύ τη χρήση CPU και RAM· αφήστε το απενεργοποιημένο, εκτός αν κάποιο mod απαιτεί δεδομένα δεινοσαύρων από όλο τον χάρτη.",
     "disableVSync": "Απενεργοποίηση VSync",
     "disableVSyncDesc": "Απενεργοποίηση του κάθετου συγχρονισμού για αφαίρεση του ορίου FPS.",
     "enableAnselSupport": "Ενεργοποίηση Ansel",
@@ -313,11 +317,11 @@
     "searchWorkshopMods": "Αναζήτηση workshop mods",
     "noInstalledMods": "Δεν βρέθηκαν εγκατεστημένα mods. Μπορείτε να εγκαταστήσετε ένα μέσω ID παραπάνω ή από τη λίστα workshop.",
     "installLocation": "Τοποθεσία εγκατάστασης",
-    "toInstallArkOpenSettings": "Για να εγκαταστήσετε το ARK, ανοίξτε τις Ρυθμίσεις Launcher, επιλέξτε έναν κενό ή υπάρχοντα φάκελο ως Διαδρομή Παιχνιδιού, εφαρμόστε την και επιστρέψτε εδώ για Ενημέρωση.",
+    "toInstallArkOpenSettings": "Για να εγκαταστήσετε το ARK, ανοίξτε τις Ρυθμίσεις Launcher, επιλέξτε έναν φάκελο ως Διαδρομή Παιχνιδιού, εφαρμόστε την και επιστρέψτε εδώ για Ενημέρωση.",
     "openLauncherSettings": "Άνοιγμα Ρυθμίσεων Launcher",
     "maintenance": "Συντήρηση",
     "gamePath": "Διαδρομή Παιχνιδιού",
-    "gamePathDescription": "Ορίστε τον υπάρχοντα φάκελο του ARK ή έναν κενό φάκελο όπου ο launcher θα εγκαταστήσει μια διαχειριζόμενη κόπια του παιχνιδιού.",
+    "gamePathDescription": "Ορίστε τον φάκελο του ARK ή έναν κενό φάκελο όπου ο launcher θα εγκαταστήσει το παιχνίδι.",
     "applyGamePath": "Εφαρμογή Διαδρομής",
     "cleanDownloadCache": "Καθαρισμός Cache Λήψεων",
     "deleteLauncherSettings": "Διαγραφή Ρυθμίσεων Launcher",
@@ -330,7 +334,7 @@
     "applyPreset": "Εφαρμογή Προεπιλογής",
     "deletePreset": "Διαγραφή Προεπιλογής",
     "customPrefix": "Προσαρμοσμένο Prefix",
-    "customPrefixDescription": "Χρήση προσαρμοσμένου compatdata root. Επιλέξτε τον φάκελο που θα περιέχει την κατάσταση του Proton/Wine prefix, όχι απευθείας το pfx.",
+    "customPrefixDescription": "Χρήση προσαρμοσμένου compatdata root. Επιλέξτε τον φάκελο που θα περιέχει το Proton/Wine prefix.",
     "gamemoderun": "gamemoderun",
     "gamescope": "gamescope",
     "mangohud": "MangoHud",
@@ -348,7 +352,7 @@
     "runGameAsAdmin": "Εκτέλεση ως διαχειριστής",
     "useSpacewar": "Χρήση Spacewar",
     "placeholderLaunchParams": "-sm4 -example",
-    "placeholderCustomPrefix": "Αφήστε κενό για διαχείριση από launcher ή Steam compatdata",
+    "placeholderCustomPrefix": "Κενό για διαχείριση από launcher ή Steam compatdata",
     "placeholderGamescopeArgs": "-W 1920 -H 1080 -r 60",
     "placeholderWineFsrStrength": "0-5, προαιρετικό",
     "placeholderExtraEnv": "KEY=value\nANOTHER_KEY=value",
@@ -361,12 +365,12 @@
     "useExistingArk": "Χρήση υπάρχουσας εγκατάστασης ARK",
     "installNewFolder": "Εγκατάσταση ARK σε νέο φάκελο",
     "selectExistingFolder": "Επιλογή υπάρχοντος φακέλου ARK",
-    "selectFolderDescription": "Ο επιλεγμένος φάκελος πρέπει να περιέχει το ShooterGame/Binaries/Win64/ShooterGame.exe.",
+    "selectFolderDescription": "Ο φάκελος πρέπει να περιέχει το ShooterGame/Binaries/Win64/ShooterGame.exe.",
     "placeholderPathToArk": "/διαδρομή/προς/ARK",
     "selectFolderToContinue": "Επιλέξτε έναν φάκελο για να συνεχίσετε.",
     "continue": "Συνέχεια",
     "chooseInstallFolder": "Επιλογή φακέλου εγκατάστασης",
-    "chooseInstallDescription": "Ο TEK Launcher θα χρησιμοποιήσει αυτόν τον φάκελο για μια διαχειριζόμενη εγκατάσταση.",
+    "chooseInstallDescription": "Ο TEK Launcher θα χρησιμοποιήσει αυτόν τον φάκελο για την εγκατάσταση.",
     "placeholderInstallPath": "/διαδρομή/εγκατάστασης/ARK",
     "preAquatica": "Pre-Aquatica (129 GB)",
     "latest": "Τελευταία (166 GB)",
@@ -384,23 +388,23 @@
     "launcherUpdateAvailable": "Νέα ενημέρωση launcher διαθέσιμη — επανεκκινήστε για εγκατάσταση.",
     "launcherUpdateFail": "Αποτυχία λήψης της ενημέρωσης launcher.",
     "updating": "Ενημέρωση…",
-    "linuxFallbackNote": "Οι εκδόσεις Windows μπορούν να αντικαταστήσουν το αρχείο αυτόματα. Οι εκδόσεις Linux απαιτούν χειροκίνητη ενημέρωση από τη σελίδα εκδόσεων προς το παρόν."
+    "linuxFallbackNote": "Στα Windows η ενημέρωση γίνεται αυτόματα. Στο Linux απαιτείται προς το παρόν χειροκίνητη λήψη από τη σελίδα εκδόσεων."
   },
   "dlcUpdaterWindow": {
     "tabTitle": "Ενημέρωση DLC",
-    "closeNote": "Κλείστε το παράθυρο μετά την παύση ή όταν τελειώσει η εργασία. Η υποκείμενη εργασία Steam είναι η ίδια με την παλιά ροή ενημέρωσης."
+    "closeNote": "Κλείστε το παράθυρο μετά την παύση ή την ολοκλήρωση. Χρησιμοποιείται το ίδιο σύστημα εργασιών με τον παλιό updater."
   },
   "serverModsUpdaterWindow": {
     "tabTitle": "Mods Server",
-    "closeNote": "Κάντε παύση πριν κλείσετε εάν η εργασία εκτελείται ακόμα, ή περιμένετε να τελειώσει η επικύρωση."
+    "closeNote": "Κάντε παύση πριν κλείσετε εάν η εργασία εκτελείται, ή περιμένετε να τελειώσει η επικύρωση."
   },
   "modUpdaterWindow": {
     "tabTitle": "Ενημέρωση Mods",
-    "closeNote": "Κάντε παύση πριν κλείσετε εάν η εργασία εκτελείται ακόμα, ή περιμένετε να ολοκληρωθεί η εργασία."
+    "closeNote": "Κάντε παύση πριν κλείσετε εάν η εργασία εκτελείται, ή περιμένετε να ολοκληρωθεί η εργασία."
   },
   "gameUpdaterWindow": {
     "tabTitle": "Ενημέρωση Παιχνιδιού"
   },
-  "gameUpdateAvailable": "Game update is available.",
-  "updateFinished": "Update finished."
+  "gameUpdateAvailable": "Υπάρχει διαθέσιμη ενημέρωση παιχνιδιού.",
+  "updateFinished": "Η ενημέρωση ολοκληρώθηκε."
 }

@@ -284,6 +284,95 @@ static class WebSocketConnection
         MessageReceived -= messageReceivedHandler;
         return result;
     }
+
+    /// <summary>Sends a message to CM server and accumulates all response messages until <paramref name="isComplete"/> returns <see langword="true"/>.</summary>
+    /// <typeparam name="T">Type of expected response message body.</typeparam>
+    /// <param name="message">Message to send.</param>
+    /// <param name="expectedResponseType">Type of expected response message.</param>
+    /// <param name="isComplete">Predicate called for each collected message body; when it returns <see langword="true"/>, accumulation stops.</param>
+    /// <param name="timeoutMs">Total timeout in milliseconds to wait for completion.</param>
+    /// <returns>List of collected response message bodies, or <see langword="null"/> if the first response was not received before timeout.</returns>
+    public static List<T>? GetMessages<T>(Message message, MessageType expectedResponseType, Func<T, bool> isComplete, int timeoutMs = 15000) where T : IMessage, new()
+    {
+        using var waitEvent = new ManualResetEvent(false);
+        var results = new List<T>();
+        bool firstReceived = false;
+        void messageReceivedHandler(byte[] data, int size)
+        {
+            var type = (MessageType)(BitConverter.ToUInt32(data) & 0x7FFFFFFF);
+            if (type == MessageType.ServerUnavailable)
+            {
+                Disconnect();
+                waitEvent.Set();
+                return;
+            }
+            void processMessage(byte[] msgData, int msgSize)
+            {
+                var msgType = (MessageType)(BitConverter.ToUInt32(msgData) & 0x7FFFFFFF);
+                if (msgType == MessageType.ServerUnavailable)
+                {
+                    Disconnect();
+                    waitEvent.Set();
+                    return;
+                }
+                if (msgType != expectedResponseType)
+                    return;
+                var msg = new Message<T>(msgData, msgSize);
+                firstReceived = true;
+                results.Add(msg.Body);
+                if (isComplete(msg.Body))
+                    waitEvent.Set();
+            }
+            if (type == MessageType.Multi)
+            {
+                var multiMessage = new Message<Multi>(data, size);
+                var stream = multiMessage.Body.MessagesData.Memory.AsStream();
+                if (multiMessage.Body.UncompressedSize > 0)
+                {
+                    byte[] uncompressedPayload = new byte[multiMessage.Body.UncompressedSize];
+                    try
+                    {
+                        using (var decompressorStream = new GZipStream(stream, CompressionMode.Decompress))
+                        {
+                            int bytesRead;
+                            int offset = 0;
+                            do
+                            {
+                                bytesRead = decompressorStream.Read(uncompressedPayload, offset, uncompressedPayload.Length - offset);
+                                offset += bytesRead;
+                            }
+                            while (bytesRead > 0);
+                        }
+                        stream.Dispose();
+                        stream = new MemoryStream(uncompressedPayload);
+                    }
+                    catch { return; }
+                }
+                Span<byte> buffer = stackalloc byte[4];
+                using (stream)
+                    while (stream.Read(buffer) == 4)
+                    {
+                        byte[] messageData = new byte[BitConverter.ToInt32(buffer)];
+                        stream.ReadExactly(messageData);
+                        processMessage(messageData, messageData.Length);
+                        if (waitEvent.WaitOne(0))
+                            return;
+                    }
+            }
+            else
+                processMessage(data, size);
+        }
+        MessageReceived += messageReceivedHandler;
+        if (!Send(message))
+        {
+            MessageReceived -= messageReceivedHandler;
+            return null;
+        }
+        waitEvent.WaitOne(timeoutMs);
+        MessageReceived -= messageReceivedHandler;
+        return firstReceived ? results : null;
+    }
+
     /// <summary>Occurs when the connection receives a new message; message data array and size of the message in bytes are passed as arguments.</summary>
     static event Action<byte[], int>? MessageReceived;
 }
