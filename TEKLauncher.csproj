@@ -17,9 +17,9 @@
   <PropertyGroup>
     <ProtoRoot>$(ProjectDir)protos/</ProtoRoot>
     <ProtoOutputDir>$(ProjectDir)src/</ProtoOutputDir>
-    <ProtocExecutable Condition="$([MSBuild]::IsOSPlatform('Windows'))">$(NuGetPackageRoot)google.protobuf.tools/3.34.1/tools/windows_x64/protoc.exe</ProtocExecutable>
-    <ProtocExecutable Condition="$([MSBuild]::IsOSPlatform('Linux'))">$(NuGetPackageRoot)google.protobuf.tools/3.34.1/tools/linux_x64/protoc</ProtocExecutable>
-    <ProtocExecutable Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(NuGetPackageRoot)google.protobuf.tools/3.34.1/tools/macosx_x64/protoc</ProtocExecutable>
+    <ProtocExecutable Condition="$([MSBuild]::IsOSPlatform('Windows'))">$(NuGetPackageRoot)google.protobuf.tools/3.35.0/tools/windows_x64/protoc.exe</ProtocExecutable>
+    <ProtocExecutable Condition="$([MSBuild]::IsOSPlatform('Linux'))">$(NuGetPackageRoot)google.protobuf.tools/3.35.0/tools/linux_x64/protoc</ProtocExecutable>
+    <ProtocExecutable Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(NuGetPackageRoot)google.protobuf.tools/3.35.0/tools/macosx_x64/protoc</ProtocExecutable>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <Optimize>True</Optimize>
