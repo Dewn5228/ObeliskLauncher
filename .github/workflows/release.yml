@@ -37,7 +37,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if gh release view "${{ needs.extract-version.outputs.version-tag }}" &> /dev/null; then
+          if gh release view "${{ needs.extract-version.outputs.version-tag }}" --repo "${{ github.repository }}" &> /dev/null; then
             echo "exists=true" >> $GITHUB_OUTPUT
             echo "Release ${{ needs.extract-version.outputs.version-tag }} already exists"
           else
@@ -64,7 +64,7 @@ jobs:
         run: dotnet build TEKLauncher.csproj -c Release -p:SignAssembly=false
       
       - name: Publish Windows Release
-        run: dotnet publish TEKLauncher.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:SignAssembly=false -o artifacts/publish/win-x64
+        run: dotnet publish TEKLauncher.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -p:SignAssembly=false -o artifacts/publish/win-x64
       
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
