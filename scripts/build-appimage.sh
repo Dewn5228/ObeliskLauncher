@@ -5,7 +5,7 @@ set -euo pipefail
 RID="${RID:-linux-x64}"
 OUTPUT_DIR="artifacts/publish/${RID}"
 APPDIR="artifacts/AppDir"
-APPIMAGE_TOOL_URL="https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
+APPIMAGE_TOOL_URL="https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
 APPIMAGE_TOOL="artifacts/appimagetool.AppImage"
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
@@ -58,10 +58,13 @@ if [ ! -f "${APPIMAGE_TOOL}" ]; then
 fi
 
 echo "==> Building AppImage..."
-ARCH=x86_64 ./${APPIMAGE_TOOL} "${APPDIR}" "artifacts/ObeliskLauncher-x86_64.AppImage"
+ARCH=x86_64 APPIMAGE_EXTRACT_AND_RUN=1 "./${APPIMAGE_TOOL}" --appimage-extract-and-run \
+    "${APPDIR}" "artifacts/ObeliskLauncher-x86_64.AppImage"
+chmod +x "artifacts/ObeliskLauncher-x86_64.AppImage"
 
 echo "==> Creating standalone Linux tarball..."
 tar -czf "artifacts/ObeliskLauncher-linux-x86_64.tar.gz" -C "${OUTPUT_DIR}" ObeliskLauncher
 
-echo "==> Success! AppImage created at: artifacts/ObeliskLauncher-x86_64.AppImage"
-echo "==> Success! Standalone Tarball created at: artifacts/ObeliskLauncher-linux-x86_64.tar.gz"
+echo "==> Done!"
+echo "    AppImage : artifacts/ObeliskLauncher-x86_64.AppImage"
+echo "    Tarball  : artifacts/ObeliskLauncher-linux-x86_64.tar.gz"

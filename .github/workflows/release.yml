@@ -97,7 +97,7 @@ jobs:
         run: dotnet build ObeliskLauncher.csproj -c Release -p:SignAssembly=false
       
       - name: Build AppImage
-        run: SIGN_ASSEMBLY=false bash scripts/build-appimage.sh
+        run: SIGN_ASSEMBLY=false APPIMAGE_EXTRACT_AND_RUN=1 bash scripts/build-appimage.sh
       
       - name: Upload Linux AppImage
         uses: actions/upload-artifact@v4
