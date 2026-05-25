@@ -1,4 +1,4 @@
-﻿namespace TEKLauncher.UI;
+﻿namespace ObeliskLauncher.UI;
 
 /// <summary>Manages message windows.</summary>
 class Messages

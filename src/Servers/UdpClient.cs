@@ -2,7 +2,7 @@
 using System.Net.Sockets;
 using System.Threading;
 
-namespace TEKLauncher.Servers;
+namespace ObeliskLauncher.Servers;
 
 /// <summary>Manages UDP traffic of the application.</summary>
 /// <remarks>The purpose of this class is using only one socket to send and receive datagrams from all servers.</remarks>

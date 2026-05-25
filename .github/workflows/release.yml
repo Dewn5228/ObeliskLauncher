@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'TEKLauncher.csproj'
+      - 'ObeliskLauncher.csproj'
       - '.github/workflows/release.yml'
   workflow_dispatch:
 
@@ -21,7 +21,7 @@ jobs:
       - name: Extract version from csproj
         id: version
         run: |
-          VERSION=$(grep -oP '(?<=<Version>)[^<]+' TEKLauncher.csproj)
+          VERSION=$(grep -oP '(?<=<Version>)[^<]+' ObeliskLauncher.csproj)
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "version-tag=v${VERSION}" >> $GITHUB_OUTPUT
           echo "Extracted version: ${VERSION}"
@@ -61,16 +61,16 @@ jobs:
         run: dotnet restore
       
       - name: Build project
-        run: dotnet build TEKLauncher.csproj -c Release -p:SignAssembly=false
+        run: dotnet build ObeliskLauncher.csproj -c Release -p:SignAssembly=false
       
       - name: Publish Windows Release
-        run: dotnet publish TEKLauncher.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -p:SignAssembly=false -o artifacts/publish/win-x64
+        run: dotnet publish ObeliskLauncher.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:SignAssembly=false -o artifacts/publish/win-x64
       
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-executable
-          path: artifacts/publish/win-x64/TEKLauncher.exe
+          path: artifacts/publish/win-x64/ObeliskLauncher.exe
           retention-days: 1
 
   build-linux:
@@ -94,16 +94,23 @@ jobs:
         run: dotnet restore
       
       - name: Build project
-        run: dotnet build TEKLauncher.csproj -c Release -p:SignAssembly=false
+        run: dotnet build ObeliskLauncher.csproj -c Release -p:SignAssembly=false
       
       - name: Build AppImage
         run: SIGN_ASSEMBLY=false bash scripts/build-appimage.sh
       
-      - name: Upload Linux artifact
+      - name: Upload Linux AppImage
         uses: actions/upload-artifact@v4
         with:
           name: linux-appimage
-          path: artifacts/TEKLauncher-x86_64.AppImage
+          path: artifacts/ObeliskLauncher-x86_64.AppImage
+          retention-days: 1
+
+      - name: Upload Linux Tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-tarball
+          path: artifacts/ObeliskLauncher-linux-x86_64.tar.gz
           retention-days: 1
 
   create-release:
@@ -122,23 +129,31 @@ jobs:
           name: windows-executable
           path: ./artifacts/windows
       
-      - name: Download Linux artifact
+      - name: Download Linux AppImage
         uses: actions/download-artifact@v4
         with:
           name: linux-appimage
-          path: ./artifacts/linux
+          path: ./artifacts/linux-appimage
+
+      - name: Download Linux Tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-tarball
+          path: ./artifacts/linux-tarball
       
       - name: Rename artifacts
         run: |
-          mv ./artifacts/windows/TEKLauncher.exe ./artifacts/TEKLauncher-win-x64.exe
-          mv ./artifacts/linux/TEKLauncher-x86_64.AppImage ./artifacts/TEKLauncher-linux-x86_64.AppImage
+          mv ./artifacts/windows/ObeliskLauncher.exe ./artifacts/ObeliskLauncher-win-x64.exe
+          mv ./artifacts/linux-appimage/ObeliskLauncher-x86_64.AppImage ./artifacts/ObeliskLauncher-linux-x86_64.AppImage
+          mv ./artifacts/linux-tarball/ObeliskLauncher-linux-x86_64.tar.gz ./artifacts/ObeliskLauncher-linux-x86_64.tar.gz
       
       - name: Create Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "${{ needs.extract-version.outputs.version-tag }}" \
-            ./artifacts/TEKLauncher-win-x64.exe \
-            ./artifacts/TEKLauncher-linux-x86_64.AppImage \
-            --title "TEKLauncher ${{ needs.extract-version.outputs.version }}" \
-            --notes "Release built from version ${{ needs.extract-version.outputs.version }} in TEKLauncher.csproj"
+            ./artifacts/ObeliskLauncher-win-x64.exe \
+            ./artifacts/ObeliskLauncher-linux-x86_64.AppImage \
+            ./artifacts/ObeliskLauncher-linux-x86_64.tar.gz \
+            --title "Obelisk Launcher ${{ needs.extract-version.outputs.version }}" \
+            --notes "Release built from version ${{ needs.extract-version.outputs.version }} in ObeliskLauncher.csproj"

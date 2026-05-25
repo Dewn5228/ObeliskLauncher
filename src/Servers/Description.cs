@@ -1,4 +1,4 @@
-﻿namespace TEKLauncher.Servers;
+﻿namespace ObeliskLauncher.Servers;
 
 /// <summary>Server/cluster description container.</summary>
 public record Description

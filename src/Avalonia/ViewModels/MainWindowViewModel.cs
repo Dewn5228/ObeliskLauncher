@@ -1,9 +1,9 @@
 using System.Linq;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using TEKLauncher.Servers;
+using ObeliskLauncher.Servers;
 
-namespace TEKLauncher.Avalonia.ViewModels;
+namespace ObeliskLauncher.Avalonia.ViewModels;
 
 public sealed class LauncherNavNodeViewModel
 {
@@ -96,7 +96,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     Task<bool>? _reloadAfterSwitchTask;
     Task<string?>? _navigationSwitchTask;
 
-    public string Title => "TEK Launcher";
+    public string Title => "Obelisk Launcher";
 
     public string Subtitle
     {

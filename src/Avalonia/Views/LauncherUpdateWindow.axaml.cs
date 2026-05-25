@@ -1,8 +1,8 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using TEKLauncher.Avalonia.ViewModels;
+using ObeliskLauncher.Avalonia.ViewModels;
 
-namespace TEKLauncher.Avalonia.Views;
+namespace ObeliskLauncher.Avalonia.Views;
 
 public partial class LauncherUpdateWindow : Window
 {

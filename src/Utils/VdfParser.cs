@@ -1,4 +1,4 @@
-namespace TEKLauncher.Utils;
+namespace ObeliskLauncher.Utils;
 
 class VdfNode
 {

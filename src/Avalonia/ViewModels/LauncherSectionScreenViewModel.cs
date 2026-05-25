@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace TEKLauncher.Avalonia.ViewModels;
+namespace ObeliskLauncher.Avalonia.ViewModels;
 
 public abstract class LauncherSectionScreenViewModel : INotifyPropertyChanged
 {

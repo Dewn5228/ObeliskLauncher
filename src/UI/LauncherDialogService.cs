@@ -1,4 +1,4 @@
-namespace TEKLauncher.UI;
+namespace ObeliskLauncher.UI;
 
 static class LauncherDialogService
 {

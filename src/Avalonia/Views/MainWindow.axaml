@@ -1,17 +1,17 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="TEKLauncher.Avalonia.Views.MainWindow"
-        xmlns:vm="clr-namespace:TEKLauncher.Avalonia.ViewModels"
-        xmlns:d="clr-namespace:TEKLauncher.Data"
-        xmlns:p="clr-namespace:TEKLauncher.Platform"
-        xmlns:u="clr-namespace:TEKLauncher.UI"
+        x:Class="ObeliskLauncher.Avalonia.Views.MainWindow"
+        xmlns:vm="clr-namespace:ObeliskLauncher.Avalonia.ViewModels"
+        xmlns:d="clr-namespace:ObeliskLauncher.Data"
+        xmlns:p="clr-namespace:ObeliskLauncher.Platform"
+        xmlns:u="clr-namespace:ObeliskLauncher.UI"
         x:DataType="vm:MainWindowViewModel"
         x:CompileBindings="True"
         Width="1100"
         Height="720"
         MinWidth="900"
         MinHeight="600"
-        Title="TEK Launcher">
+        Title="Obelisk Launcher">
   <Window.DataTemplates>
     <DataTemplate DataType="vm:PlaySectionScreenViewModel">
       <StackPanel Spacing="16">

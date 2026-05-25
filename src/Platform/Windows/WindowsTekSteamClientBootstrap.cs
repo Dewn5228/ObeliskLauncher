@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace TEKLauncher.Platform;
+namespace ObeliskLauncher.Platform;
 
 sealed class WindowsTekSteamClientBootstrap : ITekSteamClientBootstrap
 {

@@ -1,4 +1,4 @@
-namespace TEKLauncher.Avalonia.ViewModels;
+namespace ObeliskLauncher.Avalonia.ViewModels;
 
 public sealed class LauncherSettingsSectionScreenViewModel : LauncherSectionScreenViewModel
 {

@@ -1,4 +1,4 @@
-﻿namespace TEKLauncher.Steam;
+﻿namespace ObeliskLauncher.Steam;
 
 /// <summary>
 /// An exception that occurred in Steam client and is not critical for app functioning,

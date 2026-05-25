@@ -1,4 +1,4 @@
-﻿namespace TEKLauncher.ARK;
+﻿namespace ObeliskLauncher.ARK;
 
 /// <summary>Defines ARK maps.</summary>
 public enum MapCode

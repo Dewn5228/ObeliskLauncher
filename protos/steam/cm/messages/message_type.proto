@@ -1,7 +1,7 @@
 syntax="proto3";
 
-package teklauncher.steam.cm.messages;
-option csharp_namespace = "TEKLauncher.Steam.CM.Messages";
+package obelisklauncher.steam.cm.messages;
+option csharp_namespace = "ObeliskLauncher.Steam.CM.Messages";
 
 enum MessageType
 {

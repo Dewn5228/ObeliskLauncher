@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace TEKLauncher;
+namespace ObeliskLauncher;
 
 readonly record struct LauncherBootstrapResult(bool Success, string? ErrorCode);
 

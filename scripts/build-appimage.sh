@@ -22,33 +22,33 @@ mkdir -p "${APPDIR}/usr/bin"
 mkdir -p "${APPDIR}/usr/share/applications"
 mkdir -p "${APPDIR}/usr/share/icons/hicolor/256x256/apps"
 
-cp "${OUTPUT_DIR}/TEKLauncher" "${APPDIR}/usr/bin/"
+cp "${OUTPUT_DIR}/ObeliskLauncher" "${APPDIR}/usr/bin/"
 
 cat << 'EOF' > "${APPDIR}/AppRun"
 #!/bin/sh
 HERE="$(dirname "$(readlink -f "${0}")")"
-exec "${HERE}/usr/bin/TEKLauncher" "$@"
+exec "${HERE}/usr/bin/ObeliskLauncher" "$@"
 EOF
 chmod +x "${APPDIR}/AppRun"
 
-cat << 'EOF' > "${APPDIR}/TEKLauncher.desktop"
+cat << 'EOF' > "${APPDIR}/ObeliskLauncher.desktop"
 [Desktop Entry]
 Type=Application
-Name=TEKLauncher
-Exec=TEKLauncher
-Icon=teklauncher
+Name=Obelisk Launcher
+Exec=ObeliskLauncher
+Icon=obelisklauncher
 Categories=Game;
 Terminal=false
 EOF
-cp "${APPDIR}/TEKLauncher.desktop" "${APPDIR}/usr/share/applications/"
+cp "${APPDIR}/ObeliskLauncher.desktop" "${APPDIR}/usr/share/applications/"
 
 ICON_FILE="assets/icon.png"
 if [ -f "$ICON_FILE" ]; then
-    cp "$ICON_FILE" "${APPDIR}/usr/share/icons/hicolor/256x256/apps/teklauncher.png"
-    cp "$ICON_FILE" "${APPDIR}/teklauncher.png"
+    cp "$ICON_FILE" "${APPDIR}/usr/share/icons/hicolor/256x256/apps/obelisklauncher.png"
+    cp "$ICON_FILE" "${APPDIR}/obelisklauncher.png"
 else
     echo "Warning: No icon found at $ICON_FILE. Generating a dummy one..."
-    convert -size 256x256 xc:transparent "${APPDIR}/teklauncher.png" 2>/dev/null || touch "${APPDIR}/teklauncher.png"
+    convert -size 256x256 xc:transparent "${APPDIR}/obelisklauncher.png" 2>/dev/null || touch "${APPDIR}/obelisklauncher.png"
 fi
 
 if [ ! -f "${APPIMAGE_TOOL}" ]; then
@@ -58,6 +58,10 @@ if [ ! -f "${APPIMAGE_TOOL}" ]; then
 fi
 
 echo "==> Building AppImage..."
-ARCH=x86_64 ./${APPIMAGE_TOOL} "${APPDIR}" "artifacts/TEKLauncher-x86_64.AppImage"
+ARCH=x86_64 ./${APPIMAGE_TOOL} "${APPDIR}" "artifacts/ObeliskLauncher-x86_64.AppImage"
 
-echo "==> Success! AppImage created at: artifacts/TEKLauncher-x86_64.AppImage"
+echo "==> Creating standalone Linux tarball..."
+tar -czf "artifacts/ObeliskLauncher-linux-x86_64.tar.gz" -C "${OUTPUT_DIR}" ObeliskLauncher
+
+echo "==> Success! AppImage created at: artifacts/ObeliskLauncher-x86_64.AppImage"
+echo "==> Success! Standalone Tarball created at: artifacts/ObeliskLauncher-linux-x86_64.tar.gz"

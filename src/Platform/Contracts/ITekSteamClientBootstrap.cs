@@ -1,4 +1,4 @@
-namespace TEKLauncher.Platform;
+namespace ObeliskLauncher.Platform;
 
 readonly record struct TekSteamClientBootstrapResult(bool Success, bool RestartRequired, string? ErrorMessage, string? DownloadName, string? DownloadUrl, string? WarningMessage);
 

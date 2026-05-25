@@ -1,6 +1,6 @@
-using TEKLauncher.ARK;
+using ObeliskLauncher.ARK;
 
-namespace TEKLauncher.Data;
+namespace ObeliskLauncher.Data;
 
 static class ActiveGameManager
 {

@@ -5,7 +5,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 
-namespace TEKLauncher.Avalonia.Views;
+namespace ObeliskLauncher.Avalonia.Views;
 
 public partial class WhatsNewWindow : Window
 {
@@ -24,7 +24,7 @@ public partial class WhatsNewWindow : Window
     {
         try
         {
-            using var stream = AssetLoader.Open(new Uri("avares://TEKLauncher/res/Changelog.txt"));
+            using var stream = AssetLoader.Open(new Uri("avares://ObeliskLauncher/res/Changelog.txt"));
             using var reader = new StreamReader(stream);
             for (string? version; (version = reader.ReadLine()) is not null;)
             {

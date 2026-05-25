@@ -1,4 +1,4 @@
-namespace TEKLauncher.UI;
+namespace ObeliskLauncher.UI;
 
 readonly record struct GameOptionsActionResult(string Message, int Severity);
 
@@ -93,7 +93,7 @@ static class GameOptionsWorkflow
 
         string file = Path.Combine(LauncherBootstrap.AppDataFolder, "Dw_PlayerLocalData.arkprofile");
         bool success = await Downloader.DownloadFileAsync(file, new EventHandlers(),
-          "https://nuclearist.ru/static/teklauncher/PlayerLocalData.arkprofile",
+          "https://nuclearist.ru/static/obelisklauncher/PlayerLocalData.arkprofile",
           "https://drive.google.com/uc?export=download&id=1YsuoGqf-XOvdg5oneuoPDOVeVN8uRkRF");
 
         if (!success)

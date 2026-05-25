@@ -1,4 +1,4 @@
-namespace TEKLauncher.Platform;
+namespace ObeliskLauncher.Platform;
 
 readonly record struct GameLaunchCapabilities(bool SupportsHighProcessPriority, bool SupportsRunAsAdmin, bool SupportsSpoofAppId);
 

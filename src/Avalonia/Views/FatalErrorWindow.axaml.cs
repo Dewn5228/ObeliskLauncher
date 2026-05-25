@@ -4,7 +4,7 @@ using Avalonia.Interactivity;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input.Platform;
 
-namespace TEKLauncher.Avalonia.Views;
+namespace ObeliskLauncher.Avalonia.Views;
 
 public partial class FatalErrorWindow : Window
 {

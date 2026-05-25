@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace TEKLauncher.Platform;
+namespace ObeliskLauncher.Platform;
 
 sealed class LinuxLauncherPlatform : ILauncherPlatform
 {
@@ -127,9 +127,9 @@ sealed class LinuxLauncherPlatform : ILauncherPlatform
     {
         string? xdgDataHome = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
         if (!string.IsNullOrWhiteSpace(xdgDataHome))
-            return Path.Combine(xdgDataHome, "TEK Launcher");
+            return Path.Combine(xdgDataHome, "Obelisk Launcher");
         string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        return Path.Combine(home, ".local", "share", "TEK Launcher");
+        return Path.Combine(home, ".local", "share", "Obelisk Launcher");
     }
 
     static IEnumerable<string> GetSteamCandidates()

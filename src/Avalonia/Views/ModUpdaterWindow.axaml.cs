@@ -1,8 +1,8 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using TEKLauncher.Avalonia.ViewModels;
+using ObeliskLauncher.Avalonia.ViewModels;
 
-namespace TEKLauncher.Avalonia.Views;
+namespace ObeliskLauncher.Avalonia.Views;
 
 public partial class ModUpdaterWindow : Window
 {
@@ -29,7 +29,7 @@ public partial class ModUpdaterWindow : Window
 
     void ClosingHandler(object? sender, WindowClosingEventArgs e)
     {
-        if (_viewModel is not null && !global::TEKLauncher.Avalonia.App.ShuttingDown)
+        if (_viewModel is not null && !global::ObeliskLauncher.Avalonia.App.ShuttingDown)
             e.Cancel = !_viewModel.TryClose();
     }
 

@@ -1,4 +1,4 @@
-namespace TEKLauncher.Avalonia.ViewModels;
+namespace ObeliskLauncher.Avalonia.ViewModels;
 
 internal sealed class GameUpdaterWindowViewModel : SteamTaskUpdaterWindowViewModelBase
 {

@@ -1,4 +1,4 @@
-﻿namespace TEKLauncher.Servers;
+﻿namespace ObeliskLauncher.Servers;
 
 /// <summary>Represents server/cluster information JSON object.</summary>
 public record Info

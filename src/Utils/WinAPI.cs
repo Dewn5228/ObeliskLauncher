@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace TEKLauncher.Utils;
+namespace ObeliskLauncher.Utils;
 
 /// <summary>Consolidates function imports from Windows APIs and util methods using them.</summary>
 static class WinAPI

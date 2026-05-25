@@ -1,9 +1,9 @@
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
-using TEKLauncher.Avalonia.Views;
+using ObeliskLauncher.Avalonia.Views;
 
-namespace TEKLauncher.UI;
+namespace ObeliskLauncher.UI;
 
 sealed class AvaloniaLauncherDialogService : ILauncherDialogService
 {

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.Json.Nodes;
-using TEKLauncher;
+using ObeliskLauncher;
 
-namespace TEKLauncher.Data;
+namespace ObeliskLauncher.Data;
 
 static class Locale
 {

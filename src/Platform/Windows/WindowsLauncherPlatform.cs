@@ -1,14 +1,14 @@
 using Microsoft.Win32;
 
-namespace TEKLauncher.Platform;
+namespace ObeliskLauncher.Platform;
 
 sealed class WindowsLauncherPlatform : ILauncherPlatform
 {
-    const string LauncherRegistryKey = @"SOFTWARE\TEKLauncher";
+    const string LauncherRegistryKey = @"SOFTWARE\ObeliskLauncher";
     const string SteamRegistryKey = @"SOFTWARE\WOW6432Node\Valve\Steam";
     const string SteamActiveProcessKey = @"SOFTWARE\Valve\Steam\ActiveProcess";
 
-    public string AppDataFolder { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TEK Launcher");
+    public string AppDataFolder { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Obelisk Launcher");
 
     public string GetGameConfigDirectory(string gamePath) => Path.Combine(gamePath, "ShooterGame", "Saved", "Config", "WindowsNoEditor");
 

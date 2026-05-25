@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Collections.ObjectModel;
 
-namespace TEKLauncher.Avalonia.ViewModels;
+namespace ObeliskLauncher.Avalonia.ViewModels;
 
 public sealed class DlcRowViewModel : INotifyPropertyChanged
 {

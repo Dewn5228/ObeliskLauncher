@@ -1,4 +1,4 @@
-﻿namespace TEKLauncher.Data;
+﻿namespace ObeliskLauncher.Data;
 
 /// <summary>Container for event handlers used by <see cref="Downloader"/> and <see cref="Steam.Client"/>.</summary>
 class EventHandlers

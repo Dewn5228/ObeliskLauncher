@@ -1,4 +1,4 @@
-namespace TEKLauncher.ARK;
+namespace ObeliskLauncher.ARK;
 
 sealed class CatalogGameContext(string gameId, string rootPath) : IGameContext
 {

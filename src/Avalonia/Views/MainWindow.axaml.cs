@@ -3,14 +3,14 @@ using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.Controls.Primitives;
 using System.Diagnostics;
-using TEKLauncher.ARK;
-using TEKLauncher.Platform;
-using TEKLauncher.Avalonia.ViewModels;
-using TEKLauncher.Data;
-using TEKLauncher.UI;
+using ObeliskLauncher.ARK;
+using ObeliskLauncher.Platform;
+using ObeliskLauncher.Avalonia.ViewModels;
+using ObeliskLauncher.Data;
+using ObeliskLauncher.UI;
 using Avalonia.Input.Platform;
 
-namespace TEKLauncher.Avalonia.Views;
+namespace ObeliskLauncher.Avalonia.Views;
 
 public partial class MainWindow : Window
 {
@@ -112,9 +112,9 @@ public partial class MainWindow : Window
 
     void OpenDiscordLink(object? sender, RoutedEventArgs e) => OpenUrl("https://discord.gg/JBUgcwvpfc");
 
-    void OpenLicenseLink(object? sender, RoutedEventArgs e) => OpenUrl("https://github.com/Dewn5228/TEKLauncher/blob/main/LICENSE.TXT");
+    void OpenLicenseLink(object? sender, RoutedEventArgs e) => OpenUrl("https://github.com/Dewn5228/ObeliskLauncher/blob/main/LICENSE.TXT");
 
-    void OpenRepoLink(object? sender, RoutedEventArgs e) => OpenUrl("https://github.com/Dewn5228/TEKLauncher");
+    void OpenRepoLink(object? sender, RoutedEventArgs e) => OpenUrl("https://github.com/Dewn5228/ObeliskLauncher");
 
     async void BrowseSettingsAseGamePath(object? sender, RoutedEventArgs e)
     {
@@ -706,7 +706,7 @@ public partial class MainWindow : Window
         switch (notice.ActionKind)
         {
             case ShellNoticeActionKind.OpenLauncherReleasePage:
-                OpenUrl("https://github.com/Dewn5228/TEKLauncher/releases");
+                OpenUrl("https://github.com/Dewn5228/ObeliskLauncher/releases");
                 break;
             case ShellNoticeActionKind.OpenGameUpdater:
                 OpenGameUpdater(false, navigateToGameOptions: true);

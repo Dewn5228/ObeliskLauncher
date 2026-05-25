@@ -2,13 +2,13 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Avalonia.Threading;
-using TEKLauncher.Data;
+using ObeliskLauncher.Data;
 
-namespace TEKLauncher.Avalonia.ViewModels;
+namespace ObeliskLauncher.Avalonia.ViewModels;
 
 public sealed class LauncherUpdateWindowViewModel : INotifyPropertyChanged
 {
-    const string LatestReleaseUrl = "https://github.com/Dewn5228/TEKLauncher/releases/latest";
+    const string LatestReleaseUrl = "https://github.com/Dewn5228/ObeliskLauncher/releases/latest";
 
     bool _canOpenReleasePage;
     bool _isBusy;
@@ -117,9 +117,7 @@ public sealed class LauncherUpdateWindowViewModel : INotifyPropertyChanged
             bool success = await Downloader.DownloadFileAsync(
               newPath,
               eventHandlers,
-              "https://teknology-hub.com/software/tek-launcher/releases/latest/win-x86_64-static/tek-launcher.exe",
-              "https://de.teknology-hub.com/software/tek-launcher/releases/latest/win-x86_64-static/tek-launcher.exe",
-                            "https://github.com/Dewn5228/TEKLauncher/releases/latest/download/TEKLauncher.exe");
+              "https://github.com/Dewn5228/ObeliskLauncher/releases/latest/download/ObeliskLauncher-win-x64.exe");
 
             if (!success)
             {

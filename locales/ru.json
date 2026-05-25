@@ -359,9 +359,9 @@
     "placeholderLaunchWrappers": "По одной команде на строку\nobs-gamecapture mangohud"
   },
   "firstLaunchWindow": {
-    "title": "Настройка TEK Launcher",
+    "title": "Настройка Obelisk Launcher",
     "firstLaunch": "Первый запуск",
-    "chooseHowToStart": "Выберите, как TEK Launcher должен начать работу.",
+    "chooseHowToStart": "Выберите, как Obelisk Launcher должен начать работу.",
     "useExistingArk": "Использовать существующую установку ARK",
     "installNewFolder": "Установить ARK в новую папку",
     "selectExistingFolder": "Выбрать существующую папку ARK",
@@ -370,7 +370,7 @@
     "selectFolderToContinue": "Выберите папку, чтобы продолжить.",
     "continue": "Продолжить",
     "chooseInstallFolder": "Выберите папку для установки",
-    "chooseInstallDescription": "TEK Launcher будет использовать эту папку для управления установкой игры.",
+    "chooseInstallDescription": "Obelisk Launcher будет использовать эту папку для управления установкой игры.",
     "placeholderInstallPath": "/путь/для/установки/ARK",
     "preAquatica": "Pre-Aquatica (129 ГБ)",
     "latest": "Latest (166 ГБ)",

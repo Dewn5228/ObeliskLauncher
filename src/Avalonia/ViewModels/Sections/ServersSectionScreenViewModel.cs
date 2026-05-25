@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Avalonia.Threading;
 
-namespace TEKLauncher.Avalonia.ViewModels;
+namespace ObeliskLauncher.Avalonia.ViewModels;
 
 public sealed class ServersClusterRowViewModel : INotifyPropertyChanged
 {

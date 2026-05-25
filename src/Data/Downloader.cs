@@ -1,7 +1,7 @@
 ﻿using System.Net.Http;
 using System.Net.Http.Json;
 
-namespace TEKLauncher.Data;
+namespace ObeliskLauncher.Data;
 
 /// <summary>Manages general downloads within the app.</summary>
 static class Downloader
@@ -13,7 +13,7 @@ static class Downloader
         Timeout = TimeSpan.FromSeconds(10),
     };
     /// <summary>Initializes HTTP client.</summary>
-    static Downloader() => s_client.DefaultRequestHeaders.UserAgent.ParseAdd($"TEKLauncher {LauncherBootstrap.Version}"); //Valid User-Agent must be specified to access GitHub API
+    static Downloader() => s_client.DefaultRequestHeaders.UserAgent.ParseAdd($"ObeliskLauncher {LauncherBootstrap.Version}"); //Valid User-Agent must be specified to access GitHub API
     /// <summary>Asynchronously attempts to download a file.</summary>
     /// <param name="filePath">The path of the file to write downloaded content to.</param>
     /// <param name="eventHandlers">Handlers for PrepareProgress and UpdateProgress events.</param>

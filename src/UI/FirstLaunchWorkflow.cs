@@ -1,6 +1,6 @@
 using System.Linq;
 
-namespace TEKLauncher.UI;
+namespace ObeliskLauncher.UI;
 
 readonly record struct ExistingInstallValidation(bool FilesExist, bool IsPreAquatica);
 

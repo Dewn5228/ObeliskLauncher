@@ -3,13 +3,13 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
-using TEKLauncher.ARK;
-using TEKLauncher.Avalonia.ViewModels;
-using TEKLauncher.Avalonia.Views;
-using TEKLauncher.Servers;
-using TEKLauncher.UI;
+using ObeliskLauncher.ARK;
+using ObeliskLauncher.Avalonia.ViewModels;
+using ObeliskLauncher.Avalonia.Views;
+using ObeliskLauncher.Servers;
+using ObeliskLauncher.UI;
 
-namespace TEKLauncher.Avalonia;
+namespace ObeliskLauncher.Avalonia;
 
 public partial class App : Application
 {

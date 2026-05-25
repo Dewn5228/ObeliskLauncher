@@ -1,8 +1,8 @@
 ﻿using System.Threading;
 using System.Runtime.Versioning;
-using TEKLauncher.Platform;
+using ObeliskLauncher.Platform;
 
-namespace TEKLauncher.Utils;
+namespace ObeliskLauncher.Utils;
 
 /// <summary>Inter-process communication manager.</summary>
 static class IPC
@@ -31,13 +31,13 @@ static class IPC
     [SupportedOSPlatform("windows")]
     static bool InitializeWindows()
     {
-        if (EventWaitHandle.TryOpenExisting("TEKLauncherInput", out var result))
+        if (EventWaitHandle.TryOpenExisting("ObeliskLauncherInput", out var result))
         {
             result.Dispose();
             return false;
         }
 
-        s_inputEvent = new EventWaitHandle(false, EventResetMode.AutoReset, "TEKLauncherInput");
+        s_inputEvent = new EventWaitHandle(false, EventResetMode.AutoReset, "ObeliskLauncherInput");
         return true;
     }
 

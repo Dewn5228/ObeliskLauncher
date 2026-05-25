@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
 using System.Linq;
-using TEKLauncher.Data;
+using ObeliskLauncher.Data;
 
-namespace TEKLauncher.Servers;
+namespace ObeliskLauncher.Servers;
 
 /// <summary>Represents an ARK server.</summary>
 public class Server

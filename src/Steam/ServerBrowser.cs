@@ -1,8 +1,8 @@
 ﻿using System.Runtime.InteropServices;
 using System.Threading;
-using TEKLauncher.Servers;
+using ObeliskLauncher.Servers;
 
-namespace TEKLauncher.Steam;
+namespace ObeliskLauncher.Steam;
 
 /// <summary>Manages Steam client API interop for using subset of ISteamMatchmaking and ISteamMatchmakingServers interfaces.</summary>
 static class ServerBrowser

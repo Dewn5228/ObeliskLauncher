@@ -1,9 +1,9 @@
 using System.Diagnostics;
-using TEKLauncher.ARK;
-using TEKLauncher.Steam.CM;
-using TEKLauncher.Utils;
+using ObeliskLauncher.ARK;
+using ObeliskLauncher.Steam.CM;
+using ObeliskLauncher.Utils;
 
-namespace TEKLauncher.Steam;
+namespace ObeliskLauncher.Steam;
 
 /// <summary>Manages Steam app's files and configs.</summary>
 static class App

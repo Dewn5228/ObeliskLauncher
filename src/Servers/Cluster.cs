@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.Threading;
 
-namespace TEKLauncher.Servers;
+namespace ObeliskLauncher.Servers;
 
 /// <summary>Represents a cluster of servers.</summary>
 public class Cluster

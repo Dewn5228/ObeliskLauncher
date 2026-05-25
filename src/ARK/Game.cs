@@ -1,10 +1,10 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json.Serialization;
-using TEKLauncher.Data;
-using TEKLauncher.Servers;
+using ObeliskLauncher.Data;
+using ObeliskLauncher.Servers;
 
-namespace TEKLauncher.ARK;
+namespace ObeliskLauncher.ARK;
 
 /// <summary>Manages game files and parameters.</summary>
 static class Game
@@ -155,7 +155,9 @@ static class Game
                     cfApiWrapper = Settings.AsaCfApiWrapper;
             }
 
-            var settings = new TekGameRuntimeSettings("steam", ActiveGameManager.Current.RuntimeAppId, spoofAppId, new Dictionary<uint, string>(ActiveGameManager.Current.RuntimeDlcDisplayNames), [.. instDlc], ActiveGameManager.Current.WorkshopDir, Path, forceEgsAuth, cfApiWrapper);
+            string? workshopDirPath = ActiveGameManager.Current.RuntimeAppId == 346110 ? ActiveGameManager.Current.WorkshopDir : null;
+            string? workshopAmPath = ActiveGameManager.Current.RuntimeAppId == 346110 ? Path : null;
+            var settings = new TekGameRuntimeSettings("steam", ActiveGameManager.Current.RuntimeAppId, spoofAppId, new Dictionary<uint, string>(ActiveGameManager.Current.RuntimeDlcDisplayNames), [.. instDlc], workshopDirPath, workshopAmPath, forceEgsAuth, cfApiWrapper);
 
             var data = JsonSerializer.SerializeToUtf8Bytes(settings, new JsonSerializerOptions
             {
@@ -241,5 +243,5 @@ static class Game
         OwnedAndInstalled
     }
 
-    readonly record struct TekGameRuntimeSettings(string Store, uint AppId, uint SpoofAppId, Dictionary<uint, string> Dlc, uint[] InstalledDlc, string WorkshopDirPath, string WorkshopAmPath, bool? ForceEgsAuth, string? CfApiWrapper);
+    readonly record struct TekGameRuntimeSettings(string Store, uint AppId, uint SpoofAppId, Dictionary<uint, string> Dlc, uint[] InstalledDlc, string? WorkshopDirPath, string? WorkshopAmPath, bool? ForceEgsAuth, string? CfApiWrapper);
 }

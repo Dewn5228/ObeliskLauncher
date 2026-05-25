@@ -2,9 +2,9 @@ using System;
 using System.IO;
 using System.Linq;
 using Xunit;
-using TEKLauncher.Utils;
+using ObeliskLauncher.Utils;
 
-namespace TEKLauncher.Tests;
+namespace ObeliskLauncher.Tests;
 
 public class VdfParserTests
 {

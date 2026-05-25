@@ -1,6 +1,6 @@
-using TEKLauncher.Servers;
+using ObeliskLauncher.Servers;
 
-namespace TEKLauncher.Platform;
+namespace ObeliskLauncher.Platform;
 
 sealed class WindowsServerBrowserService : IServerBrowserService
 {

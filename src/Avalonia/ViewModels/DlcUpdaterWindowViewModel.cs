@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace TEKLauncher.Avalonia.ViewModels;
+namespace ObeliskLauncher.Avalonia.ViewModels;
 
 internal sealed class DlcUpdaterWindowViewModel : SteamTaskUpdaterWindowViewModelBase
 {

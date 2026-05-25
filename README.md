@@ -1,10 +1,12 @@
-# TEK Launcher
+# Obelisk Launcher
 [![Discord](https://img.shields.io/discord/937821572285206659?style=flat-square&label=Discord&logo=discord&logoColor=white&color=7289DA)](https://discord.gg/JBUgcwvpfc)
-[![Downloads](https://img.shields.io/github/downloads/Nuclearistt/TEKLauncher/total?style=flat-square)](https://github.com/Nuclearistt/TEKLauncher/releases)
 
 ## Overview
 
-TEK Launcher is a launcher for ARK: Survival Evolved that can manage game files, DLCs, mods, servers and provides few extra options
+Obelisk Launcher is a launcher for **ARK: Survival Evolved** (ASE) and **ARK: Survival Ascended** (ASA) that can manage game files, DLCs, mods, servers, and provides a few extra options.
+
+> [!NOTE]
+> This project is a fork of the original [Nuclearistt/TEKLauncher](https://github.com/Nuclearistt/TEKLauncher).
 
 ## Requirements
 
@@ -33,4 +35,4 @@ New localizations are currently not accepted due to ongoing complete rework of t
 
 ## License
 
-TEK Launcher is licensed under the [MIT](LICENSE.TXT) license.
+Obelisk Launcher is licensed under the [MIT](LICENSE.TXT) license.

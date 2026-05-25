@@ -1,4 +1,4 @@
-namespace TEKLauncher;
+namespace ObeliskLauncher;
 
 public enum LauncherSection
 {

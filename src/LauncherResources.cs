@@ -1,7 +1,7 @@
 using System.IO;
 using Avalonia.Platform;
 
-namespace TEKLauncher;
+namespace ObeliskLauncher;
 
 static class LauncherResources
 {
@@ -9,7 +9,7 @@ static class LauncherResources
     {
         string normalizedPath = Normalize(relativePath);
 
-        return AssetLoader.Open(new Uri($"avares://TEKLauncher/{normalizedPath}"));
+        return AssetLoader.Open(new Uri($"avares://ObeliskLauncher/{normalizedPath}"));
     }
 
     static string Normalize(string relativePath) => relativePath.TrimStart('/').Replace('\\', '/');

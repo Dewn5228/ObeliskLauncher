@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package teklauncher.steam.cm.messages.bodies;
+package obelisklauncher.steam.cm.messages.bodies;
 
-option csharp_namespace = "TEKLauncher.Steam.CM.Messages.Bodies";
+option csharp_namespace = "ObeliskLauncher.Steam.CM.Messages.Bodies";
 
 message PicsAccessTokenRequest {
   repeated uint32 package_ids = 1;

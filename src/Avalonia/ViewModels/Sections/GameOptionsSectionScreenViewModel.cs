@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Linq;
 
-namespace TEKLauncher.Avalonia.ViewModels;
+namespace ObeliskLauncher.Avalonia.ViewModels;
 
 public sealed class GameOptionsLaunchParameterViewModel : INotifyPropertyChanged
 {

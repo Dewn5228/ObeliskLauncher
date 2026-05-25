@@ -1,7 +1,7 @@
 using Avalonia.Media;
 using System.Linq;
 
-namespace TEKLauncher.Avalonia.ViewModels;
+namespace ObeliskLauncher.Avalonia.ViewModels;
 
 internal sealed class ServerModsUpdaterWindowViewModel : SteamTaskUpdaterWindowViewModelBase
 {

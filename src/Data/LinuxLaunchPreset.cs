@@ -1,4 +1,4 @@
-namespace TEKLauncher.Data;
+namespace ObeliskLauncher.Data;
 
 public sealed class LinuxLaunchPreset
 {

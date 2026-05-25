@@ -1,7 +1,7 @@
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 
-namespace TEKLauncher.Platform;
+namespace ObeliskLauncher.Platform;
 
 sealed class AvaloniaLauncherLifetimeService : ILauncherLifetimeService
 {

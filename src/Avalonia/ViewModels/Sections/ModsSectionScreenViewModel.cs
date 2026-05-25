@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace TEKLauncher.Avalonia.ViewModels;
+namespace ObeliskLauncher.Avalonia.ViewModels;
 
 public sealed class ModRowViewModel : INotifyPropertyChanged
 {

@@ -1,11 +1,11 @@
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using TEKLauncher.Data;
-using TEKLauncher.Steam;
-using TEKLauncher.Utils;
+using ObeliskLauncher.Data;
+using ObeliskLauncher.Steam;
+using ObeliskLauncher.Utils;
 
-namespace TEKLauncher.Platform;
+namespace ObeliskLauncher.Platform;
 
 sealed class LinuxGameLauncher : IGameLauncher
 {

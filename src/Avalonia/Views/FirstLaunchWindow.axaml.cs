@@ -2,11 +2,11 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
-using TEKLauncher.ARK;
-using TEKLauncher.Data;
-using TEKLauncher.UI;
+using ObeliskLauncher.ARK;
+using ObeliskLauncher.Data;
+using ObeliskLauncher.UI;
 
-namespace TEKLauncher.Avalonia.Views;
+namespace ObeliskLauncher.Avalonia.Views;
 
 public partial class FirstLaunchWindow : Window
 {

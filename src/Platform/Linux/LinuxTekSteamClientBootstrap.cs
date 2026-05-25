@@ -3,13 +3,16 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text.Json.Serialization;
-using TEKLauncher.Data;
+using ObeliskLauncher.Data;
 
-namespace TEKLauncher.Platform;
+namespace ObeliskLauncher.Platform;
 
 sealed class LinuxTekSteamClientBootstrap : ITekSteamClientBootstrap
 {
-    const string LatestReleaseUrl = "https://api.github.com/repos/teknology-hub/tek-steamclient/releases/latest";
+    const string PrimaryVersionUrl = "https://teknology-hub.com/software/tek-steamclient/version-2";
+    const string MirrorVersionUrl = "https://de.teknology-hub.com/software/tek-steamclient/version-2";
+    const string PrimaryDownloadUrl = "https://teknology-hub.com/software/tek-steamclient/releases/latest-2/linux-x86_64/tek-sc-cli-x86_64.AppImage";
+    const string MirrorDownloadUrl = "https://de.teknology-hub.com/software/tek-steamclient/releases/latest-2/linux-x86_64/tek-sc-cli-x86_64.AppImage";
 
     public async Task<TekSteamClientBootstrapResult> InitializeAsync(string gamePath)
     {
@@ -111,29 +114,21 @@ sealed class LinuxTekSteamClientBootstrap : ITekSteamClientBootstrap
                 return localExtractResult;
         }
 
-        GitHubRelease? release = await Downloader.DownloadJsonAsync<GitHubRelease>(LatestReleaseUrl);
-        if (release is not { TagName: not null, Assets: not null })
-            return new(null, null, null, "Failed to query latest Linux tek-steamclient release metadata.");
-        GitHubRelease releaseData = release.Value;
+        string? latestTscVer = await Downloader.DownloadStringAsync(PrimaryVersionUrl, MirrorVersionUrl);
+        if (latestTscVer is null)
+            return new(null, null, null, "Failed to query latest Linux tek-steamclient version.");
 
-        GitHubAsset? appImageAsset = Array.Find(releaseData.Assets, static asset =>
-          asset.Name?.EndsWith(".AppImage", StringComparison.OrdinalIgnoreCase) == true
-          && asset.Name.Contains("x86_64", StringComparison.OrdinalIgnoreCase)
-          && asset.BrowserDownloadUrl is not null);
-        if (appImageAsset is not { BrowserDownloadUrl: not null, Name: not null })
-            return new(null, "Linux tek-steamclient AppImage", releaseData.HtmlUrl, "Latest Linux tek-steamclient release does not expose an x86_64 AppImage asset.");
-        GitHubAsset appImage = appImageAsset.Value;
-
-        string releaseDir = Path.Combine(cacheRoot, SanitizePathSegment(releaseData.TagName));
+        string versionTag = latestTscVer.Trim();
+        string releaseDir = Path.Combine(cacheRoot, SanitizePathSegment(versionTag));
         string? existingLibraryPath = FindLibraryInDirectory(releaseDir);
         if (existingLibraryPath is not null)
             return new(existingLibraryPath, null, null, null);
 
-        string appImagePath = Path.Combine(cacheRoot, appImage.Name);
-        if (!File.Exists(appImagePath) && !await Downloader.DownloadFileAsync(appImagePath, new EventHandlers(), appImage.BrowserDownloadUrl))
-            return new(null, "Linux tek-steamclient AppImage", appImage.BrowserDownloadUrl, "Failed to download Linux tek-steamclient AppImage.");
+        string appImagePath = Path.Combine(cacheRoot, $"tek-sc-cli-x86_64-{versionTag}.AppImage");
+        if (!File.Exists(appImagePath) && !await Downloader.DownloadFileAsync(appImagePath, new EventHandlers(), PrimaryDownloadUrl, MirrorDownloadUrl))
+            return new(null, "Linux tek-steamclient AppImage", PrimaryDownloadUrl, "Failed to download Linux tek-steamclient AppImage.");
 
-        return await TryExtractLibraryFromAppImageAsync(appImagePath, releaseDir, appImage.BrowserDownloadUrl);
+        return await TryExtractLibraryFromAppImageAsync(appImagePath, releaseDir, PrimaryDownloadUrl);
     }
 
     static string? TryFindTekSteamClientTool()
@@ -457,25 +452,4 @@ sealed class LinuxTekSteamClientBootstrap : ITekSteamClientBootstrap
     }
 
     readonly record struct TekSteamClientAcquireResult(string? LibraryPath, string? DownloadName, string? DownloadUrl, string? ErrorMessage);
-
-    readonly record struct GitHubAsset
-    {
-        [JsonPropertyName("browser_download_url")]
-        public string? BrowserDownloadUrl { get; init; }
-
-        [JsonPropertyName("name")]
-        public string? Name { get; init; }
-    }
-
-    readonly record struct GitHubRelease
-    {
-        [JsonPropertyName("assets")]
-        public GitHubAsset[]? Assets { get; init; }
-
-        [JsonPropertyName("html_url")]
-        public string? HtmlUrl { get; init; }
-
-        [JsonPropertyName("tag_name")]
-        public string? TagName { get; init; }
-    }
 }

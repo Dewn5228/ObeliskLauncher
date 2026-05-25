@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Reflection;
 
-namespace TEKLauncher.Utils;
+namespace ObeliskLauncher.Utils;
 
 /// <summary>Bindings for tek-steamclient library.</summary>
 static partial class TEKSteamClient

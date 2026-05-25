@@ -1,7 +1,7 @@
 using Serilog;
 using Serilog.Events;
 
-namespace TEKLauncher;
+namespace ObeliskLauncher;
 
 static class LauncherLog
 {
@@ -16,7 +16,7 @@ static class LauncherLog
 
         string logsDir = Path.Combine(LauncherPlatform.Current.AppDataFolder, "logs");
         Directory.CreateDirectory(logsDir);
-        string filePath = Path.Combine(logsDir, "teklauncher-.log");
+        string filePath = Path.Combine(logsDir, "obelisklauncher-.log");
 
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()

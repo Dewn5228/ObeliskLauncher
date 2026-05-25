@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace TEKLauncher.ARK;
+namespace ObeliskLauncher.ARK;
 
 /// <summary>Represents a mod of the game.</summary>
 class Mod

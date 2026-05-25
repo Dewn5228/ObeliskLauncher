@@ -1,4 +1,4 @@
-namespace TEKLauncher.Platform;
+namespace ObeliskLauncher.Platform;
 
 sealed class LinuxTekSteamClientService : ITekSteamClientService
 {

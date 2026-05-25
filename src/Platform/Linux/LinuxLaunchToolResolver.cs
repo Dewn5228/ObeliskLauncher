@@ -1,6 +1,6 @@
 using System.Linq;
 
-namespace TEKLauncher.Platform;
+namespace ObeliskLauncher.Platform;
 
 public enum LinuxLaunchToolKind
 {

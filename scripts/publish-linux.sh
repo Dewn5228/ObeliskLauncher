@@ -12,7 +12,7 @@ REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 
 cd "${REPO_ROOT}"
 
-dotnet publish TEKLauncher.csproj \
+dotnet publish ObeliskLauncher.csproj \
   -c "${CONFIGURATION}" \
   -r "${RID}" \
   /p:UiFramework=Avalonia \

@@ -1,6 +1,6 @@
 using Avalonia;
 
-namespace TEKLauncher.Avalonia;
+namespace ObeliskLauncher.Avalonia;
 
 static class Program
 {
@@ -8,7 +8,7 @@ static class Program
     public static void Main(string[] args)
     {
         LauncherLog.Initialize();
-        LauncherLog.Information("TEKLauncher starting. Version={Version}, Args={Args}", LauncherBootstrap.Version, args);
+        LauncherLog.Information("ObeliskLauncher starting. Version={Version}, Args={Args}", LauncherBootstrap.Version, args);
 
         if (CatalogRefreshCommand.TryRun(args, out int exitCode))
         {

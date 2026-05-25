@@ -1,4 +1,4 @@
-namespace TEKLauncher.ARK;
+namespace ObeliskLauncher.ARK;
 
 interface IGameContext
 {

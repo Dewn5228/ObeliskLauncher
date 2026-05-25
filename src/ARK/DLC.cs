@@ -1,7 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Linq;
 
-namespace TEKLauncher.ARK;
+namespace ObeliskLauncher.ARK;
 
 /// <summary>Represents a DLC of the game.</summary>
 class DLC

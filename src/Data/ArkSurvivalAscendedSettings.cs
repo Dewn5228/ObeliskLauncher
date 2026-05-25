@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace TEKLauncher.Data;
+namespace ObeliskLauncher.Data;
 
 /// <summary>Manages Ark Survival Ascended (ASA) specific settings.</summary>
 static class ArkSurvivalAscendedSettings

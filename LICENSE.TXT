@@ -1,6 +1,7 @@
 The MIT License (MIT)
 
 Copyright © 2020 Nuclearist
+Copyright © 2026 Dewn
 
 All rights reserved.
 

@@ -1,7 +1,7 @@
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace TEKLauncher.UI;
+namespace ObeliskLauncher.UI;
 
 static class GameUpdateWorkflow
 {

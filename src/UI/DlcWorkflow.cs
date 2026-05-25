@@ -1,4 +1,4 @@
-namespace TEKLauncher.UI;
+namespace ObeliskLauncher.UI;
 
 public readonly record struct DlcActionResult(string Message, int Severity);
 

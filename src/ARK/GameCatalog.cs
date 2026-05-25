@@ -3,9 +3,9 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.Json.Serialization;
 using System.Text.Json.Nodes;
-using TEKLauncher.Steam.CM;
+using ObeliskLauncher.Steam.CM;
 
-namespace TEKLauncher.ARK;
+namespace ObeliskLauncher.ARK;
 
 readonly record struct GameDlcInfo(
     string Name,
@@ -45,7 +45,7 @@ sealed record GameCatalogEntry(
 static class GameCatalog
 {
     const int SupportedSchemaVersion = 1;
-    const string CatalogResourceName = "TEKLauncher.assets.catalog.game-catalog.json";
+    const string CatalogResourceName = "ObeliskLauncher.assets.catalog.game-catalog.json";
     const string AppDataCatalogDirectoryName = "catalog";
     const string OverrideCatalogFileName = "game-catalog.override.json";
     const string RemoteCatalogFileName = "game-catalog.remote.json";

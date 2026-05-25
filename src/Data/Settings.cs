@@ -1,6 +1,6 @@
-﻿using System.Linq;
+using System.Linq;
 
-namespace TEKLauncher.Data;
+namespace ObeliskLauncher.Data;
 
 /// <summary>Manages global launcher settings and delegates per-game settings to per-game classes.</summary>
 static class Settings
@@ -19,7 +19,7 @@ static class Settings
     public static IReadOnlyDictionary<string, string> GamePaths => s_gamePaths;
     public static bool PreAquatica { get; set; }
     public static bool AsaForceEgsAuth { get; set; }
-    public static string AsaCfApiWrapper { get; set; } = "https://83374.apiw.nuclearist.ru/";
+    public static string AsaCfApiWrapper { get; set; } = "apiw.nuclearist.ru";
     public static string AseGamePath
     {
         get => GetGamePath(GameCatalog.AseGameId);
@@ -66,7 +66,16 @@ static class Settings
         Game.UseSpacewar = json.UseSpacewar;
         Game.Language = json.GameLanguage;
         AsaForceEgsAuth = json.AsaForceEgsAuth;
-        AsaCfApiWrapper = NormalizeText(json.AsaCfApiWrapper);
+        if (json.AsaCfApiWrapper is not null)
+        {
+            AsaCfApiWrapper = NormalizeText(json.AsaCfApiWrapper);
+            if (AsaCfApiWrapper == "https://83374.apiw.nuclearist.ru/")
+                AsaCfApiWrapper = "apiw.nuclearist.ru";
+        }
+        else
+        {
+            AsaCfApiWrapper = "apiw.nuclearist.ru";
+        }
 
         // Load custom tools and presets
         s_customLinuxLaunchToolIds.Clear();

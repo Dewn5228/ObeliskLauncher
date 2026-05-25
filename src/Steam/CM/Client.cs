@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics;
 using System.Text.Json.Serialization;
-using TEKLauncher.Steam.CM.Messages;
-using TEKLauncher.Steam.CM.Messages.Bodies;
+using ObeliskLauncher.Steam.CM.Messages;
+using ObeliskLauncher.Steam.CM.Messages.Bodies;
 
-namespace TEKLauncher.Steam.CM;
+namespace ObeliskLauncher.Steam.CM;
 
 /// <summary>Steam CM client.</summary>
 static class Client

@@ -1,9 +1,9 @@
 using Avalonia.Data;
 using System.ComponentModel;
 using Avalonia.Markup.Xaml;
-using TEKLauncher.Data;
+using ObeliskLauncher.Data;
 
-namespace TEKLauncher.UI;
+namespace ObeliskLauncher.UI;
 
 public class TrExtension : MarkupExtension
 {

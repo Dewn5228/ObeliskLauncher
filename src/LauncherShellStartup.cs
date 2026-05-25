@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Linq;
 
-namespace TEKLauncher;
+namespace ObeliskLauncher;
 
 enum LauncherShellTone
 {
@@ -110,7 +110,7 @@ static class LauncherShellStartup
 
     static async Task<bool> CheckLauncherUpdateAsync()
     {
-        var release = await Downloader.DownloadJsonAsync<Release>("https://api.github.com/repos/Dewn5228/TEKLauncher/releases/latest");
+        var release = await Downloader.DownloadJsonAsync<Release>("https://api.github.com/repos/Dewn5228/ObeliskLauncher/releases/latest");
         string? versionString = release.TagName?[1..];
 
         return Version.TryParse(versionString, out var onlineVersion)

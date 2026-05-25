@@ -3,10 +3,10 @@ using System.Net.WebSockets;
 using System.Threading;
 using Google.Protobuf;
 using CommunityToolkit.HighPerformance;
-using TEKLauncher.Steam.CM.Messages;
-using TEKLauncher.Steam.CM.Messages.Bodies;
+using ObeliskLauncher.Steam.CM.Messages;
+using ObeliskLauncher.Steam.CM.Messages.Bodies;
 
-namespace TEKLauncher.Steam.CM;
+namespace ObeliskLauncher.Steam.CM;
 
 /// <summary>Represents a connection provider that uses WebSocket protocol to connect to Steam CM servers.</summary>
 static class WebSocketConnection

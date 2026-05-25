@@ -1,4 +1,4 @@
-namespace TEKLauncher.UI;
+namespace ObeliskLauncher.UI;
 
 public readonly record struct ModActionResult(string Message, int Severity);
 

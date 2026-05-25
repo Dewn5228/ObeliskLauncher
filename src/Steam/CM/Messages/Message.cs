@@ -1,6 +1,6 @@
 ﻿using Google.Protobuf;
 
-namespace TEKLauncher.Steam.CM.Messages;
+namespace ObeliskLauncher.Steam.CM.Messages;
 
 /// <summary>Represents a Steam CM protobuf-serialized message.</summary>
 class Message

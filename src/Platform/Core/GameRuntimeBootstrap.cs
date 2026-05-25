@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
 using System.Diagnostics;
-using TEKLauncher.Data;
+using ObeliskLauncher.Data;
 
-namespace TEKLauncher.Platform;
+namespace ObeliskLauncher.Platform;
 
 static class GameRuntimeBootstrap
 {

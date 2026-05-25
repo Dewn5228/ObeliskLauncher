@@ -1,8 +1,8 @@
 using System.Linq;
 using System.Text.Json.Nodes;
-using TEKLauncher.Steam.CM;
+using ObeliskLauncher.Steam.CM;
 
-namespace TEKLauncher;
+namespace ObeliskLauncher;
 
 static class CatalogRefreshCommand
 {

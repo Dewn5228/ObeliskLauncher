@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace TEKLauncher.Utils;
+namespace ObeliskLauncher.Utils;
 
 /// <summary>Bindings for tek-injector library.</summary>
 static partial class TEKInjector

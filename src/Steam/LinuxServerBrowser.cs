@@ -1,10 +1,10 @@
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading;
-using TEKLauncher.Platform;
-using TEKLauncher.Servers;
+using ObeliskLauncher.Platform;
+using ObeliskLauncher.Servers;
 
-namespace TEKLauncher.Steam;
+namespace ObeliskLauncher.Steam;
 
 static class LinuxServerBrowser
 {

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace TEKLauncher.Data;
+namespace ObeliskLauncher.Data;
 
 /// <summary>Manages Ark Survival Evolved (ASE) specific settings.</summary>
 static class ArkSurvivalEvolvedSettings

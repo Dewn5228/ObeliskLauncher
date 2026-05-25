@@ -359,9 +359,9 @@
     "placeholderLaunchWrappers": "Eén wrapper-commando per regel\nobs-gamecapture mangohud"
   },
   "firstLaunchWindow": {
-    "title": "TEK Launcher Setup",
+    "title": "Obelisk Launcher Setup",
     "firstLaunch": "Eerste Start",
-    "chooseHowToStart": "Kies hoe TEK Launcher moet starten.",
+    "chooseHowToStart": "Kies hoe Obelisk Launcher moet starten.",
     "useExistingArk": "Gebruik een bestaande ARK-installatie",
     "installNewFolder": "Installeer ARK in een nieuwe map",
     "selectExistingFolder": "Selecteer een bestaande ARK-map",
@@ -370,7 +370,7 @@
     "selectFolderToContinue": "Selecteer een map om door te gaan.",
     "continue": "Doorgaan",
     "chooseInstallFolder": "Kies een installatiemap",
-    "chooseInstallDescription": "TEK Launcher zal deze map gebruiken voor een beheerde spelinstallatie.",
+    "chooseInstallDescription": "Obelisk Launcher zal deze map gebruiken voor een beheerde spelinstallatie.",
     "placeholderInstallPath": "/pad/naar/installatie/ARK",
     "preAquatica": "Pre-Aquatica (129 GB)",
     "latest": "Nieuwste (166 GB)",

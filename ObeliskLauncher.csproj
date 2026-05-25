@@ -4,9 +4,9 @@
     <Platform>x64</Platform>
     <OutputType>WinExe</OutputType>
     <Version>1.0.0</Version>
-    <Authors>Nuclearist</Authors>
-    <Product>TEK Launcher</Product>
-    <Copyright>Copyright © 2020-2026 Nuclearist</Copyright>
+    <Authors>Nuclearist, Dewn</Authors>
+    <Product>Obelisk Launcher</Product>
+    <Copyright>Copyright © 2020-2026 Nuclearist, Dewn</Copyright>
     <AppendTargetFrameworkToOutputPath>False</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>False</AppendRuntimeIdentifierToOutputPath>
     <Nullable>Enable</Nullable>
@@ -28,6 +28,7 @@
     <DelaySign>False</DelaySign>
     <PublishSingleFile>True</PublishSingleFile>
     <SelfContained>False</SelfContained>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.4.2" />
@@ -52,17 +53,17 @@
   </ItemGroup>
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>TEKLauncher.Tests</_Parameter1>
+      <_Parameter1>ObeliskLauncher.Tests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="TEKLauncher.Tests\**" />
+    <Compile Remove="ObeliskLauncher.Tests\**" />
     <Compile Remove="src\Steam\CM\Messages\**\*.g.cs" />
-    <EmbeddedResource Remove="TEKLauncher.Tests\**" />
-    <None Remove="TEKLauncher.Tests\**" />
+    <EmbeddedResource Remove="ObeliskLauncher.Tests\**" />
+    <None Remove="ObeliskLauncher.Tests\**" />
   </ItemGroup>
   <Target Name="GenerateProtobufSources" BeforeTargets="CoreCompile">
-    <Exec Command="$(ProtocExecutable) --proto_path=$(ProtoRoot) --csharp_out=$(ProtoOutputDir) --csharp_opt=file_extension=.g.cs --csharp_opt=base_namespace=TEKLauncher %(Protos.Identity)" />
+    <Exec Command="$(ProtocExecutable) --proto_path=$(ProtoRoot) --csharp_out=$(ProtoOutputDir) --csharp_opt=file_extension=.g.cs --csharp_opt=base_namespace=ObeliskLauncher %(Protos.Identity)" />
     <ItemGroup>
       <Compile Include="src\Steam\CM\Messages\**\*.g.cs" />
     </ItemGroup>
