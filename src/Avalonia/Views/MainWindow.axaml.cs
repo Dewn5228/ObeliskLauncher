@@ -110,6 +110,46 @@ public partial class MainWindow : Window
         }
     }
 
+    void AseLinuxLaunchToolChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (sender is not ComboBox comboBox)
+            return;
+
+        LauncherLog.Debug("ASE linux tool combobox changed. SelectedIndex={SelectedIndex}, SelectedItem={SelectedItemType}",
+            comboBox.SelectedIndex,
+            comboBox.SelectedItem?.GetType().Name ?? "null");
+
+        if (comboBox.DataContext is not LauncherSettingsSectionScreenViewModel screen)
+        {
+            LauncherLog.Warning("ASE linux tool combobox DataContext is not LauncherSettingsSectionScreenViewModel. DataContextType={DataContextType}",
+                comboBox.DataContext?.GetType().FullName ?? "null");
+            return;
+        }
+
+        if (comboBox.SelectedIndex >= 0)
+            screen.SelectedAseLinuxLaunchToolIndex = comboBox.SelectedIndex;
+    }
+
+    void AsaLinuxLaunchToolChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (sender is not ComboBox comboBox)
+            return;
+
+        LauncherLog.Debug("ASA linux tool combobox changed. SelectedIndex={SelectedIndex}, SelectedItem={SelectedItemType}",
+            comboBox.SelectedIndex,
+            comboBox.SelectedItem?.GetType().Name ?? "null");
+
+        if (comboBox.DataContext is not LauncherSettingsSectionScreenViewModel screen)
+        {
+            LauncherLog.Warning("ASA linux tool combobox DataContext is not LauncherSettingsSectionScreenViewModel. DataContextType={DataContextType}",
+                comboBox.DataContext?.GetType().FullName ?? "null");
+            return;
+        }
+
+        if (comboBox.SelectedIndex >= 0)
+            screen.SelectedAsaLinuxLaunchToolIndex = comboBox.SelectedIndex;
+    }
+
     void OpenDiscordLink(object? sender, RoutedEventArgs e) => OpenUrl("https://discord.gg/JBUgcwvpfc");
 
     void OpenLicenseLink(object? sender, RoutedEventArgs e) => OpenUrl("https://github.com/Dewn5228/ObeliskLauncher/blob/main/LICENSE.TXT");

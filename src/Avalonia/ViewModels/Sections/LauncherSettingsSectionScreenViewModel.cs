@@ -26,7 +26,7 @@ public abstract class LauncherSettingsSectionScreenViewModel : LauncherSectionSc
         _pageKind = pageKind;
         _aseGamePath = Settings.AseGamePath;
         _asaGamePath = Settings.AsaGamePath;
-        _linuxLaunchTools = LinuxLaunchToolResolver.GetAvailableOptions(Settings.GetLinuxLaunchTool(AseScopeId), GetConfiguredRootPathOrFallback(), Settings.CustomLinuxLaunchToolIds);
+        _linuxLaunchTools = LinuxLaunchToolResolver.GetAvailableOptions(Settings.GetLinuxLaunchTool(GetLinuxLaunchToolScopeIdForPage()), GetConfiguredRootPathOrFallback(), Settings.CustomLinuxLaunchToolIds);
         _linuxLaunchPresets = [.. Settings.LinuxLaunchPresets];
         _selectedLinuxLaunchPreset = _linuxLaunchPresets.Count > 0 ? _linuxLaunchPresets[0] : null;
     }
@@ -119,10 +119,16 @@ public abstract class LauncherSettingsSectionScreenViewModel : LauncherSectionSc
 
             Settings.RegisterCustomLinuxLaunchTool(value.Id);
             Settings.SetLinuxLaunchTool(value.Id, AseScopeId);
-            RefreshLinuxLaunchTools();
             OnPropertyChanged();
+            OnPropertyChanged(nameof(SelectedAseLinuxLaunchToolIndex));
             PersistSettings();
         }
+    }
+
+    public int SelectedAseLinuxLaunchToolIndex
+    {
+        get => ResolveSelectedLinuxLaunchToolIndex(LinuxLaunchTools, AseScopeId);
+        set => SetLinuxLaunchToolByIndex(value, AseScopeId, nameof(SelectedAseLinuxLaunchToolIndex), nameof(SelectedAseLinuxLaunchTool));
     }
 
     public LinuxLaunchToolOption? SelectedAsaLinuxLaunchTool
@@ -139,10 +145,16 @@ public abstract class LauncherSettingsSectionScreenViewModel : LauncherSectionSc
 
             Settings.RegisterCustomLinuxLaunchTool(value.Id);
             Settings.SetLinuxLaunchTool(value.Id, AsaScopeId);
-            RefreshLinuxLaunchTools();
             OnPropertyChanged();
+            OnPropertyChanged(nameof(SelectedAsaLinuxLaunchToolIndex));
             PersistSettings();
         }
+    }
+
+    public int SelectedAsaLinuxLaunchToolIndex
+    {
+        get => ResolveSelectedLinuxLaunchToolIndex(LinuxLaunchTools, AsaScopeId);
+        set => SetLinuxLaunchToolByIndex(value, AsaScopeId, nameof(SelectedAsaLinuxLaunchToolIndex), nameof(SelectedAsaLinuxLaunchTool));
     }
 
     public string AseLinuxCustomPrefixPath
@@ -785,9 +797,21 @@ public abstract class LauncherSettingsSectionScreenViewModel : LauncherSectionSc
 
     void RefreshLinuxLaunchTools()
     {
-        LinuxLaunchTools = LinuxLaunchToolResolver.GetAvailableOptions(Settings.GetLinuxLaunchTool(AseScopeId), GetConfiguredRootPathOrFallback(), Settings.CustomLinuxLaunchToolIds);
+        LinuxLaunchTools = LinuxLaunchToolResolver.GetAvailableOptions(Settings.GetLinuxLaunchTool(GetLinuxLaunchToolScopeIdForPage()), GetConfiguredRootPathOrFallback(), Settings.CustomLinuxLaunchToolIds);
+        LauncherLog.Debug("Linux launch tools refreshed. PageKind={PageKind}, ScopeGameId={ScopeGameId}, OptionCount={OptionCount}, CurrentTool={CurrentTool}",
+            _pageKind,
+            GetLinuxLaunchToolScopeIdForPage(),
+            LinuxLaunchTools.Count,
+            Settings.GetLinuxLaunchTool(GetLinuxLaunchToolScopeIdForPage()));
+        OnPropertyChanged(nameof(SelectedAseLinuxLaunchToolIndex));
+        OnPropertyChanged(nameof(SelectedAsaLinuxLaunchToolIndex));
+        OnPropertyChanged(nameof(SelectedAseLinuxLaunchTool));
+        OnPropertyChanged(nameof(SelectedAsaLinuxLaunchTool));
         OnPropertyChanged(nameof(PreAquaticaVisible));
     }
+
+    string GetLinuxLaunchToolScopeIdForPage()
+        => _pageKind == LauncherSettingsPageKind.Asa ? AsaScopeId : AseScopeId;
 
     static void PersistSettings() => Settings.Save();
 
@@ -806,6 +830,57 @@ public abstract class LauncherSettingsSectionScreenViewModel : LauncherSectionSc
                 return option;
 
         return options.Count > 0 ? options[0] : null;
+    }
+
+    static int ResolveSelectedLinuxLaunchToolIndex(IReadOnlyList<LinuxLaunchToolOption> options, string gameId)
+    {
+        LinuxLaunchToolOption? selected = ResolveSelectedLinuxLaunchTool(options, gameId);
+        if (selected is null)
+            return -1;
+
+        for (int i = 0; i < options.Count; i++)
+            if (ReferenceEquals(options[i], selected) || options[i].Id.Equals(selected.Id, StringComparison.OrdinalIgnoreCase))
+                return i;
+
+        return -1;
+    }
+
+    void SetLinuxLaunchToolByIndex(int index, string gameId, string indexPropertyName, string selectedToolPropertyName)
+    {
+        LauncherLog.Debug("Linux tool selection request. PageKind={PageKind}, GameId={GameId}, RequestedIndex={RequestedIndex}, OptionCount={OptionCount}",
+            _pageKind,
+            gameId,
+            index,
+            LinuxLaunchTools.Count);
+
+        if (index < 0 || index >= LinuxLaunchTools.Count)
+        {
+            LauncherLog.Warning("Linux tool selection ignored because index is out of range. GameId={GameId}, RequestedIndex={RequestedIndex}, OptionCount={OptionCount}",
+                gameId,
+                index,
+                LinuxLaunchTools.Count);
+            return;
+        }
+
+        LinuxLaunchToolOption selectedTool = LinuxLaunchTools[index];
+        string currentTool = LinuxLaunchToolResolver.NormalizeSelection(Settings.GetLinuxLaunchTool(gameId));
+        if (currentTool.Equals(selectedTool.Id, StringComparison.OrdinalIgnoreCase))
+        {
+            LauncherLog.Debug("Linux tool selection ignored because selected tool already active. GameId={GameId}, ToolId={ToolId}",
+                gameId,
+                selectedTool.Id);
+            return;
+        }
+
+        Settings.RegisterCustomLinuxLaunchTool(selectedTool.Id);
+        Settings.SetLinuxLaunchTool(selectedTool.Id, gameId);
+        LauncherLog.Information("Linux tool selection applied. GameId={GameId}, PreviousToolId={PreviousToolId}, NewToolId={NewToolId}",
+            gameId,
+            currentTool,
+            selectedTool.Id);
+        OnPropertyChanged(indexPropertyName);
+        OnPropertyChanged(selectedToolPropertyName);
+        PersistSettings();
     }
 
     static LinuxLaunchPreset? ResolveSelectedLinuxLaunchPreset(IReadOnlyList<LinuxLaunchPreset> options, string? selectedName)

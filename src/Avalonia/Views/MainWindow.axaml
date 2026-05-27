@@ -308,7 +308,7 @@
           <StackPanel Spacing="8">
             <TextBlock Text="ASE settings" FontSize="20" FontWeight="SemiBold" />
             <TextBlock Text="{u:Tr mainWindow.linuxCompatibilityTool}" FontWeight="SemiBold" />
-            <ComboBox ItemsSource="{Binding LinuxLaunchTools}" SelectedItem="{Binding SelectedAseLinuxLaunchTool, Mode=TwoWay}">
+            <ComboBox ItemsSource="{Binding LinuxLaunchTools}" SelectedIndex="{Binding SelectedAseLinuxLaunchToolIndex, Mode=TwoWay}" SelectionChanged="AseLinuxLaunchToolChanged">
               <ComboBox.ItemTemplate>
                 <DataTemplate DataType="p:LinuxLaunchToolOption">
                   <TextBlock Text="{Binding DisplayName}" />
@@ -368,7 +368,7 @@
           <StackPanel Spacing="8">
             <TextBlock Text="ASA settings" FontSize="20" FontWeight="SemiBold" />
             <TextBlock Text="{u:Tr mainWindow.linuxCompatibilityTool}" FontWeight="SemiBold" />
-            <ComboBox ItemsSource="{Binding LinuxLaunchTools}" SelectedItem="{Binding SelectedAsaLinuxLaunchTool, Mode=TwoWay}">
+            <ComboBox ItemsSource="{Binding LinuxLaunchTools}" SelectedIndex="{Binding SelectedAsaLinuxLaunchToolIndex, Mode=TwoWay}" SelectionChanged="AsaLinuxLaunchToolChanged">
               <ComboBox.ItemTemplate>
                 <DataTemplate DataType="p:LinuxLaunchToolOption">
                   <TextBlock Text="{Binding DisplayName}" />

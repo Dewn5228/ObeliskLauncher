@@ -420,10 +420,15 @@ static class Settings
     public static void SetLinuxLaunchTool(string value, string? gameId = null)
     {
         string resolvedGameId = ResolveScopedGameId(gameId);
+        string normalizedValue = LinuxLaunchToolResolver.NormalizeSelection(value);
+        LauncherLog.Debug("Settings.SetLinuxLaunchTool called. RequestedGameId={RequestedGameId}, ResolvedGameId={ResolvedGameId}, ToolId={ToolId}",
+            gameId ?? "<null>",
+            resolvedGameId,
+            normalizedValue);
         if (IsAsaGameId(resolvedGameId))
-            ArkSurvivalAscendedSettings.SetLinuxLaunchTool(value);
+            ArkSurvivalAscendedSettings.SetLinuxLaunchTool(normalizedValue);
         else
-            ArkSurvivalEvolvedSettings.SetLinuxLaunchTool(value);
+            ArkSurvivalEvolvedSettings.SetLinuxLaunchTool(normalizedValue);
     }
 
     public static string GetLinuxLaunchWrappers(string? gameId = null)
