@@ -127,9 +127,9 @@ sealed class LinuxLauncherPlatform : ILauncherPlatform
     {
         string? xdgDataHome = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
         if (!string.IsNullOrWhiteSpace(xdgDataHome))
-            return Path.Combine(xdgDataHome, "Obelisk Launcher");
+            return Path.Combine(xdgDataHome, "ObeliskLauncher");
         string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        return Path.Combine(home, ".local", "share", "Obelisk Launcher");
+        return Path.Combine(home, ".local", "share", "ObeliskLauncher");
     }
 
     static IEnumerable<string> GetSteamCandidates()

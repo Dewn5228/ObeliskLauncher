@@ -8,7 +8,7 @@ sealed class WindowsLauncherPlatform : ILauncherPlatform
     const string SteamRegistryKey = @"SOFTWARE\WOW6432Node\Valve\Steam";
     const string SteamActiveProcessKey = @"SOFTWARE\Valve\Steam\ActiveProcess";
 
-    public string AppDataFolder { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Obelisk Launcher");
+    public string AppDataFolder { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ObeliskLauncher");
 
     public string GetGameConfigDirectory(string gamePath) => Path.Combine(gamePath, "ShooterGame", "Saved", "Config", "WindowsNoEditor");
 
