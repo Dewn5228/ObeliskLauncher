@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ObeliskLauncher.Avalonia.Views.ProgressIndicator"
+             Width="32"
+             Height="32">
+  <Border Padding="12" CornerRadius="8" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1">
+    <StackPanel Spacing="6">
+      <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+        <TextBlock Grid.Column="0" Grid.Row="0"
+                   Name="TitleText"
+                   FontWeight="SemiBold"
+                   Foreground="#E0E0E0" />
+        
+        <TextBlock Grid.Column="1" Grid.Row="0"
+                   Name="PercentText"
+                   Foreground="#4A90E2"
+                   FontWeight="SemiBold" />
+        
+        <ProgressBar Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2"
+                     Name="ProgressBar"
+                     Height="6"
+                     CornerRadius="3"
+                     Foreground="#4A90E2"
+                     Background="#1A3A52" />
+      </Grid>
+    </StackPanel>
+  </Border>
+</UserControl>

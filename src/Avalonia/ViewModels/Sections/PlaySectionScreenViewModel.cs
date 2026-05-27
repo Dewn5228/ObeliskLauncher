@@ -1,9 +1,13 @@
+using Avalonia.Threading;
+
 namespace ObeliskLauncher.Avalonia.ViewModels;
 
 public sealed class PlaySectionScreenViewModel : LauncherSectionScreenViewModel
 {
+    readonly DispatcherTimer _runningStateTimer;
     readonly string[] _launcherLanguages;
     readonly int[] _launcherLanguageMap;
+    bool _isGameRunning;
 
     static readonly string[] s_gameLanguages =
     [
@@ -50,6 +54,10 @@ public sealed class PlaySectionScreenViewModel : LauncherSectionScreenViewModel
       : base(LauncherSection.Play)
     {
         (_launcherLanguages, _launcherLanguageMap) = BuildLauncherLanguageOptions();
+        _runningStateTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        _runningStateTimer.Tick += (_, _) => UpdateRunningState();
+        _runningStateTimer.Start();
+        UpdateRunningState();
     }
 
     public string CurrentGamePath => ActiveGameManager.Current.RootPath;
@@ -61,7 +69,14 @@ public sealed class PlaySectionScreenViewModel : LauncherSectionScreenViewModel
     public int GameLanguageIndex
     {
         get => Game.Language;
-        set => Game.Language = value;
+        set
+        {
+            if (Game.Language == value)
+                return;
+
+            Game.Language = value;
+            Settings.Save();
+        }
     }
 
     public IReadOnlyList<string> GameLanguages => s_gameLanguages;
@@ -97,10 +112,25 @@ public sealed class PlaySectionScreenViewModel : LauncherSectionScreenViewModel
 
     public bool LaunchBehaviorNoteVisible => !RunAsAdminVisible;
 
+    public bool IsGameRunning
+    {
+        get => _isGameRunning;
+        private set => SetProperty(ref _isGameRunning, value);
+    }
+
+    public string PlayButtonText => IsGameRunning ? "Kill" : Locale.Get("mainWindow.play");
+
     public bool RunAsAdmin
     {
         get => Game.RunAsAdmin;
-        set => Game.RunAsAdmin = value;
+        set
+        {
+            if (Game.RunAsAdmin == value)
+                return;
+
+            Game.RunAsAdmin = value;
+            Settings.Save();
+        }
     }
 
     public bool RunAsAdminVisible => Game.CanRunAsAdmin;
@@ -108,14 +138,29 @@ public sealed class PlaySectionScreenViewModel : LauncherSectionScreenViewModel
     public bool UseSpacewar
     {
         get => Game.UseSpacewar;
-        set => Game.UseSpacewar = value;
+        set
+        {
+            if (Game.UseSpacewar == value)
+                return;
+
+            Game.UseSpacewar = value;
+            Settings.Save();
+        }
     }
 
     public bool UseSpacewarVisible => Game.CanUseSpacewar;
 
     public Task LaunchAsync()
     {
+        if (IsGameRunning)
+        {
+            Game.KillRunningProcess();
+            UpdateRunningState();
+            return Task.CompletedTask;
+        }
+
         Game.Launch(null);
+        UpdateRunningState();
         return Task.CompletedTask;
     }
 
@@ -132,6 +177,8 @@ public sealed class PlaySectionScreenViewModel : LauncherSectionScreenViewModel
         OnPropertyChanged(nameof(LauncherLanguageIndex));
         OnPropertyChanged(nameof(LauncherLanguageSelectionEnabled));
         OnPropertyChanged(nameof(LauncherLanguages));
+        OnPropertyChanged(nameof(IsGameRunning));
+        OnPropertyChanged(nameof(PlayButtonText));
         OnPropertyChanged(nameof(RunAsAdmin));
         OnPropertyChanged(nameof(RunAsAdminVisible));
         OnPropertyChanged(nameof(UseSpacewar));
@@ -166,5 +213,15 @@ public sealed class PlaySectionScreenViewModel : LauncherSectionScreenViewModel
         }
 
         return ([.. labels], [.. indexMap]);
+    }
+
+    void UpdateRunningState()
+    {
+        bool running = Game.IsRunning;
+        if (IsGameRunning == running)
+            return;
+
+        IsGameRunning = running;
+        OnPropertyChanged(nameof(PlayButtonText));
     }
 }

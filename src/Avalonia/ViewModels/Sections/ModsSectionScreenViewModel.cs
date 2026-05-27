@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using ObeliskLauncher.Utils;
 
 namespace ObeliskLauncher.Avalonia.ViewModels;
 
@@ -96,6 +97,8 @@ public sealed class ModsSectionScreenViewModel : LauncherSectionScreenViewModel
     bool _hasStatus;
     bool _hasWorkshopStatus;
     bool _isBusy;
+    int _progress;
+    bool _isShowingProgress;
     string _installIdInput = string.Empty;
     string _statusColor = "#D49B38";
     string _statusMessage = string.Empty;
@@ -106,6 +109,9 @@ public sealed class ModsSectionScreenViewModel : LauncherSectionScreenViewModel
     uint _currentWorkshopPage;
     uint _totalWorkshopPages;
     bool _workshopInitialized;
+
+    readonly Dictionary<string, (uint Total, Mod.ModDetails[] Details)> _workshopCache = new();
+    readonly Dictionary<ulong, Mod.ModDetails> _modDetailsCache = new();
 
     public ModsSectionScreenViewModel()
       : base(LauncherSection.Mods)
@@ -149,6 +155,18 @@ public sealed class ModsSectionScreenViewModel : LauncherSectionScreenViewModel
     {
         get => _isBusy;
         private set => SetProperty(ref _isBusy, value);
+    }
+
+    public int Progress
+    {
+        get => _progress;
+        private set => SetProperty(ref _progress, value);
+    }
+
+    public bool IsShowingProgress
+    {
+        get => _isShowingProgress;
+        private set => SetProperty(ref _isShowingProgress, value);
     }
 
     public string InstallIdInput
@@ -256,12 +274,34 @@ public sealed class ModsSectionScreenViewModel : LauncherSectionScreenViewModel
             return;
         }
 
+        if (_modDetailsCache.TryGetValue(id, out var cachedDetails))
+        {
+            ApplyCandidate(cachedDetails, id);
+            return;
+        }
+
         IsBusy = true;
         try
         {
-            var response = await Task.Run(() => Steam.CM.Client.GetModDetails(id));
-            var details = response.Length == 0 ? default : response[0];
-            ApplyCandidate(details, id);
+            var (success, details) = await TimeoutHelper.ExecuteWithTimeoutAsync(
+                async ct =>
+                {
+                    var result = await Task.Run(() => Steam.CM.Client.GetModDetails(id), ct);
+                    return result.Length == 0 ? default : result[0];
+                },
+                timeoutMs: 15000,
+                operationName: "Mod details lookup"
+            );
+
+            if (success)
+            {
+                _modDetailsCache[id] = details!;
+                ApplyCandidate(details!, id);
+            }
+            else if (!success)
+            {
+                SetStatus(new(Locale.Get("modsTab.modLookupTimeout"), 2));
+            }
         }
         finally
         {
@@ -289,6 +329,7 @@ public sealed class ModsSectionScreenViewModel : LauncherSectionScreenViewModel
 
     public async Task SearchWorkshopAsync()
     {
+        _workshopCache.Clear();
         await LoadWorkshopPageAsync(1);
     }
 
@@ -347,11 +388,36 @@ public sealed class ModsSectionScreenViewModel : LauncherSectionScreenViewModel
         if (IsBusy)
             return;
 
+        string cacheKey = $"{page}:{WorkshopQuery}";
+
+        if (_workshopCache.TryGetValue(cacheKey, out var cachedResult))
+        {
+            ApplyWorkshopPage(page, cachedResult.Total, cachedResult.Details);
+            return;
+        }
+
         IsBusy = true;
         try
         {
-            var result = await Task.Run(() => QueryWorkshop(page, WorkshopQuery));
-            ApplyWorkshopPage(page, result.Total, result.Details);
+            var (success, result) = await TimeoutHelper.ExecuteWithTimeoutAsync(
+                async ct =>
+                {
+                    return await Task.Run(() => QueryWorkshop(page, WorkshopQuery), ct);
+                },
+                timeoutMs: 20000,
+                operationName: "Workshop search"
+            );
+
+            if (success && result != default)
+            {
+                _workshopCache[cacheKey] = result;
+                ApplyWorkshopPage(page, result.Total, result.Details);
+            }
+            else if (!success)
+            {
+                WorkshopStatusText = Locale.Get("modsTab.workshopSearchTimeout");
+                HasWorkshopStatus = true;
+            }
         }
         finally
         {

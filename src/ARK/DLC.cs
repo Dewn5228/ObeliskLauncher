@@ -61,7 +61,7 @@ class DLC
         }
         catch (Exception ex)
         {
-            LauncherLog.Warning("DLC manifest query failed for AppId={AppId}, DepotId={DepotId}. Error={Error}", 
+            LauncherLog.Warning("DLC manifest query failed for AppId={AppId}, DepotId={DepotId}. Error={Error}",
                 ActiveGameManager.Current.SteamAppId, DepotId, ex.Message);
         }
 

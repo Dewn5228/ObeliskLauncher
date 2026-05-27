@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using ObeliskLauncher.Data;
@@ -45,7 +46,46 @@ static class Game
         }
     }
     /// <summary>Gets a value that indicates whether the game is running.</summary>
-    public static bool IsRunning => Process.GetProcessesByName("ShooterGame").Length > 0;
+    public static bool IsRunning => GetRunningProcessNames().Any(processName => Process.GetProcessesByName(processName).Length > 0);
+
+    /// <summary>Attempts to terminate any running game process.</summary>
+    public static bool KillRunningProcess()
+    {
+        var processes = GetRunningProcessNames().SelectMany(processName => Process.GetProcessesByName(processName)).ToArray();
+        if (processes.Length == 0)
+            return false;
+
+        bool killedAny = false;
+        foreach (Process process in processes)
+        {
+            try
+            {
+                LauncherLog.Warning("Terminating running game process. ProcessId={ProcessId}, ProcessName={ProcessName}", process.Id, process.ProcessName);
+                process.Kill(entireProcessTree: true);
+                process.WaitForExit(5000);
+                killedAny = true;
+            }
+            catch (Exception ex)
+            {
+                LauncherLog.Warning("Failed to terminate game process. ProcessId={ProcessId}, Reason={Reason}", process.Id, ex.Message);
+            }
+            finally
+            {
+                process.Dispose();
+            }
+        }
+
+        return killedAny;
+    }
+
+    static IEnumerable<string> GetRunningProcessNames()
+    {
+        yield return System.IO.Path.GetFileNameWithoutExtension(ActiveGameManager.Current.ExeFileName);
+
+        if (ActiveGameManager.Current.Id == GameCatalog.AsaGameId)
+            yield return "ShooterGame";
+    }
+
     /// <summary>Gets or sets a value that indicates whether the game should be executed with administrator privileges.</summary>
     public static bool RunAsAdmin { get; set; }
     public static bool CanRunAsAdmin => LaunchCapabilities.SupportsRunAsAdmin;

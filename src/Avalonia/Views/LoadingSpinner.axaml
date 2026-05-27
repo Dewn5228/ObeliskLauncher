@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ObeliskLauncher.Avalonia.Views.LoadingSpinner"
+             Width="32"
+             Height="32">
+  <Viewbox Stretch="Uniform">
+    <Canvas Width="24" Height="24">
+      <Ellipse Width="22" Height="22" Canvas.Left="1" Canvas.Top="1" 
+               Stroke="#274665" StrokeThickness="2" Fill="Transparent" />
+      
+      <Ellipse Width="22" Height="22" Canvas.Left="1" Canvas.Top="1" 
+               Stroke="#4A90E2" StrokeThickness="2.5" Fill="Transparent"
+               StrokeDashArray="15,7" StrokeLineCap="Round"
+               Name="SpinningArc"
+               RenderTransformOrigin="50%, 50%">
+        <Ellipse.RenderTransform>
+          <RotateTransform Angle="0" />
+        </Ellipse.RenderTransform>
+      </Ellipse>
+    </Canvas>
+  </Viewbox>
+</UserControl>

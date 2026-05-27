@@ -22,13 +22,32 @@ public sealed class LauncherNavNodeViewModel
     public string DisplayTitle => string.IsNullOrWhiteSpace(GameId) ? Title : $"{GameId} / {Title}";
 }
 
-public sealed class LauncherNavGroupViewModel
+public sealed class LauncherNavGroupViewModel : INotifyPropertyChanged
 {
     public required string Title { get; init; }
 
     public required bool IsVisible { get; init; }
 
     public required IReadOnlyList<LauncherNavNodeViewModel> Children { get; init; }
+
+    public int ChildCount => Children.Count;
+
+    bool _isExpanded = true;
+
+    public bool IsExpanded
+    {
+        get => _isExpanded;
+        set
+        {
+            if (_isExpanded == value)
+                return;
+
+            _isExpanded = value;
+            PropertyChanged?.Invoke(this, new(nameof(IsExpanded)));
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 }
 
 public sealed class MainWindowViewModel : INotifyPropertyChanged
@@ -56,7 +75,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             [LauncherSection.GameOptions] = new GameOptionsSectionScreenViewModel(),
             [LauncherSection.DLC] = new DlcSectionScreenViewModel(),
             [LauncherSection.Mods] = new ModsSectionScreenViewModel(),
-            [LauncherSection.LauncherSettings] = new LauncherSettingsSectionScreenViewModel(),
+            [LauncherSection.GlobalSettings] = new GlobalLauncherSettingsSectionScreenViewModel(),
+            [LauncherSection.AseSettings] = new AseLauncherSettingsSectionScreenViewModel(),
+            [LauncherSection.AsaSettings] = new AsaLauncherSettingsSectionScreenViewModel(),
             [LauncherSection.About] = new AboutSectionScreenViewModel()
         };
         _selectedSection = LauncherSection.Play;
@@ -582,6 +603,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
                 sections.Insert(1, LauncherSection.Servers);
             if (!isAsa)
                 sections.Add(LauncherSection.Mods);
+            sections.Insert(1, gameId == GameCatalog.AseGameId ? LauncherSection.AseSettings : LauncherSection.AsaSettings);
             return sections;
         }
 
@@ -608,6 +630,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             {
                 Title = game.Id,
                 IsVisible = isVisible,
+                IsExpanded = true,
                 Children = [.. CreateGameSections(game.Id).Select(section => BuildNode(section, game.Id, _selectedNodeKey))]
             });
         }
@@ -616,9 +639,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         {
             Title = "Global",
             IsVisible = true,
+            IsExpanded = true,
             Children =
             [
-                BuildNode(LauncherSection.LauncherSettings, null, _selectedNodeKey),
+                BuildNode(LauncherSection.GlobalSettings, null, _selectedNodeKey),
                 BuildNode(LauncherSection.About, null, _selectedNodeKey)
             ]
         });
@@ -672,7 +696,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
     string? ResolveNodeKeyForSection(LauncherSection section)
     {
-        if (section is LauncherSection.LauncherSettings or LauncherSection.About)
+        if (section is LauncherSection.GlobalSettings or LauncherSection.About)
         {
             string globalKey = $"GLOBAL:{section}";
             return FindNodeByKey(globalKey) is null ? null : globalKey;

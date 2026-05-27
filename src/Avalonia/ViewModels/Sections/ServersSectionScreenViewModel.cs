@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Avalonia.Threading;
+using ObeliskLauncher.Utils;
 
 namespace ObeliskLauncher.Avalonia.ViewModels;
 
@@ -160,12 +161,27 @@ public sealed class ServerRowViewModel : INotifyPropertyChanged
         IsLoadingModDetails = true;
         try
         {
-            Mod.ModDetails[] details = await Task.Run(() => ResolveModDetails(ModIds));
-            ModRows.Clear();
-            foreach (Mod.ModDetails detail in details)
-                ModRows.Add(new ServerModRowViewModel(detail));
-            _modDetailsLoaded = true;
-            PropertyChanged?.Invoke(this, new(nameof(HasModRows)));
+            var (success, details) = await TimeoutHelper.ExecuteWithTimeoutAsync(
+                async ct =>
+                {
+                    return await Task.Run(() => ResolveModDetails(ModIds), ct);
+                },
+                timeoutMs: 25000,
+                operationName: "Mod details resolution"
+            );
+
+            if (success && details != null)
+            {
+                ModRows.Clear();
+                foreach (Mod.ModDetails detail in details)
+                    ModRows.Add(new ServerModRowViewModel(detail));
+                _modDetailsLoaded = true;
+                PropertyChanged?.Invoke(this, new(nameof(HasModRows)));
+            }
+            else if (!success)
+            {
+                LauncherLog.Warning($"Mod details lookup timed out for server {DisplayName}");
+            }
         }
         finally
         {
@@ -258,8 +274,23 @@ public sealed class ServersSectionScreenViewModel : LauncherSectionScreenViewMod
         IsRefreshing = true;
         try
         {
-            await Task.Run(Servers.Cluster.ReloadLists);
-            RefreshSnapshot();
+            var success = await TimeoutHelper.ExecuteWithTimeoutAsync(
+                async ct =>
+                {
+                    await Task.Run(Servers.Cluster.ReloadLists, ct);
+                },
+                timeoutMs: 60000,
+                operationName: "Server cluster reload"
+            );
+
+            if (!success)
+            {
+                StatusText = Locale.Get("mainWindow.serverRefreshTimeout");
+            }
+            else
+            {
+                RefreshSnapshot();
+            }
         }
         finally
         {
@@ -275,8 +306,23 @@ public sealed class ServersSectionScreenViewModel : LauncherSectionScreenViewMod
         IsRefreshing = true;
         try
         {
-            await Task.Run(() => ReloadClusterServers(SelectedCluster.Cluster));
-            RefreshSnapshot();
+            var success = await TimeoutHelper.ExecuteWithTimeoutAsync(
+                async ct =>
+                {
+                    await Task.Run(() => ReloadClusterServers(SelectedCluster.Cluster), ct);
+                },
+                timeoutMs: 45000,
+                operationName: "Cluster server reload"
+            );
+
+            if (!success)
+            {
+                StatusText = Locale.Get("mainWindow.clusterRefreshTimeout");
+            }
+            else
+            {
+                RefreshSnapshot();
+            }
         }
         finally
         {

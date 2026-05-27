@@ -1,6 +1,13 @@
 namespace ObeliskLauncher.Avalonia.ViewModels;
 
-public sealed class LauncherSettingsSectionScreenViewModel : LauncherSectionScreenViewModel
+public enum LauncherSettingsPageKind
+{
+    Global,
+    Ase,
+    Asa
+}
+
+public abstract class LauncherSettingsSectionScreenViewModel : LauncherSectionScreenViewModel
 {
     const string AseScopeId = GameCatalog.AseGameId;
     const string AsaScopeId = GameCatalog.AsaGameId;
@@ -11,16 +18,36 @@ public sealed class LauncherSettingsSectionScreenViewModel : LauncherSectionScre
     IReadOnlyList<LinuxLaunchPreset> _linuxLaunchPresets;
     IReadOnlyList<LinuxLaunchToolOption> _linuxLaunchTools;
     LinuxLaunchPreset? _selectedLinuxLaunchPreset;
+    readonly LauncherSettingsPageKind _pageKind;
 
-    public LauncherSettingsSectionScreenViewModel()
-      : base(LauncherSection.LauncherSettings)
+    protected LauncherSettingsSectionScreenViewModel(LauncherSection section, LauncherSettingsPageKind pageKind)
+        : base(section)
     {
+        _pageKind = pageKind;
         _aseGamePath = Settings.AseGamePath;
         _asaGamePath = Settings.AsaGamePath;
         _linuxLaunchTools = LinuxLaunchToolResolver.GetAvailableOptions(Settings.GetLinuxLaunchTool(AseScopeId), GetConfiguredRootPathOrFallback(), Settings.CustomLinuxLaunchToolIds);
         _linuxLaunchPresets = [.. Settings.LinuxLaunchPresets];
         _selectedLinuxLaunchPreset = _linuxLaunchPresets.Count > 0 ? _linuxLaunchPresets[0] : null;
     }
+
+    public bool IsGlobalPage => _pageKind == LauncherSettingsPageKind.Global;
+
+    public bool IsAsePage => _pageKind == LauncherSettingsPageKind.Ase;
+
+    public bool IsAsaPage => _pageKind == LauncherSettingsPageKind.Asa;
+
+    public bool IsScopedPage => _pageKind is LauncherSettingsPageKind.Ase or LauncherSettingsPageKind.Asa;
+
+    public bool LinuxLaunchPresetsVisible => IsGlobalPage && OperatingSystem.IsLinux();
+
+    public string PageTitle => _pageKind switch
+    {
+        LauncherSettingsPageKind.Global => "Global",
+        LauncherSettingsPageKind.Ase => "ASE",
+        LauncherSettingsPageKind.Asa => "ASA",
+        _ => "Settings"
+    };
 
 
 
@@ -44,7 +71,7 @@ public sealed class LauncherSettingsSectionScreenViewModel : LauncherSectionScre
         set => SetProperty(ref _asaGamePath, value);
     }
 
-    public bool PreAquaticaVisible => !string.IsNullOrWhiteSpace(AseGamePath);
+    public bool PreAquaticaVisible => IsGlobalPage && !string.IsNullOrWhiteSpace(AseGamePath);
 
     public bool CloseOnGameLaunch
     {
@@ -74,7 +101,7 @@ public sealed class LauncherSettingsSectionScreenViewModel : LauncherSectionScre
         }
     }
 
-    public bool LinuxLaunchToolVisible => OperatingSystem.IsLinux();
+    public bool LinuxLaunchToolVisible => IsScopedPage && OperatingSystem.IsLinux();
 
     public string LinuxLaunchToolNote => Locale.Get("launcherSettingsTab.linuxLaunchToolNote");
 
@@ -472,17 +499,17 @@ public sealed class LauncherSettingsSectionScreenViewModel : LauncherSectionScre
         }
     }
 
-    public bool AseLinuxGamescopeOptionsVisible => AseLinuxUseGamescope;
+    public bool AseLinuxGamescopeOptionsVisible => IsAsePage && AseLinuxUseGamescope;
 
-    public bool AsaLinuxGamescopeOptionsVisible => AsaLinuxUseGamescope;
+    public bool AsaLinuxGamescopeOptionsVisible => IsAsaPage && AsaLinuxUseGamescope;
 
-    public bool AseLinuxGamescopeFsrOptionsVisible => AseLinuxUseGamescope;
+    public bool AseLinuxGamescopeFsrOptionsVisible => IsAsePage && AseLinuxUseGamescope;
 
-    public bool AsaLinuxGamescopeFsrOptionsVisible => AsaLinuxUseGamescope;
+    public bool AsaLinuxGamescopeFsrOptionsVisible => IsAsaPage && AsaLinuxUseGamescope;
 
-    public bool AseLinuxWineFsrOptionsVisible => AseLinuxUseWineFullscreenFsr;
+    public bool AseLinuxWineFsrOptionsVisible => IsAsePage && AseLinuxUseWineFullscreenFsr;
 
-    public bool AsaLinuxWineFsrOptionsVisible => AsaLinuxUseWineFullscreenFsr;
+    public bool AsaLinuxWineFsrOptionsVisible => IsAsaPage && AsaLinuxUseWineFullscreenFsr;
 
 
 
@@ -568,6 +595,12 @@ public sealed class LauncherSettingsSectionScreenViewModel : LauncherSectionScre
         OnPropertyChanged(nameof(AseLinuxWineFsrOptionsVisible));
         OnPropertyChanged(nameof(AsaLinuxWineFsrOptionsVisible));
         OnPropertyChanged(nameof(CloseOnGameLaunch));
+        OnPropertyChanged(nameof(IsGlobalPage));
+        OnPropertyChanged(nameof(IsAsePage));
+        OnPropertyChanged(nameof(IsAsaPage));
+        OnPropertyChanged(nameof(IsScopedPage));
+        OnPropertyChanged(nameof(LinuxLaunchPresetsVisible));
+        OnPropertyChanged(nameof(PageTitle));
         OnPropertyChanged(nameof(LinuxLaunchPresetName));
         OnPropertyChanged(nameof(LinuxLaunchToolNote));
         OnPropertyChanged(nameof(LinuxLaunchToolVisible));

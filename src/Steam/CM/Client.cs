@@ -30,7 +30,7 @@ static class Client
     {
         if (!WebSocketConnection.IsLoggedOn)
             try { WebSocketConnection.Connect(); }
-            catch { return Array.Empty<Mod.ModDetails>(); }
+            catch (Exception ex) { LauncherLog.Error(ex, "Steam CM connect failed (GetModDetails)"); return Array.Empty<Mod.ModDetails>(); }
         ulong jobId = GlobalId.NextJobId();
         var message = new Message<ModDetails>(MessageType.ServiceMethod);
         message.Body.Ids.AddRange(ids);
@@ -39,7 +39,10 @@ static class Client
         message.Header.TargetJobName = "PublishedFile.GetDetails#1";
         var response = WebSocketConnection.GetMessage<ModDetailsResponse>(message, MessageType.ServiceMethodResponse, jobId);
         if (response is null)
+        {
+            LauncherLog.Warning("Steam CM: GetModDetails received no response (ids: {Ids})", string.Join(",", ids));
             return Array.Empty<Mod.ModDetails>();
+        }
         var result = new Mod.ModDetails[response.Body.Details.Count];
         for (int i = 0; i < response.Body.Details.Count; i++)
         {
@@ -59,7 +62,7 @@ static class Client
         IGameContext game = ActiveGameManager.Current;
         if (!WebSocketConnection.IsLoggedOn)
             try { WebSocketConnection.Connect(); }
-            catch { return Array.Empty<Mod.ModDetails>(); }
+            catch (Exception ex) { LauncherLog.Error(ex, "Steam CM connect failed (QueryMods)"); return Array.Empty<Mod.ModDetails>(); }
         ulong jobId = GlobalId.NextJobId();
         var message = new Message<QueryMods>(MessageType.ServiceMethod);
         message.Body.Page = page;
@@ -72,7 +75,10 @@ static class Client
         message.Header.TargetJobName = "PublishedFile.QueryFiles#1";
         var response = WebSocketConnection.GetMessage<QueryModsResponse>(message, MessageType.ServiceMethodResponse, jobId);
         if (response is null)
+        {
+            LauncherLog.Warning("Steam CM: QueryMods received no response (page={Page}, search={Search})", page, search);
             return Array.Empty<Mod.ModDetails>();
+        }
         total = response.Body.Total;
         var result = new Mod.ModDetails[response.Body.Items.Count];
         for (int i = 0; i < response.Body.Items.Count; i++)

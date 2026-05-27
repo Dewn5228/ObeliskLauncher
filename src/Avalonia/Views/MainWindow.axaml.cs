@@ -51,7 +51,7 @@ public partial class MainWindow : Window
         }
     }
 
-    void OpenLauncherSettingsSection(object? sender, RoutedEventArgs e) => SelectSection(LauncherSection.LauncherSettings);
+    void OpenLauncherSettingsSection(object? sender, RoutedEventArgs e) => SelectSection(LauncherSection.GlobalSettings);
 
     void SelectSection(LauncherSection section)
     {
