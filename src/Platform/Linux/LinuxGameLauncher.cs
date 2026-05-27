@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using ObeliskLauncher.Data;
@@ -66,6 +67,7 @@ sealed class LinuxGameLauncher : IGameLauncher
               : CreateProtonStartInfo(context, assets, request, settingsPath);
 
             ApplyConfiguredEnvironment(startInfo, context.GameId);
+            SanitizeInheritedLibraryPaths(startInfo);
             startInfo = WrapLaunchStartInfo(startInfo, context.GameId);
 
             WriteLaunchDebugInfo(context, assets, request, settingsPath, startInfo);
@@ -264,6 +266,54 @@ sealed class LinuxGameLauncher : IGameLauncher
 
         foreach (KeyValuePair<string, string> variable in ParseEnvironmentVariables(Settings.GetLinuxExtraEnvironmentVariables(gameId)))
             startInfo.Environment[variable.Key] = variable.Value;
+    }
+
+    static void SanitizeInheritedLibraryPaths(ProcessStartInfo startInfo)
+    {
+        const string variableName = "LD_LIBRARY_PATH";
+        if (!startInfo.Environment.TryGetValue(variableName, out string? currentValue) || string.IsNullOrWhiteSpace(currentValue))
+            return;
+
+        string bundledRoot = Path.GetFullPath(Path.Combine(LauncherBootstrap.AppDataFolder, "tek-steamclient-linux"))
+            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+        string[] filteredDirectories = currentValue
+            .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(directory => !IsUnderDirectory(directory, bundledRoot))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        if (filteredDirectories.Length == 0)
+        {
+            startInfo.Environment.Remove(variableName);
+            LauncherLog.Debug("Linux launch removed inherited {VariableName} because it only contained bundled tek-steamclient directories.", variableName);
+            return;
+        }
+
+        string sanitizedValue = string.Join(Path.PathSeparator, filteredDirectories);
+        if (string.Equals(currentValue, sanitizedValue, StringComparison.Ordinal))
+            return;
+
+        startInfo.Environment[variableName] = sanitizedValue;
+        LauncherLog.Debug("Linux launch sanitized inherited {VariableName}. OriginalEntries={OriginalEntries}, RemainingEntries={RemainingEntries}",
+            variableName,
+            currentValue.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Length,
+            filteredDirectories.Length);
+    }
+
+    static bool IsUnderDirectory(string path, string root)
+    {
+        try
+        {
+            string fullPath = Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            return fullPath.Equals(root, StringComparison.Ordinal)
+                || fullPath.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+                || fullPath.StartsWith(root + Path.AltDirectorySeparatorChar, StringComparison.Ordinal);
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     static ProcessStartInfo WrapLaunchStartInfo(ProcessStartInfo startInfo, string gameId)
