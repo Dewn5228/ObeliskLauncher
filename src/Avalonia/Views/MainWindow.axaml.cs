@@ -14,6 +14,8 @@ namespace ObeliskLauncher.Avalonia.Views;
 
 public partial class MainWindow : Window
 {
+    bool _shutdownRequested;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -24,7 +26,17 @@ public partial class MainWindow : Window
     void ClosingHandler(object? sender, WindowClosingEventArgs e)
     {
         if (SteamTaskUpdaterWindowViewModelBase.IsAnySteamTaskActive && !Messages.ShowOptions("common.warning", Locale.Get("errors.launcherClosePrompt")))
+        {
             e.Cancel = true;
+            return;
+        }
+
+        if (_shutdownRequested || App.ShuttingDown)
+            return;
+
+        _shutdownRequested = true;
+        e.Cancel = true;
+        LauncherServices.Lifetime.Shutdown();
     }
 
     async void OpenedHandler(object? sender, System.EventArgs e)

@@ -16,7 +16,10 @@ static class UdpClient
     static UdpClient()
     {
         s_socket.Bind(new IPEndPoint(IPAddress.Any, 0));
-        new Thread(ReceiveLoop).Start();
+        new Thread(ReceiveLoop)
+        {
+            IsBackground = true
+        }.Start();
     }
     /// <summary>Processes all incoming datagrams in a loop.</summary>
     static void ReceiveLoop()

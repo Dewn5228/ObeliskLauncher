@@ -135,7 +135,10 @@ static class WebSocketConnection
                 s_socket.Dispose();
                 continue;
             }
-            s_thread = new Thread(ConnectionLoop);
+            s_thread = new Thread(ConnectionLoop)
+            {
+                IsBackground = true
+            };
             s_thread.Start();
             var osVersion = Environment.OSVersion.Version;
             var logOnMessage = new Message<LogOn>(MessageType.LogOn);
