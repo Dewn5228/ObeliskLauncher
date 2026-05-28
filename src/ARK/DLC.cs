@@ -173,21 +173,7 @@ class DLC
         var prevStatus = _status;
         CurrentStatus = Status.Deleting;
         if (desc == null)
-        {
-            if (Directory.Exists(_path))
-                Directory.Delete(_path, true);
-            if (Directory.Exists(_sfcPath))
-                Directory.Delete(_sfcPath, true);
-            if (Code == MapCode.Genesis)
-            {
-                string gen2Folder = Path.Combine(_rootPath, "ShooterGame", "Content", "Maps", "Genesis2");
-                if (Directory.Exists(gen2Folder))
-                    Directory.Delete(gen2Folder, true);
-                gen2Folder = Path.Combine(_rootPath, "ShooterGame", "SeekFreeContent", "Maps", "Genesis2");
-                if (Directory.Exists(gen2Folder))
-                    Directory.Delete(gen2Folder, true);
-            }
-        }
+            DeleteInstalledFiles();
         else
         {
             if (desc->Status.HasFlag(TEKSteamClient.AmItemStatus.Job))
@@ -198,17 +184,40 @@ class DLC
                     return;
                 }
             }
-            if (desc->CurrentManifestId != 0)
+            if (desc->CurrentManifestId == 0)
+                DeleteInstalledFiles();
+            else
             {
                 if (!LauncherServices.TekSteamClient.RunJob(in itemId, ulong.MaxValue, false, null, out desc).Success)
                 {
                     CurrentStatus = prevStatus;
                     return;
                 }
+
+                if (IsInstalled)
+                    DeleteInstalledFiles();
             }
         }
         CurrentStatus = Status.NotInstalled;
     }
+
+    void DeleteInstalledFiles()
+    {
+        if (Directory.Exists(_path))
+            Directory.Delete(_path, true);
+        if (Directory.Exists(_sfcPath))
+            Directory.Delete(_sfcPath, true);
+        if (Code == MapCode.Genesis)
+        {
+            string gen2Folder = Path.Combine(_rootPath, "ShooterGame", "Content", "Maps", "Genesis2");
+            if (Directory.Exists(gen2Folder))
+                Directory.Delete(gen2Folder, true);
+            gen2Folder = Path.Combine(_rootPath, "ShooterGame", "SeekFreeContent", "Maps", "Genesis2");
+            if (Directory.Exists(gen2Folder))
+                Directory.Delete(gen2Folder, true);
+        }
+    }
+
     /// <summary>Retrieves a DLC by its map code.</summary>
     /// <param name="code">Code of the map whose DLC needs to be retrieved.</param>
     /// <returns>A DLC that provides the specified map.</returns>
