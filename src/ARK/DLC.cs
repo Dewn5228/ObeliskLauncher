@@ -169,7 +169,27 @@ class DLC
     {
         CurrentStatus = Status.Deleting;
         var itemId = new TEKSteamClient.ItemId { AppId = ActiveGameManager.Current.SteamAppId, DepotId = DepotId, WorkshopItemId = 0 };
-        var desc = LauncherServices.TekSteamClient.GetItemDesc(&itemId);
+        TEKSteamClient.AmItemDesc* desc = null;
+        foreach (uint candidateAppId in GetManifestAppIdCandidates())
+        {
+            var candidateItemId = new TEKSteamClient.ItemId { AppId = candidateAppId, DepotId = DepotId, WorkshopItemId = 0 };
+            var candidateDesc = LauncherServices.TekSteamClient.GetItemDesc(&candidateItemId);
+            if (candidateDesc is null)
+                continue;
+
+            if (desc is null)
+            {
+                desc = candidateDesc;
+                itemId = candidateItemId;
+            }
+
+            if (candidateDesc->CurrentManifestId != 0)
+            {
+                desc = candidateDesc;
+                itemId = candidateItemId;
+                break;
+            }
+        }
         var prevStatus = _status;
         CurrentStatus = Status.Deleting;
         if (desc == null)
@@ -180,41 +200,58 @@ class DLC
             {
                 if (!LauncherServices.TekSteamClient.CancelJob(ref Unsafe.AsRef<TEKSteamClient.AmItemDesc>(desc)).Success)
                 {
+                    LauncherLog.Warning("DLC delete: failed to cancel active job. Name={Name}, DepotId={DepotId}", Name, DepotId);
                     CurrentStatus = prevStatus;
                     return;
                 }
             }
+
             if (desc->CurrentManifestId == 0)
                 DeleteInstalledFiles();
             else
             {
                 if (!LauncherServices.TekSteamClient.RunJob(in itemId, ulong.MaxValue, false, null, out desc).Success)
                 {
+                    LauncherLog.Warning("DLC delete: Steam uninstall job failed. Name={Name}, AppId={AppId}, DepotId={DepotId}", Name, itemId.AppId, DepotId);
                     CurrentStatus = prevStatus;
                     return;
                 }
 
                 if (IsInstalled)
-                    DeleteInstalledFiles();
+                    LauncherLog.Warning("DLC delete: install detection still true after uninstall job, deleting leftover files. Name={Name}, DepotId={DepotId}", Name, DepotId);
+                DeleteInstalledFiles();
             }
         }
+
         CurrentStatus = Status.NotInstalled;
     }
 
     void DeleteInstalledFiles()
     {
-        if (Directory.Exists(_path))
-            Directory.Delete(_path, true);
-        if (Directory.Exists(_sfcPath))
-            Directory.Delete(_sfcPath, true);
+        TryDeleteDirectory(_path, "Content");
+        TryDeleteDirectory(_sfcPath, "SeekFreeContent");
         if (Code == MapCode.Genesis)
         {
             string gen2Folder = Path.Combine(_rootPath, "ShooterGame", "Content", "Maps", "Genesis2");
-            if (Directory.Exists(gen2Folder))
-                Directory.Delete(gen2Folder, true);
+            TryDeleteDirectory(gen2Folder, "Genesis2Content");
             gen2Folder = Path.Combine(_rootPath, "ShooterGame", "SeekFreeContent", "Maps", "Genesis2");
-            if (Directory.Exists(gen2Folder))
-                Directory.Delete(gen2Folder, true);
+            TryDeleteDirectory(gen2Folder, "Genesis2SeekFree");
+        }
+    }
+
+    void TryDeleteDirectory(string path, string kind)
+    {
+        if (!Directory.Exists(path))
+            return;
+
+        try
+        {
+            Directory.Delete(path, true);
+        }
+        catch (Exception ex)
+        {
+            LauncherLog.Warning("DLC delete: failed to delete directory. Name={Name}, Kind={Kind}, Path={Path}, Error={Error}", Name, kind, path, ex.Message);
+            throw;
         }
     }
 
