@@ -95,7 +95,7 @@ static class Game
         get => _useSpacewar;
         set => _useSpacewar = value && CanUseSpacewar;
     }
-    public static bool CanUseSpacewar => LaunchCapabilities.SupportsSpoofAppId && ActiveGameManager.Current.SupportsSpacewarSpoof;
+    public static bool CanUseSpacewar => LaunchCapabilities.SupportsSpoofAppId && ActiveGameManager.IsConfigured && ActiveGameManager.Current.SupportsSpacewarSpoof;
     public static uint SteamAppId => ActiveGameManager.Current.SteamAppId;
     public static string SteamAppIdString => SteamAppId.ToString();
     public static uint MainDepotId => ActiveGameManager.Current.MainDepotId;
