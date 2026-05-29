@@ -7,13 +7,15 @@ namespace ObeliskLauncher.Utils;
 /// <summary>Bindings for tek-steamclient library.</summary>
 static partial class TEKSteamClient
 {
+    const string NativeLibraryName = "libtek-steamclient-2.dll";
     static readonly object s_librarySync = new();
     static IntPtr s_libraryHandle;
     static string? s_libraryPath;
 
     static TEKSteamClient() => NativeLibrary.SetDllImportResolver(typeof(TEKSteamClient).Assembly, ResolveLibrary);
 
-    public static readonly string DllPath = Path.Combine(LauncherBootstrap.AppDataFolder, "libtek-steamclient-2.dll");
+    public static readonly string DllPath = Path.Combine(LauncherBootstrap.AppDataFolder,
+        OperatingSystem.IsWindows() ? NativeLibraryName : "libtek-steamclient.so.2");
     public static LibCtx? Ctx = null;
     public static AppManager? AppMng = null;
 
@@ -28,7 +30,7 @@ static partial class TEKSteamClient
 
     static IntPtr ResolveLibrary(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
     {
-        if (!string.Equals(libraryName, "libtek-steamclient-2.dll", StringComparison.Ordinal))
+        if (!IsTekSteamClientLibraryName(libraryName))
             return IntPtr.Zero;
 
         lock (s_librarySync)
@@ -46,10 +48,14 @@ static partial class TEKSteamClient
         return IntPtr.Zero;
     }
 
+    static bool IsTekSteamClientLibraryName(string libraryName)
+        => string.Equals(libraryName, NativeLibraryName, StringComparison.Ordinal)
+        || string.Equals(libraryName, "libtek-steamclient.so.2", StringComparison.Ordinal);
+
     #region Native Functions
-    [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_version")]
+    [LibraryImport(NativeLibraryName, EntryPoint = "tek_sc_version")]
     public static partial nint GetVersion();
-    [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_load_locale", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport(NativeLibraryName, EntryPoint = "tek_sc_load_locale", StringMarshalling = StringMarshalling.Utf16)]
     static partial void LoadLocaleNative(string path);
 
     public static void LoadLocale(string path)
@@ -60,45 +66,45 @@ static partial class TEKSteamClient
         LoadLocaleNative(path);
     }
 
-    [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_lib_init")]
+    [LibraryImport(NativeLibraryName, EntryPoint = "tek_sc_lib_init")]
     private static partial nint LibInit([MarshalAs(UnmanagedType.I1)] bool useFileCache, [MarshalAs(UnmanagedType.I1)] bool disableLwsLogs);
-    [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_lib_cleanup")]
+    [LibraryImport(NativeLibraryName, EntryPoint = "tek_sc_lib_cleanup")]
     private static partial void LibCleanup(nint libCtx);
-    [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_err_get_msgs")]
+    [LibraryImport(NativeLibraryName, EntryPoint = "tek_sc_err_get_msgs")]
     private static partial ErrorMessages GetErrorMsgs(in Error err);
-    [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_err_release_msgs")]
+    [LibraryImport(NativeLibraryName, EntryPoint = "tek_sc_err_release_msgs")]
     private static partial void ReleaseMsgs(ref ErrorMessages errMsgs);
-    [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_s3c_sync_manifest", StringMarshalling = StringMarshalling.Utf8)]
+    [LibraryImport(NativeLibraryName, EntryPoint = "tek_sc_s3c_sync_manifest", StringMarshalling = StringMarshalling.Utf8)]
     private static partial Error S3CSyncManifest(nint libCtx, string url, int timeoutMs);
-    [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_s3c_get_srv_for_mrc", StringMarshalling = StringMarshalling.Utf8)]
+    [LibraryImport(NativeLibraryName, EntryPoint = "tek_sc_s3c_get_srv_for_mrc", StringMarshalling = StringMarshalling.Utf8)]
     private static partial nint S3CGetServerForManifestRequestCode(nint libCtx, uint appId, uint depotId);
-    [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_dd_estimate_disk_space")]
+    [LibraryImport(NativeLibraryName, EntryPoint = "tek_sc_dd_estimate_disk_space")]
     public static partial long DeltaEstimateDiskSpace(nint delta);
-    [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_am_create", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport(NativeLibraryName, EntryPoint = "tek_sc_am_create", StringMarshalling = StringMarshalling.Utf16)]
     private static partial nint AmCreateUtf16(nint libCtx, string dir, out Error err);
-    [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_am_create", StringMarshalling = StringMarshalling.Utf8)]
+    [LibraryImport(NativeLibraryName, EntryPoint = "tek_sc_am_create", StringMarshalling = StringMarshalling.Utf8)]
     private static partial nint AmCreateUtf8(nint libCtx, string dir, out Error err);
-    [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_am_destroy")]
+    [LibraryImport(NativeLibraryName, EntryPoint = "tek_sc_am_destroy")]
     private static partial void AmDestroy(nint am);
-    [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_am_set_ws_dir", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport(NativeLibraryName, EntryPoint = "tek_sc_am_set_ws_dir", StringMarshalling = StringMarshalling.Utf16)]
     private static partial Error AmSetWorkshopDirUtf16(nint am, string wsDir);
-    [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_am_set_ws_dir", StringMarshalling = StringMarshalling.Utf8)]
+    [LibraryImport(NativeLibraryName, EntryPoint = "tek_sc_am_set_ws_dir", StringMarshalling = StringMarshalling.Utf8)]
     private static partial Error AmSetWorkshopDirUtf8(nint am, string wsDir);
-    [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_am_get_item_desc")]
+    [LibraryImport(NativeLibraryName, EntryPoint = "tek_sc_am_get_item_desc")]
     private static unsafe partial AmItemDesc* AmGetItemDesc(nint am, ItemId* itemId);
-    [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_am_item_descs_lock")]
+    [LibraryImport(NativeLibraryName, EntryPoint = "tek_sc_am_item_descs_lock")]
     private static partial void AmItemDescsLock(nint am);
-    [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_am_item_descs_unlock")]
+    [LibraryImport(NativeLibraryName, EntryPoint = "tek_sc_am_item_descs_unlock")]
     private static partial void AmItemDescsUnlock(nint am);
-    [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_am_check_for_upds")]
+    [LibraryImport(NativeLibraryName, EntryPoint = "tek_sc_am_check_for_upds")]
     private static partial Error AmCheckForUpdates(nint am, int timeoutMs);
-    [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_am_create_job")]
+    [LibraryImport(NativeLibraryName, EntryPoint = "tek_sc_am_create_job")]
     private static unsafe partial Error AmCreateJob(nint am, ItemId* itemId, ulong manifestId, [MarshalAs(UnmanagedType.I1)] bool forceVerify, out AmItemDesc* itemDesc);
-    [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_am_run_job")]
+    [LibraryImport(NativeLibraryName, EntryPoint = "tek_sc_am_run_job")]
     private static unsafe partial Error AmRunJob(nint am, ref AmItemDesc itemDesc, nint updHandler);
-    [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_am_pause_job")]
+    [LibraryImport(NativeLibraryName, EntryPoint = "tek_sc_am_pause_job")]
     private static partial void AmPauseJob(ref AmItemDesc itemDesc);
-    [LibraryImport("libtek-steamclient-2.dll", EntryPoint = "tek_sc_am_cancel_job")]
+    [LibraryImport(NativeLibraryName, EntryPoint = "tek_sc_am_cancel_job")]
     private static partial Error AmCancelJob(nint am, ref AmItemDesc itemDesc);
     #endregion
 
