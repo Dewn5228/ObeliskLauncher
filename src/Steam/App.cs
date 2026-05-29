@@ -65,6 +65,13 @@ static class App
     }
     public static void UpdateUserStatus()
     {
+        if (string.IsNullOrWhiteSpace(s_path))
+        {
+            CurrentUserStatus = new(0, Game.Status.NotOwned);
+            GamePath = null;
+            return;
+        }
+
         bool hasConfiguredGame = ActiveGameManager.IsConfigured;
         GameCatalogEntry fallbackGame = GameCatalog.GetByGameId(GameCatalog.DefaultGameId);
         uint appId = hasConfiguredGame ? ActiveGameManager.Current.SteamAppId : fallbackGame.SteamAppId;
@@ -130,6 +137,9 @@ static class App
 
     public static string? TryGetGamePath(uint appId, string steamFolderName)
     {
+        if (string.IsNullOrWhiteSpace(s_path))
+            return null;
+
         string libraryFoldersFile = Path.Combine(s_path, "config", "libraryfolders.vdf");
         if (!File.Exists(libraryFoldersFile))
             return null;

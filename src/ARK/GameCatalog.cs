@@ -37,9 +37,15 @@ sealed record GameCatalogEntry(
     IReadOnlyDictionary<uint, string> RuntimeDlcDisplayNames,
     IReadOnlyDictionary<uint, ulong> PreAquaticaManifestOverrides)
 {
-    public string BuildExePath(string rootPath) => Path.Combine(rootPath, ExeRelativePath.Replace('/', Path.DirectorySeparatorChar));
+    public string BuildExePath(string rootPath)
+        => string.IsNullOrWhiteSpace(rootPath)
+            ? string.Empty
+            : Path.Combine(rootPath, ExeRelativePath.Replace('/', Path.DirectorySeparatorChar));
 
-    public string BuildWorkshopPath(string rootPath) => Path.Combine(rootPath, WorkshopDirRelativePath.Replace('/', Path.DirectorySeparatorChar));
+    public string BuildWorkshopPath(string rootPath)
+        => string.IsNullOrWhiteSpace(rootPath)
+            ? string.Empty
+            : Path.Combine(rootPath, WorkshopDirRelativePath.Replace('/', Path.DirectorySeparatorChar));
 }
 
 static class GameCatalog

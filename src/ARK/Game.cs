@@ -116,17 +116,37 @@ static class Game
     /// <param name="server">Server to join, <see langword="null"/> if no server needs to be joined.</param>
     public static void Launch(Server? server)
     {
+        if (!ActiveGameManager.IsConfigured)
+        {
+            Messages.Show("common.warning", Locale.Get("errors.noPathSelected"));
+            return;
+        }
+
+        string rootPath = ActiveGameManager.Current.RootPath;
+        if (string.IsNullOrWhiteSpace(rootPath))
+        {
+            Messages.Show("common.warning", Locale.Get("errors.noPathSelected"));
+            return;
+        }
+
+        string exePath = ResolveExecutablePath();
+        if (string.IsNullOrWhiteSpace(exePath))
+        {
+            Messages.Show("common.warning", Locale.Get("errors.noPathSelected"));
+            return;
+        }
+
         LauncherLog.Information("Launch requested. GameId={GameId}, GameName={GameName}, RootPath={RootPath}, ExePath={ExePath}, Server={Server}",
             ActiveGameManager.Current.Id,
             ActiveGameManager.Current.DisplayName,
-            Path,
-            ExePath,
+            rootPath,
+            exePath,
             server?.Address ?? "none");
 
         var launchLog = new StringBuilder();
         launchLog.AppendLine($"UTC: {DateTimeOffset.UtcNow:O}");
-        launchLog.AppendLine($"Game path: {Path}");
-        launchLog.AppendLine($"Executable path: {ExePath}");
+        launchLog.AppendLine($"Game path: {rootPath}");
+        launchLog.AppendLine($"Executable path: {exePath}");
         launchLog.AppendLine($"Steam running: {Steam.App.IsRunning}");
         launchLog.AppendLine($"DirectX installed: {DirectXInstalled}");
         launchLog.AppendLine($"Is corrupted: {IsCorrupted}");
@@ -223,7 +243,7 @@ static class Game
             if (!string.IsNullOrWhiteSpace(cfApiWrapper))
                 launchLog.AppendLine($"ASA runtime option: cf_api_wrapper={cfApiWrapper}");
             launchLog.AppendLine($"Arguments: {string.Join(' ', args)}");
-            var launchResult = LauncherServices.GameLauncher.Launch(new(ExePath, args, useHighProcessPriority, useRunAsAdmin, data));
+            var launchResult = LauncherServices.GameLauncher.Launch(new(exePath, args, useHighProcessPriority, useRunAsAdmin, data));
             if (!launchResult.Success)
             {
                 LauncherLog.Error("Platform launcher failed. Error={Error}", launchResult.ErrorMessage ?? "unknown");
@@ -257,6 +277,9 @@ static class Game
 
     static string ResolveExecutablePath()
     {
+        if (!ActiveGameManager.IsConfigured)
+            return string.Empty;
+
         string configuredPath = ActiveGameManager.Current.ExePath;
         if (File.Exists(configuredPath))
             return configuredPath;
@@ -265,6 +288,9 @@ static class Game
             return configuredPath;
 
         string rootPath = ActiveGameManager.Current.RootPath;
+        if (string.IsNullOrWhiteSpace(rootPath))
+            return configuredPath;
+
         foreach (string relativePath in s_asaExeFallbackRelativePaths)
         {
             string candidate = System.IO.Path.Combine(rootPath, relativePath.Replace('/', System.IO.Path.DirectorySeparatorChar));
