@@ -574,121 +574,133 @@
       </StackPanel>
     </DataTemplate>
   </Window.DataTemplates>
-  <Grid ColumnDefinitions="280,*" Margin="20">
-    <Border Padding="20"
-            CornerRadius="18,0,0,18"
-            Background="#17202C"
-            BorderBrush="#284560"
-            BorderThickness="1,1,0,1">
-      <Grid RowDefinitions="Auto,*">
-        <StackPanel Spacing="12">
-          <TextBlock Text="{Binding Title}" FontSize="28" FontWeight="SemiBold" />
-          <TextBlock Text="{Binding Subtitle}" Opacity="0.78" TextWrapping="Wrap" />
-        </StackPanel>
-        <ScrollViewer Grid.Row="1" Margin="0,12,0,0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-          <ItemsControl ItemsSource="{Binding NavigationGroups}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate DataType="vm:LauncherNavGroupViewModel">
-                <Border Margin="0,0,0,12"
-                        Padding="14"
-                        CornerRadius="14"
-                        Background="#132132"
-                        BorderBrush="#22384E"
-                        BorderThickness="1">
-                  <StackPanel IsVisible="{Binding IsVisible}" Spacing="10">
-                    <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold" Opacity="0.9" />
-                    <Grid ColumnDefinitions="4,*">
-                      <Border Background="#2E5E8C" CornerRadius="2" Margin="0,2,10,2" />
-                      <ItemsControl Grid.Column="1" ItemsSource="{Binding Children}">
-                        <ItemsControl.ItemTemplate>
-                          <DataTemplate DataType="vm:LauncherNavNodeViewModel">
-                            <Button Padding="12,8"
-                                    Background="#17202C"
-                                    BorderBrush="#2A4C6D"
-                                    BorderThickness="1"
-                                    CornerRadius="10"
-                                    HorizontalContentAlignment="Left"
-                                    Click="SelectNavigationNode"
-                                    Classes.selected="{Binding IsSelected}">
-                              <Button.Styles>
-                                <Style Selector="Button.selected">
-                                  <Setter Property="Background" Value="#2B5D8C" />
-                                  <Setter Property="BorderBrush" Value="#4C8CC7" />
-                                </Style>
-                              </Button.Styles>
-                              <TextBlock Text="{Binding Title}" />
-                            </Button>
-                          </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                      </ItemsControl>
-                    </Grid>
-                  </StackPanel>
-                </Border>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-        </ScrollViewer>
-      </Grid>
-    </Border>
-    <Border Grid.Column="1"
-            Padding="24"
-            CornerRadius="0,18,18,0"
-            Background="#10233A"
-            BorderBrush="#2E5E8C"
-            BorderThickness="0,1,1,1">
-      <Grid RowDefinitions="Auto,*">
-        <StackPanel Spacing="16">
-          <TextBlock Text="{Binding SelectedSectionTitle}" FontSize="30" FontWeight="SemiBold" />
-          <TextBlock Text="{Binding SelectedSectionDescription}" Opacity="0.78" TextWrapping="Wrap" />
-          <Border Padding="16"
-                  CornerRadius="12"
-                  Background="#0C1A2C"
-                  BorderBrush="#274665"
-                  BorderThickness="1">
-            <Grid ColumnDefinitions="Auto,*">
-              <TextBlock Text="{u:Tr playTab.gameVersion}" FontSize="14" Opacity="0.72" />
-              <TextBlock Grid.Column="1" Margin="12,0,0,0" Text="{Binding GameVersion}" Foreground="{Binding GameVersionColor}" FontSize="16" FontWeight="SemiBold" />
-            </Grid>
-          </Border>
-          <Border Padding="16"
-                  CornerRadius="12"
-                  Background="#0C1A2C"
-                  BorderBrush="#274665"
-                  BorderThickness="1"
-                  IsVisible="{Binding IsBusy}">
-            <StackPanel Spacing="8">
-              <StackPanel Spacing="8" HorizontalAlignment="Center">
-                <v:LoadingSpinner />
-                <TextBlock Text="{u:Tr common.loading}" HorizontalAlignment="Center" />
-              </StackPanel>
-            </StackPanel>
-          </Border>
-        </StackPanel>
-        <ScrollViewer Grid.Row="1" Margin="0,16,0,0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-          <StackPanel Spacing="16">
-            <ItemsControl ItemsSource="{Binding Notices}">
+  <Grid>
+    <Grid ColumnDefinitions="280,*" Margin="20">
+      <Border Padding="20"
+              CornerRadius="18,0,0,18"
+              Background="#17202C"
+              BorderBrush="#284560"
+              BorderThickness="1,1,0,1">
+        <Grid RowDefinitions="Auto,*">
+          <StackPanel Spacing="12">
+            <TextBlock Text="{Binding Title}" FontSize="28" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding Subtitle}" Opacity="0.78" TextWrapping="Wrap" />
+          </StackPanel>
+          <ScrollViewer Grid.Row="1" Margin="0,12,0,0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding NavigationGroups}">
               <ItemsControl.ItemTemplate>
-                <DataTemplate DataType="vm:ShellNoticeViewModel">
-                  <Border Padding="14,10"
-                          CornerRadius="12"
-                          Background="#2A1F11"
-                          BorderBrush="#B98532"
+                <DataTemplate DataType="vm:LauncherNavGroupViewModel">
+                  <Border Margin="0,0,0,12"
+                          Padding="14"
+                          CornerRadius="14"
+                          Background="#132132"
+                          BorderBrush="#22384E"
                           BorderThickness="1">
-                    <Grid ColumnDefinitions="*,Auto">
-                      <TextBlock Text="{Binding Message}" TextWrapping="Wrap" VerticalAlignment="Center" />
-                      <Button Grid.Column="1"
-                              Margin="12,0,0,0"
-                              Content="{Binding ActionLabel}"
-                              Click="NoticeActionClick"
-                              IsVisible="{Binding HasAction}" />
-                    </Grid>
+                    <StackPanel IsVisible="{Binding IsVisible}" Spacing="10">
+                      <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold" Opacity="0.9" />
+                      <Grid ColumnDefinitions="4,*">
+                        <Border Background="#2E5E8C" CornerRadius="2" Margin="0,2,10,2" />
+                        <ItemsControl Grid.Column="1" ItemsSource="{Binding Children}">
+                          <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="vm:LauncherNavNodeViewModel">
+                              <Button Padding="12,8"
+                                      Background="#17202C"
+                                      BorderBrush="#2A4C6D"
+                                      BorderThickness="1"
+                                      CornerRadius="10"
+                                      HorizontalContentAlignment="Left"
+                                      Click="SelectNavigationNode"
+                                      Classes.selected="{Binding IsSelected}">
+                                <Button.Styles>
+                                  <Style Selector="Button.selected">
+                                    <Setter Property="Background" Value="#2B5D8C" />
+                                    <Setter Property="BorderBrush" Value="#4C8CC7" />
+                                  </Style>
+                                </Button.Styles>
+                                <TextBlock Text="{Binding Title}" />
+                              </Button>
+                            </DataTemplate>
+                          </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                      </Grid>
+                    </StackPanel>
                   </Border>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <ContentControl Content="{Binding CurrentScreen}" />
+          </ScrollViewer>
+        </Grid>
+      </Border>
+      <Border Grid.Column="1"
+              Padding="24"
+              CornerRadius="0,18,18,0"
+              Background="#10233A"
+              BorderBrush="#2E5E8C"
+              BorderThickness="0,1,1,1">
+        <Grid RowDefinitions="Auto,*">
+          <StackPanel Spacing="16">
+            <TextBlock Text="{Binding SelectedSectionTitle}" FontSize="30" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding SelectedSectionDescription}" Opacity="0.78" TextWrapping="Wrap" />
+            <Border Padding="16"
+                    CornerRadius="12"
+                    Background="#0C1A2C"
+                    BorderBrush="#274665"
+                    BorderThickness="1">
+              <Grid ColumnDefinitions="Auto,*">
+                <TextBlock Text="{u:Tr playTab.gameVersion}" FontSize="14" Opacity="0.72" />
+                <TextBlock Grid.Column="1" Margin="12,0,0,0" Text="{Binding GameVersion}" Foreground="{Binding GameVersionColor}" FontSize="16" FontWeight="SemiBold" />
+              </Grid>
+            </Border>
           </StackPanel>
-        </ScrollViewer>
+          <ScrollViewer Grid.Row="1" Margin="0,16,0,0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="16">
+              <ItemsControl ItemsSource="{Binding Notices}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate DataType="vm:ShellNoticeViewModel">
+                    <Border Padding="14,10"
+                            CornerRadius="12"
+                            Background="#2A1F11"
+                            BorderBrush="#B98532"
+                            BorderThickness="1">
+                      <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Text="{Binding Message}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                        <Button Grid.Column="1"
+                                Margin="12,0,0,0"
+                                Content="{Binding ActionLabel}"
+                                Click="NoticeActionClick"
+                                IsVisible="{Binding HasAction}" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <ContentControl Content="{Binding CurrentScreen}" />
+            </StackPanel>
+          </ScrollViewer>
+        </Grid>
+      </Border>
+    </Grid>
+
+    <Border IsVisible="{Binding IsBusy}"
+            IsHitTestVisible="True"
+            Background="#C0121B28"
+            CornerRadius="0"
+          HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch">
+      <Grid>
+        <Border Padding="24"
+                CornerRadius="18"
+                Background="#132132"
+                BorderBrush="#274665"
+                BorderThickness="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                MinWidth="220">
+          <StackPanel Spacing="12" HorizontalAlignment="Center">
+            <v:LoadingSpinner HorizontalAlignment="Center" />
+            <TextBlock Text="{u:Tr common.loading}" HorizontalAlignment="Center" FontWeight="SemiBold" />
+          </StackPanel>
+        </Border>
       </Grid>
     </Border>
   </Grid>

@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace ObeliskLauncher.UI;
 
 readonly record struct GameOptionsActionResult(string Message, int Severity);
@@ -25,11 +27,24 @@ static class GameOptionsWorkflow
 
     public static bool HasLaunchParameter(string parameter) => Game.LaunchParameters.Contains(parameter);
 
-    public static string GetCustomLaunchParametersText() => string.Join(' ', Game.LaunchParameters.FindAll(parameter => !IsPredefinedParameter(parameter)));
+    public static string GetCustomLaunchParametersText()
+        => HasPredefinedLaunchParameters
+            ? string.Join(' ', Game.LaunchParameters.Where(parameter => !IsKnownPredefinedParameter(parameter)))
+            : string.Join(' ', Game.LaunchParameters);
 
     public static void SetCustomLaunchParameters(string text)
     {
-        Game.LaunchParameters.RemoveAll(parameter => !IsPredefinedParameter(parameter));
+        List<string> preservedParameters = [];
+        if (HasPredefinedLaunchParameters)
+            foreach (string parameter in Game.LaunchParameters)
+                if (IsKnownPredefinedParameter(parameter))
+                    preservedParameters.Add(parameter);
+
+        Game.LaunchParameters.Clear();
+        foreach (string parameter in preservedParameters)
+            if (!Game.LaunchParameters.Contains(parameter))
+                Game.LaunchParameters.Add(parameter);
+
         if (string.IsNullOrWhiteSpace(text))
             return;
 
@@ -54,14 +69,9 @@ static class GameOptionsWorkflow
 
     public static void EnforcePredefinedLaunchParameterPolicy()
     {
-        if (HasPredefinedLaunchParameters)
+        if (!HasPredefinedLaunchParameters)
             return;
-
-        Game.LaunchParameters.RemoveAll(IsKnownPredefinedParameter);
     }
-
-    static bool IsPredefinedParameter(string parameter)
-            => HasPredefinedLaunchParameters && IsKnownPredefinedParameter(parameter);
 
     static bool IsKnownPredefinedParameter(string parameter)
         => Array.IndexOf(Game.StandardLaunchParameters, parameter) != -1;
