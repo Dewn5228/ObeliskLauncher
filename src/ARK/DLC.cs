@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 using System.Linq;
 
 namespace ObeliskLauncher.ARK;
@@ -124,7 +124,11 @@ class DLC
         if (_status is Status.Updating or Status.Deleting)
             return;
 
-        CurrentStatus = IsInstalled ? Status.Installed : Status.NotInstalled;
+        bool isInstalled = IsInstalled;
+        if (!isInstalled)
+            CurrentStatus = Status.NotInstalled;
+        else if (_status == Status.NotInstalled)
+            CurrentStatus = Status.Installed;
     }
 
     /// <summary>Gets the display name of the DLC.</summary>
