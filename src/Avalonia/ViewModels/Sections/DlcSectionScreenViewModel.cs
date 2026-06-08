@@ -57,7 +57,6 @@ public sealed class DlcSectionScreenViewModel : LauncherSectionScreenViewModel
       : base(LauncherSection.DLC)
     {
         Rows = [];
-        Activate();
     }
 
     public bool HasStatus => !string.IsNullOrWhiteSpace(StatusMessage);

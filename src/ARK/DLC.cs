@@ -44,25 +44,28 @@ class DLC
 
     unsafe bool IsInstalledByManifest()
     {
-        try
+        if (LauncherServices.TekSteamClient.IsLoaded)
         {
-            var itemId = new TEKSteamClient.ItemId { AppId = ActiveGameManager.Current.SteamAppId, DepotId = DepotId, WorkshopItemId = 0 };
-            var desc = LauncherServices.TekSteamClient.GetItemDesc(&itemId);
-            if (desc is not null && desc->CurrentManifestId != 0)
-                return true;
-
-            if (AppId != 0 && AppId != itemId.AppId)
+            try
             {
-                itemId.AppId = AppId;
-                desc = LauncherServices.TekSteamClient.GetItemDesc(&itemId);
+                var itemId = new TEKSteamClient.ItemId { AppId = ActiveGameManager.Current.SteamAppId, DepotId = DepotId, WorkshopItemId = 0 };
+                var desc = LauncherServices.TekSteamClient.GetItemDesc(&itemId);
                 if (desc is not null && desc->CurrentManifestId != 0)
                     return true;
+
+                if (AppId != 0 && AppId != itemId.AppId)
+                {
+                    itemId.AppId = AppId;
+                    desc = LauncherServices.TekSteamClient.GetItemDesc(&itemId);
+                    if (desc is not null && desc->CurrentManifestId != 0)
+                        return true;
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            LauncherLog.Warning("DLC manifest query failed for AppId={AppId}, DepotId={DepotId}. Error={Error}",
-                ActiveGameManager.Current.SteamAppId, DepotId, ex.Message);
+            catch (Exception ex)
+            {
+                LauncherLog.Warning("DLC manifest query failed for AppId={AppId}, DepotId={DepotId}. Error={Error}",
+                    ActiveGameManager.Current.SteamAppId, DepotId, ex.Message);
+            }
         }
 
         try

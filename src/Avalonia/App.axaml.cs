@@ -30,6 +30,15 @@ public partial class App : Application
             Dispatcher.UIThread.UnhandledException += UiUnhandledExceptionHandler;
 
             var bootstrapResult = LauncherBootstrap.InitializeCore();
+            if (Program.IsAnotherInstanceRunning)
+            {
+                var dialog = new AvaloniaDialogWindow(Locale.Get("common.error"), "Another instance of Obelisk Launcher is already running.", false);
+                dialog.Closed += (_, _) => desktop.Shutdown();
+                desktop.MainWindow = dialog;
+                base.OnFrameworkInitializationCompleted();
+                return;
+            }
+
             if (!bootstrapResult.Success)
             {
                 desktop.MainWindow = CreateMainWindow(false, Locale.Get(bootstrapResult.ErrorCode!));
