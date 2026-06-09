@@ -66,9 +66,9 @@ sealed class LinuxGameLauncher : IGameLauncher
               ? CreateWineStartInfo(context, assets, request, settingsPath)
               : CreateProtonStartInfo(context, assets, request, settingsPath);
 
-            ApplyConfiguredEnvironment(startInfo, context.GameId);
+            ApplyConfiguredEnvironment(startInfo, context.GameId, context.LaunchTool.Kind);
             SanitizeInheritedLibraryPaths(startInfo);
-            startInfo = WrapLaunchStartInfo(startInfo, context.GameId);
+            startInfo = WrapLaunchStartInfo(startInfo, context.GameId, context.LaunchTool.Kind);
 
             WriteLaunchDebugInfo(context, assets, request, settingsPath, startInfo);
 
@@ -251,10 +251,13 @@ sealed class LinuxGameLauncher : IGameLauncher
         settings[propertyName] = ToWinePath(path);
     }
 
-    static void ApplyConfiguredEnvironment(ProcessStartInfo startInfo, string gameId)
+    static void ApplyConfiguredEnvironment(ProcessStartInfo startInfo, string gameId, LinuxLaunchToolKind toolKind)
     {
         if (Settings.GetLinuxUseVkBasalt(gameId))
             startInfo.Environment["ENABLE_VKBASALT"] = "1";
+
+        if (Settings.GetLinuxUseMangoHud(gameId) && toolKind != LinuxLaunchToolKind.Wine)
+            startInfo.Environment["MANGOHUD"] = "1";
 
         if (Settings.GetLinuxUseWineFullscreenFsr(gameId))
         {
@@ -316,9 +319,9 @@ sealed class LinuxGameLauncher : IGameLauncher
         }
     }
 
-    static ProcessStartInfo WrapLaunchStartInfo(ProcessStartInfo startInfo, string gameId)
+    static ProcessStartInfo WrapLaunchStartInfo(ProcessStartInfo startInfo, string gameId, LinuxLaunchToolKind toolKind)
     {
-        List<LaunchWrapper> wrappers = BuildLaunchWrappers(gameId);
+        List<LaunchWrapper> wrappers = BuildLaunchWrappers(gameId, toolKind);
         if (wrappers.Count == 0)
             return startInfo;
 
@@ -364,12 +367,12 @@ sealed class LinuxGameLauncher : IGameLauncher
         return wrappedStartInfo;
     }
 
-    static List<LaunchWrapper> BuildLaunchWrappers(string gameId)
+    static List<LaunchWrapper> BuildLaunchWrappers(string gameId, LinuxLaunchToolKind toolKind)
     {
         var wrappers = new List<LaunchWrapper>();
         if (Settings.GetLinuxUseGameMode(gameId))
             wrappers.Add(new("gamemoderun", [], false, null));
-        if (Settings.GetLinuxUseMangoHud(gameId))
+        if (Settings.GetLinuxUseMangoHud(gameId) && toolKind == LinuxLaunchToolKind.Wine)
             wrappers.Add(new("mangohud", [], false, null));
 
         foreach (LaunchWrapper wrapper in ParseWrapperCommands(Settings.GetLinuxLaunchWrappers(gameId)))
