@@ -41,7 +41,9 @@ public partial class App : Application
 
             if (!bootstrapResult.Success)
             {
-                desktop.MainWindow = CreateMainWindow(false, Locale.Get(bootstrapResult.ErrorCode!));
+                var dialog = new AvaloniaDialogWindow(Locale.Get("common.error"), Locale.Get(bootstrapResult.ErrorCode!), false);
+                dialog.Closed += (_, _) => desktop.Shutdown();
+                desktop.MainWindow = dialog;
                 base.OnFrameworkInitializationCompleted();
                 return;
             }

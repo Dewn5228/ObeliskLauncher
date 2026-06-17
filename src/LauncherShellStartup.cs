@@ -92,9 +92,9 @@ static class LauncherShellStartup
                         continue;
 
                     desc = GetDesc(game.SteamAppId, dlc.DepotId);
-                    if (desc == null && dlc.AppId != 0 && dlc.AppId != game.SteamAppId)
+                    if ((desc == null || desc->CurrentManifestId == 0) && dlc.AppId != 0 && dlc.AppId != game.SteamAppId)
                         desc = GetDesc(dlc.AppId, dlc.DepotId);
-                    if (desc == null)
+                    if (desc == null || desc->CurrentManifestId == 0)
                         continue;
 
                     bool updateAvailable = IsDlcUpdateAvailable(desc, dlc.DepotId);
