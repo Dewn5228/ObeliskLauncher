@@ -599,11 +599,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         {
             var sections = new List<LauncherSection> { LauncherSection.Play, LauncherSection.GameOptions, LauncherSection.DLC };
             bool isAsa = gameId == GameCatalog.AsaGameId;
+            
+            if (OperatingSystem.IsLinux())
+                sections.Insert(1, gameId == GameCatalog.AseGameId ? LauncherSection.AseSettings : LauncherSection.AsaSettings);
+                
             if (!isAsa)
                 sections.Insert(1, LauncherSection.Servers);
             if (!isAsa)
                 sections.Add(LauncherSection.Mods);
-            sections.Insert(1, gameId == GameCatalog.AseGameId ? LauncherSection.AseSettings : LauncherSection.AsaSettings);
+                
             return sections;
         }
 

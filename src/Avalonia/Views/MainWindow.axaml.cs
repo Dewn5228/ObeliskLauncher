@@ -539,7 +539,7 @@ public partial class MainWindow : Window
         }
 
         var details = screen.SelectedModDetails;
-        var window = new ModUpdaterWindow(details, false);
+        var window = new ModUpdaterWindow(details, true);
         window.Closed += (_, _) => screen.RefreshAfterUpdaterClosed();
         window.Show(this);
     }
