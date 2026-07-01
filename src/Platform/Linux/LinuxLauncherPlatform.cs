@@ -16,9 +16,27 @@ sealed class LinuxLauncherPlatform : ILauncherPlatform
 
     public long GetDiskFreeSpace(string directory)
     {
-        string fullPath = Path.GetFullPath(directory);
-        string root = Path.GetPathRoot(fullPath) ?? Path.DirectorySeparatorChar.ToString();
-        return new DriveInfo(root).AvailableFreeSpace;
+        string path = Path.GetFullPath(directory);
+        while (!Directory.Exists(path) && !string.IsNullOrEmpty(path))
+        {
+            string? parent = Path.GetDirectoryName(path);
+            if (parent == null || parent == path)
+                break;
+            path = parent;
+        }
+
+        if (string.IsNullOrEmpty(path))
+            path = "/";
+
+        try
+        {
+            return new DriveInfo(path).AvailableFreeSpace;
+        }
+        catch (Exception ex)
+        {
+            LauncherLog.Warning("Failed to query disk free space for path={ResolvedPath} (original={OriginalPath}). Error={Error}", path, directory, ex.Message);
+            return 0;
+        }
     }
 
     public string? GetLastLaunchedVersion() => File.Exists(VersionFilePath) ? File.ReadAllText(VersionFilePath).Trim() : null;
