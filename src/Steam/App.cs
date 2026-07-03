@@ -90,36 +90,21 @@ static class App
             LauncherLog.Warning("Failed to set Steam identity environment variables: {Error}", ex.Message);
         }
 
-        ulong steamId64 = 0;
-        string loginUsersFile = Path.Combine(s_path, "config", "loginusers.vdf");
-        if (File.Exists(loginUsersFile))
+        if (!Api.Initialize())
         {
-            using var reader = new StreamReader(loginUsersFile);
-            var root = VdfParser.Parse(reader.ReadToEnd());
-            var users = root["users"];
-            foreach (var (key, user) in users?.Children ?? [])
-                if (user["MostRecent"]?.Value == "1")
-                {
-                    _ = ulong.TryParse(key, out steamId64);
-                    break;
-                }
+            CurrentUserStatus = new(0, Game.Status.NotOwned);
+            return;
         }
+        ulong steamId64 = Api.GetCurrentSteamId();
         if (steamId64 == 0)
         {
             CurrentUserStatus = new(0, Game.Status.NotOwned);
             return;
         }
         Game.Status status = Game.Status.NotOwned;
-        string configFile = Path.Combine(s_path, "userdata", steamId64.ToString(), "config", "localconfig.vdf");
-        if (File.Exists(configFile))
+        if (Api.IsAppOwned(appId))
         {
-            using var reader = new StreamReader(configFile);
-            var vdf = VdfParser.Parse(reader.ReadToEnd())["apptickets"]?[appId.ToString()];
-            if (vdf is not null)
-                status = Game.Status.Owned;
-        }
-        if (status == Game.Status.Owned)
-        {
+            status = Game.Status.Owned;
             GamePath = TryGetGamePath(appId, steamFolderName);
             if (configuredRootPath is not null && GamePath == configuredRootPath)
                 status = Game.Status.OwnedAndInstalled;

@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Reflection;
 
@@ -30,6 +30,9 @@ static partial class TEKSteamClient
 
     static IntPtr ResolveLibrary(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
     {
+        if (string.Equals(libraryName, "steamclient64.dll", StringComparison.Ordinal))
+            return Steam.Api.LibraryHandle;
+
         if (!IsTekSteamClientLibraryName(libraryName))
             return IntPtr.Zero;
 
