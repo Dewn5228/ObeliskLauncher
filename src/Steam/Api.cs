@@ -48,8 +48,10 @@ static class Api
 	static CancelQuery s_cancelQuery = null!;
 	/// <summary>ISteamMatchmakingServers::GetServerCount function pointer.</summary>
 	static GetServerCount s_getServerCount = null!;
-	/// <summary>ISteamUser::GetSteamID function pointer.</summary>
-	static GetSteamId s_getSteamId = null!;
+	/// <summary>ISteamUser::GetSteamID function pointer (Windows ABI: out param).</summary>
+	static GetSteamIdWin s_getSteamId = null!;
+	/// <summary>ISteamUser::GetSteamID function pointer (Linux ABI: return value).</summary>
+	static GetSteamIdLinux s_getSteamIdLinux = null!;
 	/// <summary>ISteamUtils::RunFrame function pointer.</summary>
 	static RunFrame s_runFrame = null!;
 	//Steam API function delegate definitions
@@ -69,7 +71,8 @@ static class Api
 	delegate IntPtr GetServerDetails(IntPtr pThis, IntPtr hRequest, int iServer);
 	delegate void CancelQuery(IntPtr pThis, IntPtr hRequest);
 	delegate int GetServerCount(IntPtr pThis, IntPtr hRequest);
-	delegate void GetSteamId(IntPtr pThis, out ulong steamId);
+	delegate void GetSteamIdWin(IntPtr pThis, out ulong steamId);
+	delegate ulong GetSteamIdLinux(IntPtr pThis);
 	delegate void RunFrame(IntPtr pThis);
 	// On Linux, CreateInterface is resolved dynamically via LibraryHandle.
 	// On Windows, it is P/Invoked from steamclient64.dll which gets resolved via
@@ -125,7 +128,11 @@ static class Api
 		s_getServerDetails = Marshal.GetDelegateForFunctionPointer<GetServerDetails>(Marshal.ReadIntPtr(vfptr, 0x38));
 		s_cancelQuery = Marshal.GetDelegateForFunctionPointer<CancelQuery>(Marshal.ReadIntPtr(vfptr, 0x40));
 		s_getServerCount = Marshal.GetDelegateForFunctionPointer<GetServerCount>(Marshal.ReadIntPtr(vfptr, 0x58));
-		s_getSteamId = Marshal.GetDelegateForFunctionPointer<GetSteamId>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(s_steamUser), 0x10));
+		IntPtr getSteamIdPtr = Marshal.ReadIntPtr(Marshal.ReadIntPtr(s_steamUser), 0x10);
+		if (OperatingSystem.IsLinux())
+			s_getSteamIdLinux = Marshal.GetDelegateForFunctionPointer<GetSteamIdLinux>(getSteamIdPtr);
+		else
+			s_getSteamId = Marshal.GetDelegateForFunctionPointer<GetSteamIdWin>(getSteamIdPtr);
 		s_runFrame = Marshal.GetDelegateForFunctionPointer<RunFrame>(Marshal.ReadIntPtr(Marshal.ReadIntPtr(s_steamUtils), 0x70));
 		return true;
 	}
@@ -199,6 +206,8 @@ static class Api
 	}
 	public static ulong GetCurrentSteamId()
 	{
+		if (OperatingSystem.IsLinux())
+			return s_getSteamIdLinux(s_steamUser);
 		s_getSteamId(s_steamUser, out ulong id);
 		return id;
 	}

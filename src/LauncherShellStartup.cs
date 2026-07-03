@@ -82,7 +82,9 @@ static class LauncherShellStartup
                 {
                     gameUpdateAvailable = IsGameUpdateAvailable(desc);
 
-                    gameVersionText = Locale.Get(gameUpdateAvailable ? "common.outdated" : "common.latest");
+                    gameVersionText = !gameUpdateAvailable && Settings.PreAquatica && game.Id == GameCatalog.AseGameId
+                        ? Locale.Get("common.preAquatica")
+                        : Locale.Get(gameUpdateAvailable ? "common.outdated" : "common.latest");
                     gameVersionTone = gameUpdateAvailable ? LauncherShellTone.Warning : LauncherShellTone.Success;
                 }
 
