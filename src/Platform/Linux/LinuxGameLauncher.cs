@@ -410,9 +410,23 @@ sealed class LinuxGameLauncher : IGameLauncher
 
             string key = line[..separatorIndex].Trim();
             string value = line[(separatorIndex + 1)..].Trim();
-            if (!string.IsNullOrWhiteSpace(key))
-                yield return new(key, value);
+            if (string.IsNullOrWhiteSpace(key))
+                continue;
+
+            value = TrimSurroundingQuotes(value);
+            key = TrimSurroundingQuotes(key);
+            yield return new(key, value);
         }
+    }
+
+    static string TrimSurroundingQuotes(string s)
+    {
+        if (s.Length < 2)
+            return s;
+        char first = s[0];
+        if ((first == '"' || first == '\'') && s[^1] == first)
+            return s[1..^1];
+        return s;
     }
 
     static IEnumerable<LaunchWrapper> ParseWrapperCommands(string input)
