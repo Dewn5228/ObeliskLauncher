@@ -60,7 +60,6 @@ static class App
                 }
             }
         }
-        UpdateUserStatus();
         return true;
     }
     public static void UpdateUserStatus()

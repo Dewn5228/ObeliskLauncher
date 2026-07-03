@@ -84,7 +84,7 @@ public partial class App : Application
         if (OperatingSystem.IsLinux())
             LauncherLog.Information("Skipping automatic cluster reload on Linux startup; server list will load on demand.");
         else
-            Task.Run(Cluster.ReloadLists);
+            Task.Delay(2000).ContinueWith(delegate { Cluster.ReloadLists(); });
     }
 
     static void TryScheduleWhatsNew(Window owner)

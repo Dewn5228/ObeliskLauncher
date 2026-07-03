@@ -459,7 +459,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             }
 
             await Task.Run(Mod.InitializeList);
-            await Task.Run(Cluster.ReloadLists);
+            await Task.Delay(2000).ContinueWith(delegate { Cluster.ReloadLists(); });
 
             var status = await LauncherShellStartup.GetStatusSummaryAsync(_beginInstallation);
             ApplyGameVersionStatus(status.GameVersionText, status.GameVersionTone);
