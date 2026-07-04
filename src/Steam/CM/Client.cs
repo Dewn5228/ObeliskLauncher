@@ -138,7 +138,7 @@ static class Client
                     VdfNode? depots = null;
                     foreach (var child in root.Children.Values)
                         depots ??= child["depots"];
-                    if (depots is not null && depots.Children.Count > 0)
+                    if (depots is not null && HasValidDepotContent(depots))
                         result.Add(app.AppId);
                 }
                 else if (app.HasSha && app.HasSize && app.Size > 0 && body.HasHttpHost)
@@ -158,13 +158,24 @@ static class Client
                         VdfNode? depots = null;
                         foreach (var child in root.Children.Values)
                             depots ??= child["depots"];
-                        if (depots is not null && depots.Children.Count > 0)
+                        if (depots is not null && HasValidDepotContent(depots))
                             result.Add(app.AppId);
                     }
                     catch { }
                 }
             }
         return result;
+
+        static bool HasValidDepotContent(VdfNode depots)
+        {
+            foreach (var depot in depots.Children.Values)
+            {
+                string? sizeStr = depot["manifests"]?["public"]?["size"]?.Value;
+                if (ulong.TryParse(sizeStr, out ulong size) && size >= 10)
+                    return true;
+            }
+            return false;
+        }
     }
 
     /// <summary>Represents Steam Web API CM server list response JSON object.</summary>
