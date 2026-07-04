@@ -215,10 +215,32 @@ static class Client
             {
                 if (!app.HasAppId || app.AppId != parentAppId)
                     continue;
-                if (!app.HasBuffer || app.Buffer.Length == 0)
+
+                string? vdfText = null;
+                if (app.HasBuffer && app.Buffer.Length > 0)
+                {
+                    vdfText = Encoding.UTF8.GetString(app.Buffer.ToByteArray());
+                }
+                else if (app.HasSha && app.HasSize && app.Size > 0 && body.HasHttpHost)
+                {
+                    string sha = Convert.ToHexStringLower(app.Sha.ToByteArray());
+                    string url = $"http://{body.HttpHost}/appinfo/{app.AppId}/sha/{sha}.txt.gz";
+                    try
+                    {
+                        using var httpClient = new System.Net.Http.HttpClient();
+                        httpClient.Timeout = TimeSpan.FromSeconds(15);
+                        byte[] compressed = httpClient.GetByteArrayAsync(url).GetAwaiter().GetResult();
+                        using var compressedStream = new MemoryStream(compressed);
+                        using var gzipStream = new System.IO.Compression.GZipStream(compressedStream, System.IO.Compression.CompressionMode.Decompress);
+                        using var reader = new StreamReader(gzipStream, Encoding.UTF8);
+                        vdfText = reader.ReadToEnd();
+                    }
+                    catch { }
+                }
+
+                if (vdfText is null)
                     continue;
 
-                string vdfText = Encoding.UTF8.GetString(app.Buffer.ToByteArray());
                 var root = VdfParser.Parse(vdfText);
                 foreach (var child in root.Children.Values)
                 {
@@ -234,12 +256,15 @@ static class Client
             return new List<(uint, string, bool)>();
 
         var dlcAppIds = new List<uint>();
-        foreach (string part in dlcListText.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+        foreach (string part in dlcListText.Split([' ', ','], StringSplitOptions.RemoveEmptyEntries))
             if (uint.TryParse(part, out uint dlcAppId) && dlcAppId != 0)
                 dlcAppIds.Add(dlcAppId);
 
         if (dlcAppIds.Count == 0)
+        {
+            LauncherLog.Warning("GetDlcCatalog: failed to parse any DLC app IDs from listofdlc");
             return new List<(uint, string, bool)>();
+        }
 
         var dlcTokenMessage = new Message<PicsAccessTokenRequest>(MessageType.PicsAccessTokenRequest);
         dlcTokenMessage.Body.AppIds.AddRange(dlcAppIds);
@@ -324,6 +349,10 @@ static class Client
                 }
 
                 result.Add((app.AppId, name, hasDepot));
+                if (!hasDepot)
+                    LauncherLog.Warning("GetDlcCatalog: DLC {AppId} resolved as name=\"{Name}\" hasDepot=false", app.AppId, name);
+                else
+                    LauncherLog.Debug("GetDlcCatalog: DLC {AppId} resolved as name=\"{Name}\" hasDepot=true", app.AppId, name);
             }
 
         return result;

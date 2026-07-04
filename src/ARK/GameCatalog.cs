@@ -453,28 +453,45 @@ static class GameCatalog
 
     static async Task<bool> SyncAsaCatalogAsync()
     {
+        LauncherLog.Debug("SyncAsaCatalogAsync: starting");
         try
         {
             GameCatalogEntry asaSource;
             lock (s_stateSync)
             {
                 if (!s_state.ByGameId.TryGetValue(AsaGameId, out asaSource!))
+                {
+                    LauncherLog.Warning("SyncAsaCatalogAsync: ASA game entry not found in catalog state");
                     return false;
+                }
             }
 
             var dlcEntries = Client.GetDlcCatalog(AsaSteamAppId);
-            if (dlcEntries is null || dlcEntries.Count == 0)
+            if (dlcEntries is null)
+            {
+                LauncherLog.Warning("SyncAsaCatalogAsync: GetDlcCatalog returned null");
                 return false;
+            }
+            if (dlcEntries.Count == 0)
+            {
+                LauncherLog.Warning("SyncAsaCatalogAsync: GetDlcCatalog returned empty list");
+                return false;
+            }
+            LauncherLog.Debug("SyncAsaCatalogAsync: got {Count} DLC entries from PICS", dlcEntries.Count);
 
             var runtimeNames = new Dictionary<string, string>();
             var dlcCatalog = new List<CatalogDlc>();
 
+            int skipped = 0;
             foreach (var (appId, name, hasDepot) in dlcEntries)
             {
                 uint depotId = hasDepot ? appId : 0u;
+                if (depotId == 0)
+                    skipped++;
                 runtimeNames[appId.ToString(CultureInfo.InvariantCulture)] = name;
                 dlcCatalog.Add(new CatalogDlc(name, appId, depotId, false, false, "Mod", null, null, null));
             }
+            LauncherLog.Debug("SyncAsaCatalogAsync: {Total} DLCs ({Skipped} skipped, depotId=0)", dlcCatalog.Count, skipped);
 
             var acceptedDirs = asaSource.AcceptedServerGameDirs.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
             if (acceptedDirs.Count == 0)
@@ -509,14 +526,19 @@ static class GameCatalog
             {
                 string currentText = await File.ReadAllTextAsync(AutoCatalogPath).ConfigureAwait(false);
                 if (string.Equals(currentText, serialized, StringComparison.Ordinal))
+                {
+                    LauncherLog.Debug("SyncAsaCatalogAsync: file unchanged, skipping write");
                     return false;
+                }
             }
 
+            LauncherLog.Debug("SyncAsaCatalogAsync: writing {Path} ({Count} DLCs)", AutoCatalogPath, dlcCatalog.Count);
             await File.WriteAllTextAsync(AutoCatalogPath, serialized).ConfigureAwait(false);
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            LauncherLog.Warning(ex, "SyncAsaCatalogAsync: exception");
             return false;
         }
     }
