@@ -2,7 +2,6 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.Json.Serialization;
-using System.Text.Json.Nodes;
 using ObeliskLauncher.Steam.CM;
 
 namespace ObeliskLauncher.ARK;
@@ -59,7 +58,7 @@ static class GameCatalog
     const string RemoteCatalogHashFileName = "game-catalog.remote.sha256";
     const string RemoteCatalogSignatureFileName = "game-catalog.remote.sig";
     const string SyncConfigFileName = "catalog-sync.json";
-    const string AsaSettingsUrl = "https://nuclearist.ru/static/tek-gr-settings.json";
+    const uint AsaSteamAppId = 2399830;
 
     static readonly object s_stateSync = new();
 
@@ -456,18 +455,6 @@ static class GameCatalog
     {
         try
         {
-            string? payload = await Downloader.DownloadStringAsync([AsaSettingsUrl]).ConfigureAwait(false);
-            if (string.IsNullOrWhiteSpace(payload))
-                return false;
-
-            JsonNode? parsed = JsonNode.Parse(payload);
-            if (parsed is not JsonObject settings)
-                return false;
-            if (settings["dlc"] is not JsonObject dlcObject || dlcObject.Count == 0)
-                return false;
-
-            uint steamAppId = GetUIntOrDefault(settings["app_id"], 2399830);
-
             GameCatalogEntry asaSource;
             lock (s_stateSync)
             {
@@ -475,47 +462,19 @@ static class GameCatalog
                     return false;
             }
 
+            var dlcEntries = Client.GetDlcCatalog(AsaSteamAppId);
+            if (dlcEntries is null || dlcEntries.Count == 0)
+                return false;
+
             var runtimeNames = new Dictionary<string, string>();
             var dlcCatalog = new List<CatalogDlc>();
 
-            var dlcEntries = new List<(uint appId, string name)>();
-            foreach ((string appIdText, JsonNode? nameNode) in dlcObject.OrderBy(static x => x.Key, StringComparer.Ordinal))
+            foreach (var (appId, name, hasDepot) in dlcEntries)
             {
-                if (!uint.TryParse(appIdText, out uint dlcAppId) || dlcAppId == 0)
-                    continue;
-
-                string name = nameNode?.GetValue<string>()?.Trim() ?? string.Empty;
-                if (string.IsNullOrWhiteSpace(name))
-                    name = $"Unknown DLC {dlcAppId}";
-
-                dlcEntries.Add((dlcAppId, name));
+                uint depotId = hasDepot ? appId : 0u;
+                runtimeNames[appId.ToString(CultureInfo.InvariantCulture)] = name;
+                dlcCatalog.Add(new CatalogDlc(name, appId, depotId, false, false, "Mod", null, null, null));
             }
-
-            HashSet<uint>? appsWithDepots = null;
-            if (dlcEntries.Count > 0)
-            {
-                try { appsWithDepots = Client.GetAppsWithDepots([.. dlcEntries.Select(static e => e.appId)]); }
-                catch { }
-            }
-
-            var existingDepotIds = asaSource.DlcCatalog
-              .GroupBy(static dlc => dlc.AppId)
-              .ToDictionary(static group => group.Key, static group => group.Last().DepotId);
-
-            foreach ((uint dlcAppId, string name) in dlcEntries)
-            {
-                uint depotId;
-                if (appsWithDepots is null)
-                    depotId = existingDepotIds.GetValueOrDefault(dlcAppId, 0u);
-                else
-                    depotId = appsWithDepots.Contains(dlcAppId) ? dlcAppId : 0u;
-
-                runtimeNames[dlcAppId.ToString(CultureInfo.InvariantCulture)] = name;
-                dlcCatalog.Add(new CatalogDlc(name, dlcAppId, depotId, false, false, "Mod", null, null, null));
-            }
-
-            if (dlcCatalog.Count == 0)
-                return false;
 
             var acceptedDirs = asaSource.AcceptedServerGameDirs.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
             if (acceptedDirs.Count == 0)
@@ -527,8 +486,8 @@ static class GameCatalog
             CatalogGame asaGame = new(
               AsaGameId,
               asaSource.DisplayName,
-              steamAppId,
-              steamAppId,
+              AsaSteamAppId,
+              AsaSteamAppId,
               asaSource.MainDepotId,
               asaSource.WorkshopDepotId,
               asaSource.ServerGameDir,
@@ -560,23 +519,6 @@ static class GameCatalog
         {
             return false;
         }
-    }
-
-    static uint GetUIntOrDefault(JsonNode? node, uint fallback)
-    {
-        if (node is JsonValue value)
-        {
-            if (value.TryGetValue(out uint uintValue))
-                return uintValue;
-            if (value.TryGetValue(out int intValue) && intValue > 0)
-                return (uint)intValue;
-            if (value.TryGetValue(out long longValue) && longValue > 0 && longValue <= uint.MaxValue)
-                return (uint)longValue;
-            if (value.TryGetValue(out string? text) && uint.TryParse(text, out uint parsed))
-                return parsed;
-        }
-
-        return fallback;
     }
 
     static string? BuildStartupNotice(CatalogSyncResult syncResult)

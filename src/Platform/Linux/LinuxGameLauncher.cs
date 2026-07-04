@@ -597,7 +597,7 @@ sealed class LinuxGameLauncher : IGameLauncher
         }
         catch (Exception ex)
         {
-            LauncherLog.Warning("Failed to inspect launch process outcome. Reason={Reason}", ex.Message);
+            LauncherLog.Warning(ex, "Failed to inspect launch process outcome");
         }
         finally
         {
@@ -628,7 +628,7 @@ sealed class LinuxGameLauncher : IGameLauncher
         }
         catch (Exception ex)
         {
-            LauncherLog.Warning("Failed to persist resolved Linux launch tool. GameId={GameId}, ToolId={ToolId}, Reason={Reason}", context.GameId, context.LaunchTool.Id, ex.Message);
+            LauncherLog.Warning(ex, "Failed to persist resolved Linux launch tool. GameId={GameId}, ToolId={ToolId}", context.GameId, context.LaunchTool.Id);
         }
     }
 
@@ -681,7 +681,7 @@ sealed class LinuxGameLauncher : IGameLauncher
         }
         catch (Exception ex)
         {
-            LauncherLog.Warning("Failed to enable child output capture: {Reason}", ex.Message);
+            LauncherLog.Warning(ex, "Failed to enable child output capture");
         }
     }
 

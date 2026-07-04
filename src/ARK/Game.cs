@@ -67,7 +67,7 @@ static class Game
             }
             catch (Exception ex)
             {
-                LauncherLog.Warning("Failed to terminate game process. ProcessId={ProcessId}, Reason={Reason}", process.Id, ex.Message);
+                LauncherLog.Warning(ex, "Failed to terminate game process. ProcessId={ProcessId}", process.Id);
             }
             finally
             {

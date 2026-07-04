@@ -57,6 +57,8 @@ static class LauncherLog
 
     public static void Warning(string messageTemplate, params object?[] args) => Log.Warning(messageTemplate, args);
 
+    public static void Warning(Exception ex, string messageTemplate, params object?[] args) => Log.Warning(ex, messageTemplate, args);
+
     public static void Error(string messageTemplate, params object?[] args) => Log.Error(messageTemplate, args);
 
     public static void Error(Exception ex, string messageTemplate, params object?[] args) => Log.Error(ex, messageTemplate, args);

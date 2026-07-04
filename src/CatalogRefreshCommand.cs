@@ -6,11 +6,6 @@ namespace ObeliskLauncher;
 
 static class CatalogRefreshCommand
 {
-    static readonly string[] s_defaultAsaSettingsUrls =
-    [
-      "https://nuclearist.ru/static/tek-gr-settings.json"
-    ];
-
     static readonly Dictionary<string, JsonObject> s_defaultGameTemplates = new(StringComparer.OrdinalIgnoreCase)
     {
         ["ASE"] = new()
@@ -225,8 +220,6 @@ static class CatalogRefreshCommand
     {
         string catalogPath = Path.Combine(Environment.CurrentDirectory, "assets", "catalog", "game-catalog.json");
         bool dryRun = false;
-        var asaSettingsUrls = new List<string>();
-        bool useAsaSettings = true;
 
         for (int i = 0; i < args.Length; i++)
         {
@@ -240,18 +233,6 @@ static class CatalogRefreshCommand
                 continue;
             }
 
-            if (string.Equals(arg, "--asa-settings-url", StringComparison.OrdinalIgnoreCase))
-            {
-                asaSettingsUrls.Add(ReadValue(args, ref i, "--asa-settings-url"));
-                continue;
-            }
-
-            if (string.Equals(arg, "--skip-asa-settings", StringComparison.OrdinalIgnoreCase))
-            {
-                useAsaSettings = false;
-                continue;
-            }
-
             if (string.Equals(arg, "--dry-run", StringComparison.OrdinalIgnoreCase))
             {
                 dryRun = true;
@@ -259,11 +240,7 @@ static class CatalogRefreshCommand
             }
         }
 
-        return new(
-          catalogPath,
-          dryRun,
-          useAsaSettings,
-          asaSettingsUrls.Count == 0 ? s_defaultAsaSettingsUrls : [.. asaSettingsUrls]);
+        return new(catalogPath, dryRun);
     }
 
     static string ReadValue(string[] args, ref int index, string optionName)
@@ -276,55 +253,21 @@ static class CatalogRefreshCommand
 
     static void RefreshCatalog(RefreshOptions options)
     {
-        JsonNode? asaSettingsNode = null;
-        if (options.UseAsaSettings)
-            asaSettingsNode = DownloadOptionalJson(options.AsaSettingsUrls, "ASA settings");
-
         JsonObject catalog = LoadOrCreateCatalog(options.CatalogPath);
 
         JsonArray games = catalog["games"] as JsonArray
           ?? throw new InvalidOperationException("Catalog has no valid 'games' array.");
 
         ReplaceGame(games, (JsonObject)s_defaultGameTemplates["ASE"].DeepClone());
-        int replacedAsaCount = ReplaceAsaFromTekGrSettings(games, asaSettingsNode);
+        int replacedAsaCount = PopulateAsaDlcCatalog(games);
 
-        Console.WriteLine($"updated games={games.Count} replaced_asa_dlc={replacedAsaCount}");
+        Console.WriteLine($"updated games={games.Count} asa_dlc={replacedAsaCount}");
         if (options.DryRun)
             return;
 
         string outputPath = Path.GetFullPath(options.CatalogPath);
         Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
         File.WriteAllText(outputPath, catalog.ToJsonString(new JsonSerializerOptions { WriteIndented = true }) + Environment.NewLine);
-    }
-
-    static JsonNode? DownloadOptionalJson(IReadOnlyList<string> urls, string sourceName)
-    {
-        if (urls.Count == 0)
-            return null;
-
-        try
-        {
-            string? payload = Downloader.DownloadStringAsync([.. urls]).GetAwaiter().GetResult();
-            if (string.IsNullOrWhiteSpace(payload))
-            {
-                Console.Error.WriteLine($"warning: {sourceName} download returned empty payload");
-                return null;
-            }
-
-            JsonNode? parsed = JsonNode.Parse(payload);
-            if (parsed is null)
-            {
-                Console.Error.WriteLine($"warning: {sourceName} payload is empty");
-                return null;
-            }
-
-            return parsed;
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"warning: failed to download {sourceName}: {ex.Message}");
-            return null;
-        }
     }
 
     static JsonObject LoadOrCreateCatalog(string catalogPath)
@@ -351,20 +294,8 @@ static class CatalogRefreshCommand
         };
     }
 
-    static int ReplaceAsaFromTekGrSettings(JsonArray games, JsonNode? asaSettingsNode)
+    static int PopulateAsaDlcCatalog(JsonArray games)
     {
-        if (asaSettingsNode is not JsonObject settings)
-            return 0;
-
-        if (!TryGetUInt(settings["app_id"], out uint appId)
-          && !TryGetUInt(settings["appId"], out appId)
-          && !TryGetUInt(settings["id"], out appId))
-            return 0;
-
-        JsonObject? dlcNode = settings["dlc"] as JsonObject;
-        if (dlcNode is null || dlcNode.Count == 0)
-            return 0;
-
         JsonObject? asaGame = games
           .OfType<JsonObject>()
           .FirstOrDefault(game => string.Equals(game["id"]?.GetValue<string>(), "ASA", StringComparison.OrdinalIgnoreCase));
@@ -375,60 +306,25 @@ static class CatalogRefreshCommand
             games.Add(asaGame);
         }
 
-        asaGame["steamAppId"] = appId;
-        asaGame["runtimeAppId"] = appId;
-
-        var existingDepotIds = new Dictionary<uint, uint>();
-        if (asaGame["dlcCatalog"] is JsonArray existingDlcCatalog)
-            foreach (JsonNode? item in existingDlcCatalog)
-            {
-                if (item is not JsonObject obj)
-                    continue;
-                if (!TryGetUInt(obj["appId"], out uint existingAppId) || existingAppId == 0)
-                    continue;
-                if (!TryGetUInt(obj["depotId"], out uint existingDepotId))
-                    continue;
-                existingDepotIds[existingAppId] = existingDepotId;
-            }
+        var dlcEntries = Client.GetDlcCatalog(2399830);
+        if (dlcEntries is null || dlcEntries.Count == 0)
+        {
+            asaGame["runtimeDlcDisplayNames"] = new JsonObject();
+            asaGame["dlcCatalog"] = new JsonArray();
+            return 0;
+        }
 
         var runtimeNames = new JsonObject();
         var dlcCatalog = new JsonArray();
 
-        var dlcEntries = new List<(uint appId, string name)>();
-        foreach ((string appIdText, JsonNode? nameNode) in dlcNode.OrderBy(static x => x.Key, StringComparer.Ordinal))
+        foreach (var (appId, name, hasDepot) in dlcEntries)
         {
-            if (!uint.TryParse(appIdText, out uint dlcAppId) || dlcAppId == 0)
-                continue;
-
-            string? name = nameNode?.GetValue<string>()?.Trim();
-            if (string.IsNullOrWhiteSpace(name))
-                name = $"Unknown DLC {dlcAppId}";
-
-            dlcEntries.Add((dlcAppId, name));
-        }
-
-        HashSet<uint>? appsWithDepots = null;
-        if (dlcEntries.Count > 0)
-        {
-            try { appsWithDepots = Client.GetAppsWithDepots([.. dlcEntries.Select(static e => e.appId)]); }
-            catch { }
-        }
-
-        foreach ((uint dlcAppId, string name) in dlcEntries)
-        {
-            uint depotId;
-            if (appsWithDepots is null)
-            {
-                depotId = existingDepotIds.GetValueOrDefault(dlcAppId, 0u);
-            }
-            else
-                depotId = appsWithDepots.Contains(dlcAppId) ? dlcAppId : 0u;
-
-            runtimeNames[dlcAppId.ToString(CultureInfo.InvariantCulture)] = name;
+            uint depotId = hasDepot ? appId : 0u;
+            runtimeNames[appId.ToString(CultureInfo.InvariantCulture)] = name;
             dlcCatalog.Add(new JsonObject
             {
                 ["name"] = name,
-                ["appId"] = dlcAppId,
+                ["appId"] = appId,
                 ["depotId"] = depotId,
                 ["isModContent"] = false,
                 ["hasPPostfix"] = false,
@@ -463,47 +359,7 @@ static class CatalogRefreshCommand
         games.Add(replacement);
     }
 
-    static bool TryGetUInt(JsonNode? node, out uint value)
-    {
-        value = 0;
-        if (node is null)
-            return false;
-
-        if (node is JsonValue jsonValue)
-        {
-            if (jsonValue.TryGetValue(out uint uintValue))
-            {
-                value = uintValue;
-                return true;
-            }
-
-            if (jsonValue.TryGetValue(out int intValue) && intValue > 0)
-            {
-                value = (uint)intValue;
-                return true;
-            }
-
-            if (jsonValue.TryGetValue(out long longValue) && longValue > 0 && longValue <= uint.MaxValue)
-            {
-                value = (uint)longValue;
-                return true;
-            }
-
-            if (jsonValue.TryGetValue(out string? strValue)
-              && !string.IsNullOrWhiteSpace(strValue)
-              && uint.TryParse(strValue, out uint parsed))
-            {
-                value = parsed;
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     readonly record struct RefreshOptions(
       string CatalogPath,
-      bool DryRun,
-      bool UseAsaSettings,
-      IReadOnlyList<string> AsaSettingsUrls);
+      bool DryRun);
 }

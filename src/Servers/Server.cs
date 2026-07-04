@@ -223,7 +223,7 @@ public class Server
         }
         catch (Exception ex)
         {
-            LauncherLog.Warning("Server query error for {Address}: {Error}", Address, ex.Message);
+            LauncherLog.Warning(ex, "Server query error for {Address}", Address);
             return false;
         }
     }
@@ -236,11 +236,10 @@ public class Server
         }
         catch (Exception ex)
         {
-            LauncherLog.Warning("Falling back to raw map name for {Address}. ActiveGame={GameId}, MapCode={MapCode}, Reason={Reason}",
+            LauncherLog.Warning(ex, "Falling back to raw map name for {Address}. ActiveGame={GameId}, MapCode={MapCode}",
                 Address,
                 ActiveGameManager.Current.Id,
-                Map,
-                ex.Message);
+                Map);
             return fallback;
         }
     }

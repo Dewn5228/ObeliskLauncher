@@ -165,17 +165,168 @@ static class Client
                 }
             }
         return result;
+    }
 
-        static bool HasValidDepotContent(VdfNode depots)
+    static bool HasValidDepotContent(VdfNode depots)
+    {
+        foreach (var depot in depots.Children.Values)
         {
-            foreach (var depot in depots.Children.Values)
-            {
-                string? sizeStr = depot["manifests"]?["public"]?["size"]?.Value;
-                if (ulong.TryParse(sizeStr, out ulong size) && size >= 10)
-                    return true;
-            }
-            return false;
+            string? sizeStr = depot["manifests"]?["public"]?["size"]?.Value;
+            if (ulong.TryParse(sizeStr, out ulong size) && size >= 10)
+                return true;
         }
+        return false;
+    }
+
+    /// <summary>Queries a parent app via PICS to discover its DLC catalog.</summary>
+    /// <param name="parentAppId">Steam app ID of the parent game.</param>
+    /// <returns>
+    ///   A list of DLC entries with app ID, display name, and depot validity;
+    ///   returns <see langword="null"/> if the request failed.
+    /// </returns>
+    public static List<(uint AppId, string Name, bool HasDepot)>? GetDlcCatalog(uint parentAppId)
+    {
+        if (!WebSocketConnection.IsLoggedOn)
+            try { WebSocketConnection.Connect(); }
+            catch { return null; }
+
+        var tokenMessage = new Message<PicsAccessTokenRequest>(MessageType.PicsAccessTokenRequest);
+        tokenMessage.Body.AppIds.Add(parentAppId);
+        var tokenResponse = WebSocketConnection.GetMessage<PicsAccessTokenResponse>(tokenMessage, MessageType.PicsAccessTokenResponse);
+
+        ulong parentToken = 0;
+        if (tokenResponse is not null)
+            foreach (var t in tokenResponse.Body.AppTokens)
+                if (t.HasAppId && t.AppId == parentAppId && t.HasAccessToken)
+                    parentToken = t.AccessToken;
+
+        var infoMessage = new Message<PicsProductInfoRequest>(MessageType.PicsProductInfoRequest);
+        infoMessage.Body.Apps.Add(new PicsProductInfoRequest.Types.App { AppId = parentAppId, AccessToken = parentToken });
+
+        var responses = WebSocketConnection.GetMessages<PicsProductInfoResponse>(
+            infoMessage, MessageType.PicsProductInfoResponse,
+            body => !body.ResponsePending);
+        if (responses is null)
+            return null;
+
+        string? dlcListText = null;
+        foreach (var body in responses)
+            foreach (var app in body.Apps)
+            {
+                if (!app.HasAppId || app.AppId != parentAppId)
+                    continue;
+                if (!app.HasBuffer || app.Buffer.Length == 0)
+                    continue;
+
+                string vdfText = Encoding.UTF8.GetString(app.Buffer.ToByteArray());
+                var root = VdfParser.Parse(vdfText);
+                foreach (var child in root.Children.Values)
+                {
+                    dlcListText = child["extended"]?["listofdlc"]?.Value;
+                    if (dlcListText is not null)
+                        break;
+                }
+                if (dlcListText is not null)
+                    break;
+            }
+
+        if (string.IsNullOrWhiteSpace(dlcListText))
+            return new List<(uint, string, bool)>();
+
+        var dlcAppIds = new List<uint>();
+        foreach (string part in dlcListText.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+            if (uint.TryParse(part, out uint dlcAppId) && dlcAppId != 0)
+                dlcAppIds.Add(dlcAppId);
+
+        if (dlcAppIds.Count == 0)
+            return new List<(uint, string, bool)>();
+
+        var dlcTokenMessage = new Message<PicsAccessTokenRequest>(MessageType.PicsAccessTokenRequest);
+        dlcTokenMessage.Body.AppIds.AddRange(dlcAppIds);
+        var dlcTokenResponse = WebSocketConnection.GetMessage<PicsAccessTokenResponse>(dlcTokenMessage, MessageType.PicsAccessTokenResponse);
+
+        var tokenMap = new Dictionary<uint, ulong>();
+        if (dlcTokenResponse is not null)
+            foreach (var token in dlcTokenResponse.Body.AppTokens)
+                if (token.HasAppId && token.HasAccessToken)
+                    tokenMap[token.AppId] = token.AccessToken;
+
+        var dlcInfoMessage = new Message<PicsProductInfoRequest>(MessageType.PicsProductInfoRequest);
+        foreach (uint appId in dlcAppIds)
+        {
+            var entry = new PicsProductInfoRequest.Types.App { AppId = appId };
+            if (tokenMap.TryGetValue(appId, out ulong dlcToken))
+                entry.AccessToken = dlcToken;
+            dlcInfoMessage.Body.Apps.Add(entry);
+        }
+
+        var dlcResponses = WebSocketConnection.GetMessages<PicsProductInfoResponse>(
+            dlcInfoMessage, MessageType.PicsProductInfoResponse,
+            body => !body.ResponsePending);
+        if (dlcResponses is null)
+            return null;
+
+        var result = new List<(uint AppId, string Name, bool HasDepot)>();
+        foreach (var body in dlcResponses)
+            foreach (var app in body.Apps)
+            {
+                if (!app.HasAppId)
+                    continue;
+
+                string name = $"Unknown DLC {app.AppId}";
+                bool hasDepot = false;
+
+                if (app.HasBuffer && app.Buffer.Length > 0)
+                {
+                    string vdfText = Encoding.UTF8.GetString(app.Buffer.ToByteArray());
+                    var root = VdfParser.Parse(vdfText);
+                    foreach (var child in root.Children.Values)
+                    {
+                        string? commonName = child["common"]?["name"]?.Value;
+                        if (!string.IsNullOrWhiteSpace(commonName))
+                            name = commonName;
+
+                        var depots = child["depots"];
+                        if (depots is not null && HasValidDepotContent(depots))
+                            hasDepot = true;
+
+                        break;
+                    }
+                }
+                else if (app.HasSha && app.HasSize && app.Size > 0 && body.HasHttpHost)
+                {
+                    string sha = Convert.ToHexStringLower(app.Sha.ToByteArray());
+                    string url = $"http://{body.HttpHost}/appinfo/{app.AppId}/sha/{sha}.txt.gz";
+                    try
+                    {
+                        using var httpClient = new System.Net.Http.HttpClient();
+                        httpClient.Timeout = TimeSpan.FromSeconds(15);
+                        byte[] compressed = httpClient.GetByteArrayAsync(url).GetAwaiter().GetResult();
+                        using var compressedStream = new MemoryStream(compressed);
+                        using var gzipStream = new System.IO.Compression.GZipStream(compressedStream, System.IO.Compression.CompressionMode.Decompress);
+                        using var reader = new StreamReader(gzipStream, Encoding.UTF8);
+                        string vdfText = reader.ReadToEnd();
+                        var root = VdfParser.Parse(vdfText);
+                        foreach (var child in root.Children.Values)
+                        {
+                            string? commonName = child["common"]?["name"]?.Value;
+                            if (!string.IsNullOrWhiteSpace(commonName))
+                                name = commonName;
+
+                            var depots = child["depots"];
+                            if (depots is not null && HasValidDepotContent(depots))
+                                hasDepot = true;
+
+                            break;
+                        }
+                    }
+                    catch { }
+                }
+
+                result.Add((app.AppId, name, hasDepot));
+            }
+
+        return result;
     }
 
     /// <summary>Represents Steam Web API CM server list response JSON object.</summary>

@@ -263,7 +263,7 @@ sealed class LinuxTekSteamClientBootstrap : ITekSteamClientBootstrap
         }
         catch (Exception ex)
         {
-            LauncherLog.Warning("LinuxTekSteamClientBootstrap failed deleting legacy Windows-named library artifact; continuing while ignoring it. Path={LibraryPath}. Error={Error}", legacyPath, ex.Message);
+            LauncherLog.Warning(ex, "LinuxTekSteamClientBootstrap failed deleting legacy Windows-named library artifact; continuing while ignoring it. Path={LibraryPath}", legacyPath);
         }
     }
 

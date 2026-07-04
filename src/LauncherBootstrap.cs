@@ -47,7 +47,7 @@ static class LauncherBootstrap
             }
             catch (Exception ex)
             {
-                LauncherLog.Warning("Failed to delete stale old executable: {OldExePath}. {Error}", oldExePath, ex.Message);
+                LauncherLog.Warning(ex, "Failed to delete stale old executable: {OldExePath}", oldExePath);
             }
 
         LauncherLog.Information("InitializeCore completed successfully");

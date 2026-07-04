@@ -86,7 +86,7 @@ static class App
         }
         catch (Exception ex)
         {
-            LauncherLog.Warning("Failed to set Steam identity environment variables: {Error}", ex.Message);
+            LauncherLog.Warning(ex, "Failed to set Steam identity environment variables");
         }
 
         if (!Api.Initialize())

@@ -46,7 +46,7 @@ static class UdpClient
         }
         catch (Exception ex)
         {
-            LauncherLog.Warning("UdpClient receive loop failed. Error={Error}", ex.Message);
+            LauncherLog.Warning(ex, "UdpClient receive loop failed");
         }
     }
     /// <summary>Releases the underlying socket and cancels all its send and receive operations.</summary>
@@ -63,7 +63,7 @@ static class UdpClient
             try { s_socket.SendTo(request, endpoint); }
             catch (Exception ex)
             {
-                LauncherLog.Warning("UdpClient send to {Endpoint} failed. Error={Error}", endpoint, ex.Message);
+                LauncherLog.Warning(ex, "UdpClient send to {Endpoint} failed", endpoint);
                 return null;
             }
         if (!completionSource.Task.Wait(2000))

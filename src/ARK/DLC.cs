@@ -63,8 +63,8 @@ class DLC
             }
             catch (Exception ex)
             {
-                LauncherLog.Warning("DLC manifest query failed for AppId={AppId}, DepotId={DepotId}. Error={Error}",
-                    ActiveGameManager.Current.SteamAppId, DepotId, ex.Message);
+                LauncherLog.Warning(ex, "DLC manifest query failed for AppId={AppId}, DepotId={DepotId}",
+                    ActiveGameManager.Current.SteamAppId, DepotId);
             }
         }
 
@@ -87,7 +87,7 @@ class DLC
         }
         catch (Exception ex)
         {
-            LauncherLog.Warning("DLC manifest file parse failed for DepotId={DepotId}. Error={Error}", DepotId, ex.Message);
+            LauncherLog.Warning(ex, "DLC manifest file parse failed for DepotId={DepotId}", DepotId);
             return false;
         }
     }
@@ -257,7 +257,7 @@ class DLC
         }
         catch (Exception ex)
         {
-            LauncherLog.Warning("DLC delete: failed to delete directory. Name={Name}, Kind={Kind}, Path={Path}, Error={Error}", Name, kind, path, ex.Message);
+            LauncherLog.Warning(ex, "DLC delete: failed to delete directory. Name={Name}, Kind={Kind}, Path={Path}", Name, kind, path);
             throw;
         }
     }

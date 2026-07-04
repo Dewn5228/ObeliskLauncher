@@ -34,7 +34,7 @@ sealed class LinuxLauncherPlatform : ILauncherPlatform
         }
         catch (Exception ex)
         {
-            LauncherLog.Warning("Failed to query disk free space for path={ResolvedPath} (original={OriginalPath}). Error={Error}", path, directory, ex.Message);
+            LauncherLog.Warning(ex, "Failed to query disk free space for path={ResolvedPath} (original={OriginalPath})", path, directory);
             return 0;
         }
     }
