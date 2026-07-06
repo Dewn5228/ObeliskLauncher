@@ -9,11 +9,11 @@ sealed class AvaloniaDialogWindow : Window
 {
     public bool? DialogResultValue { get; private set; }
 
-    public AvaloniaDialogWindow(string title, string message, bool twoOptions, string? linkLabel = null, string? linkUrl = null)
+    public AvaloniaDialogWindow(string title, string message, bool twoOptions, string? linkLabel = null, string? linkUrl = null, string? secondaryLinkLabel = null, Action? secondaryLinkAction = null)
     {
         Title = title;
         Width = 560;
-        Height = linkUrl is null ? 240 : 280;
+        Height = linkUrl is null && secondaryLinkLabel is null ? 240 : 280;
         MinWidth = 420;
         CanResize = false;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -24,6 +24,13 @@ sealed class AvaloniaDialogWindow : Window
             HorizontalAlignment = HorizontalAlignment.Right,
             Spacing = 10
         };
+
+        if (secondaryLinkLabel is not null && secondaryLinkAction is not null)
+        {
+            var secButton = new Button { Content = secondaryLinkLabel };
+            secButton.Click += (_, _) => secondaryLinkAction();
+            actions.Children.Add(secButton);
+        }
 
         if (linkUrl is not null)
         {
