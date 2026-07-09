@@ -59,6 +59,19 @@ sealed class LinuxTekSteamClientBootstrap : ITekSteamClientBootstrap
             return new(false, false, appManagerError, null, null, null);
         }
 
+        TEKSteamClient.CmClient cm;
+        try
+        {
+            cm = new TEKSteamClient.CmClient(ctx);
+        }
+        catch (Exception ex)
+        {
+            LauncherLog.Error(ex, "LinuxTekSteamClientBootstrap failed creating CmClient.");
+            appMng.Dispose();
+            ctx.Dispose();
+            return new(false, false, ex.Message, null, null, null);
+        }
+
         string modsDir = Path.Combine(gamePath, "Mods");
         try
         {
@@ -74,6 +87,7 @@ sealed class LinuxTekSteamClientBootstrap : ITekSteamClientBootstrap
                 ? $"Failed to set workshop directory to '{modsDir}'."
                 : workshopResult.Message;
             LauncherLog.Error("LinuxTekSteamClientBootstrap failed setting workshop dir. Error={Error}", workshopError);
+            cm.Dispose();
             appMng.Dispose();
             ctx.Dispose();
             return new(false, false, workshopError, null, null, null);
@@ -90,7 +104,62 @@ sealed class LinuxTekSteamClientBootstrap : ITekSteamClientBootstrap
         if (mirrorS3Result.Uri != 0)
             Marshal.FreeHGlobal(mirrorS3Result.Uri);
 
-        LauncherServices.TekSteamClient.Initialize(ctx, appMng);
+        LauncherServices.TekSteamClient.Initialize(ctx, appMng, cm);
+        return new(true, false, null, null, null, warningMessage);
+    }
+
+    public async Task<TekSteamClientBootstrapResult> SwitchGameAsync(string gamePath)
+    {
+        TEKSteamClient.LibCtx? ctx = LauncherServices.TekSteamClient.Context;
+        if (ctx is null || !LauncherServices.TekSteamClient.IsLibraryLoaded)
+            return await InitializeAsync(gamePath);
+
+        LauncherServices.TekSteamClient.CloseAppManager();
+
+        var appMng = new TEKSteamClient.AppManager(ctx, gamePath);
+        if (appMng.IsInvalid)
+        {
+            string error = string.IsNullOrWhiteSpace(appMng.CreationError.Message)
+                ? "tek-steamclient AppManager creation failed with no additional details."
+                : appMng.CreationError.Message;
+            LauncherLog.Error("LinuxTekSteamClientBootstrap.SwitchGameAsync failed creating AppManager. Error={Error}", error);
+            appMng.Dispose();
+            return new(false, false, error, null, null, null);
+        }
+
+        string modsDir = Path.Combine(gamePath, "Mods");
+        try
+        {
+            if (!Directory.Exists(modsDir))
+                Directory.CreateDirectory(modsDir);
+        }
+        catch { }
+
+        var workshopResult = appMng.SetWorkshopDir(modsDir);
+        if (!workshopResult.Success)
+        {
+            string workshopError = string.IsNullOrWhiteSpace(workshopResult.Message)
+                ? $"Failed to set workshop directory to '{modsDir}'."
+                : workshopResult.Message;
+            LauncherLog.Error("LinuxTekSteamClientBootstrap.SwitchGameAsync failed setting workshop dir. Error={Error}", workshopError);
+            appMng.Dispose();
+            return new(false, false, workshopError, null, null, null);
+        }
+
+        var primaryS3Result = await Task.Run(() => ctx.SyncS3Manifest("https://api.teknology-hub.com/s3"));
+        var mirrorS3Result = await Task.Run(() => ctx.SyncS3Manifest("https://de.api.teknology-hub.com/s3"));
+
+        string? warningMessage = null;
+        if (!primaryS3Result.Success && !mirrorS3Result.Success)
+            warningMessage = $"Failed to connect to tek-s3u servers: {primaryS3Result.AuxMessage}";
+        if (primaryS3Result.Uri != 0)
+            Marshal.FreeHGlobal(primaryS3Result.Uri);
+        if (mirrorS3Result.Uri != 0)
+            Marshal.FreeHGlobal(mirrorS3Result.Uri);
+
+        await Task.Run(() => appMng.CheckForUpdates(20000));
+
+        LauncherServices.TekSteamClient.ReplaceAppManager(appMng);
         return new(true, false, null, null, null, warningMessage);
     }
 

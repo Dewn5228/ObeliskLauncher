@@ -2,7 +2,6 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.Json.Serialization;
-using ObeliskLauncher.Steam.CM;
 
 namespace ObeliskLauncher.ARK;
 
@@ -109,8 +108,7 @@ static class GameCatalog
             s_state = LoadState();
 
         CatalogSyncResult syncResult = SyncRemoteCatalogAsync().GetAwaiter().GetResult();
-        bool asaAutoSyncApplied = SyncAsaCatalogAsync().GetAwaiter().GetResult();
-        if (syncResult.Applied || asaAutoSyncApplied)
+        if (syncResult.Applied)
             lock (s_stateSync)
                 s_state = LoadState();
 
@@ -466,7 +464,7 @@ static class GameCatalog
                 }
             }
 
-            var dlcEntries = Client.GetDlcCatalog(AsaSteamAppId);
+            var dlcEntries = Platform.LauncherServices.TekSteamClient.Cm?.GetDlcCatalog(AsaSteamAppId);
             if (dlcEntries is null)
             {
                 LauncherLog.Warning("SyncAsaCatalogAsync: GetDlcCatalog returned null");
@@ -483,7 +481,7 @@ static class GameCatalog
             var dlcCatalog = new List<CatalogDlc>();
 
             int skipped = 0;
-            foreach (var (appId, name, hasDepot) in dlcEntries)
+            foreach ((uint appId, string name, bool hasDepot) in dlcEntries)
             {
                 uint depotId = hasDepot ? appId : 0u;
                 if (depotId == 0)
@@ -540,6 +538,26 @@ static class GameCatalog
         {
             LauncherLog.Warning(ex, "SyncAsaCatalogAsync: exception");
             return false;
+        }
+    }
+
+    public static async void TriggerDeferredAsaSync()
+    {
+        try
+        {
+            LauncherLog.Debug("TriggerDeferredAsaSync: starting deferred ASA catalog sync");
+            bool applied = await SyncAsaCatalogAsync().ConfigureAwait(false);
+            if (applied)
+            {
+                lock (s_stateSync)
+                    s_state = LoadState();
+                DLC.InvalidateCache();
+                LauncherLog.Debug("TriggerDeferredAsaSync: ASA catalog updated, state reloaded, DLC cache invalidated");
+            }
+        }
+        catch (Exception ex)
+        {
+            LauncherLog.Warning(ex, "TriggerDeferredAsaSync: deferred ASA catalog sync failed");
         }
     }
 

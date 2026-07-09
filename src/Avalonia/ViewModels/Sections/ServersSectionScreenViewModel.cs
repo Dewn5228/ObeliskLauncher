@@ -197,7 +197,7 @@ public sealed class ServerRowViewModel : INotifyPropertyChanged
 
     static Mod.ModDetails[] ResolveModDetails(ulong[] modIds)
     {
-        Mod.ModDetails[] details = Steam.CM.Client.GetModDetails(modIds);
+        Mod.ModDetails[] details = Platform.LauncherServices.TekSteamClient.Cm?.GetModDetails(modIds) ?? [];
         if (details.Length == 0)
             return [.. modIds.Select(id => new Mod.ModDetails { Id = id, Name = id.ToString() })];
 

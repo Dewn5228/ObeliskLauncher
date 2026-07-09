@@ -99,7 +99,6 @@ public partial class App : Application
         SteamTaskUpdaterWindowViewModelBase.PauseAllActiveTasks();
         UdpClient.Dispose();
         LauncherServices.ServerBrowser.Shutdown();
-        Steam.CM.Client.Disconnect();
         Settings.Save();
         LauncherServices.TekSteamClient.Close();
         IPC.Dispose();

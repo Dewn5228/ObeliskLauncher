@@ -5,4 +5,5 @@ readonly record struct TekSteamClientBootstrapResult(bool Success, bool RestartR
 interface ITekSteamClientBootstrap
 {
     Task<TekSteamClientBootstrapResult> InitializeAsync(string gamePath);
+    Task<TekSteamClientBootstrapResult> SwitchGameAsync(string gamePath);
 }

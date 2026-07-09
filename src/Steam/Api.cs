@@ -85,32 +85,65 @@ static class Api
 	/// <summary>Attempts to create Steam client API interfaces and get function pointers.</summary>
 	public static bool Initialize()
 	{
-		if (s_steamClient != IntPtr.Zero)
+		if (s_user != 0)
 			return true;
 		if (!App.IsRunning)
 			return false;
 		string? dllPath = LauncherPlatform.Current.GetSteamClientDllPath();
 		if (dllPath is null)
 			return false;
-		//Load steam client native library
-		LibraryHandle = NativeLibrary.Load(dllPath);
-		if (LibraryHandle == IntPtr.Zero)
+
+		string? envAppId = Environment.GetEnvironmentVariable("SteamAppId");
+		uint configuredAppId = uint.TryParse(envAppId, out uint parsed) ? parsed : 0;
+		uint[] appIdsToTry = configuredAppId > 0
+			? [0u, configuredAppId, 480u]
+			: [0u, 480u];
+
+		nint vfptr = IntPtr.Zero;
+		bool connected = false;
+
+		foreach (uint appId in appIdsToTry)
+		{
+			Environment.SetEnvironmentVariable("SteamAppId", appId.ToString());
+			LibraryHandle = NativeLibrary.Load(dllPath);
+			if (LibraryHandle == IntPtr.Zero)
+				return false;
+
+			IntPtr createInterfacePtr = NativeLibrary.GetExport(LibraryHandle, "CreateInterface");
+			var createInterface = Marshal.GetDelegateForFunctionPointer<CreateInterfaceDelegate>(createInterfacePtr);
+			s_steamClient = createInterface("SteamClient023", 0);
+			if (s_steamClient == IntPtr.Zero)
+				return false;
+
+			vfptr = Marshal.ReadIntPtr(s_steamClient);
+			s_bShutdownIfAllPipesClosed = Marshal.GetDelegateForFunctionPointer<BShutdownIfAllPipesClosed>(Marshal.ReadIntPtr(vfptr, 0xB8));
+			s_pipe = Marshal.GetDelegateForFunctionPointer<CreateSteamPipe>(Marshal.ReadIntPtr(vfptr))(s_steamClient);
+			if (s_pipe == 0)
+				return false;
+			s_bReleaseSteamPipe = Marshal.GetDelegateForFunctionPointer<BReleaseSteamPipe>(Marshal.ReadIntPtr(vfptr, 0x8));
+			s_user = Marshal.GetDelegateForFunctionPointer<ConnectToGlobalUser>(Marshal.ReadIntPtr(vfptr, 0x10))(s_steamClient, s_pipe);
+			if (s_user != 0)
+			{
+				connected = true;
+				break;
+			}
+
+			s_bReleaseSteamPipe(s_steamClient, s_pipe);
+			s_bShutdownIfAllPipesClosed(s_steamClient);
+			for (;;)
+			{
+				try { NativeLibrary.Free(LibraryHandle); }
+				catch { break; }
+			}
+			LibraryHandle = IntPtr.Zero;
+			s_steamClient = IntPtr.Zero;
+		}
+
+		if (!connected)
 			return false;
-		// Resolve CreateInterface from the loaded library
-		IntPtr createInterfacePtr = NativeLibrary.GetExport(LibraryHandle, "CreateInterface");
-		var createInterface = Marshal.GetDelegateForFunctionPointer<CreateInterfaceDelegate>(createInterfacePtr);
-		s_steamClient = createInterface("SteamClient023", 0); //Create ISteamClient interface
-		if (s_steamClient == IntPtr.Zero)
-			return false;
-		var vfptr = Marshal.ReadIntPtr(s_steamClient); //, get its virtual function pointer table
-													   //and compute its function addresses
-		s_pipe = Marshal.GetDelegateForFunctionPointer<CreateSteamPipe>(Marshal.ReadIntPtr(vfptr))(s_steamClient);
-		s_bReleaseSteamPipe = Marshal.GetDelegateForFunctionPointer<BReleaseSteamPipe>(Marshal.ReadIntPtr(vfptr, 0x8));
-		s_user = Marshal.GetDelegateForFunctionPointer<ConnectToGlobalUser>(Marshal.ReadIntPtr(vfptr, 0x10))(s_steamClient, s_pipe);
+
 		s_releaseUser = Marshal.GetDelegateForFunctionPointer<ReleaseUser>(Marshal.ReadIntPtr(vfptr, 0x20));
 		var getISteamGenericInterface = Marshal.GetDelegateForFunctionPointer<GetISteamGenericInterface>(Marshal.ReadIntPtr(vfptr, 0x60));
-		s_bShutdownIfAllPipesClosed = Marshal.GetDelegateForFunctionPointer<BShutdownIfAllPipesClosed>(Marshal.ReadIntPtr(vfptr, 0xB8));
-		//Create the rest of interfaces and get their function pointers
 		s_steamApps = getISteamGenericInterface(s_steamClient, s_user, s_pipe, "STEAMAPPS_INTERFACE_VERSION009");
 		s_steamMatchmaking = getISteamGenericInterface(s_steamClient, s_user, s_pipe, "SteamMatchMaking009");
 		s_steamMatchmakingServers = getISteamGenericInterface(s_steamClient, s_user, s_pipe, "SteamMatchMakingServers002");
@@ -157,11 +190,12 @@ static class Api
 	/// <summary>Shuts down Steam client API interfaces and releases their resources.</summary>
 	public static void Shutdown()
 	{
-		if (s_steamClient == IntPtr.Zero)
-			return;
-		s_releaseUser(s_steamClient, s_pipe, s_user);
-		s_bReleaseSteamPipe(s_steamClient, s_pipe);
-		s_bShutdownIfAllPipesClosed(s_steamClient);
+		if (s_user != 0)
+			s_releaseUser(s_steamClient, s_pipe, s_user);
+		if (s_pipe != 0)
+			s_bReleaseSteamPipe(s_steamClient, s_pipe);
+		if (s_steamClient != IntPtr.Zero)
+			s_bShutdownIfAllPipesClosed(s_steamClient);
 		s_steamClient = IntPtr.Zero;
 	}
 	public static bool IsAppOwned(uint appId) => s_bIsSubscribedApp(s_steamApps, appId);

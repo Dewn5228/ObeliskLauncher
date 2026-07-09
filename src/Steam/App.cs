@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using ObeliskLauncher.ARK;
-using ObeliskLauncher.Steam.CM;
 using ObeliskLauncher.Utils;
 
 namespace ObeliskLauncher.Steam;
@@ -40,26 +39,6 @@ static class App
         s_path = path;
         StartupNotice = null;
         GamePath = null;
-        string configFile = Path.Combine(path, "config", "config.vdf");
-        if (File.Exists(configFile))
-        {
-            using var reader = new StreamReader(configFile);
-            var vdf = VdfParser.Parse(reader.ReadToEnd())["Software"]?["Valve"]?["Steam"];
-            if (vdf is not null)
-            {
-                if (uint.TryParse(vdf["CurrentCellID"]?.Value, out uint cellId))
-                    CM.Client.CellId = cellId;
-                var cmList = vdf["CMWebSocket"];
-                if (cmList?.Children is not null)
-                {
-                    var urls = new Uri[cmList.Children.Count];
-                    int i = 0;
-                    foreach (string key in cmList.Children.Keys)
-                        urls[i++] = new($"wss://{key}/cmsocket/");
-                    WebSocketConnection.ServerList = new(urls);
-                }
-            }
-        }
         return true;
     }
     public static void UpdateUserStatus()

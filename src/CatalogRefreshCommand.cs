@@ -1,6 +1,5 @@
 using System.Linq;
 using System.Text.Json.Nodes;
-using ObeliskLauncher.Steam.CM;
 
 namespace ObeliskLauncher;
 
@@ -306,7 +305,14 @@ static class CatalogRefreshCommand
             games.Add(asaGame);
         }
 
-        var dlcEntries = Client.GetDlcCatalog(2399830);
+        if (LauncherServices.TekSteamClient.Cm is null)
+        {
+            asaGame["runtimeDlcDisplayNames"] = new JsonObject();
+            asaGame["dlcCatalog"] = new JsonArray();
+            return 0;
+        }
+
+        var dlcEntries = LauncherServices.TekSteamClient.Cm.GetDlcCatalog(2399830);
         if (dlcEntries is null || dlcEntries.Count == 0)
         {
             asaGame["runtimeDlcDisplayNames"] = new JsonObject();

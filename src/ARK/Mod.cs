@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 namespace ObeliskLauncher.ARK;
 
@@ -136,7 +136,7 @@ class Mod
             for (int i = 0; i < ids.Length; i++)
                 ids[i] = List[i].Id;
         }
-        var details = Steam.CM.Client.GetModDetails(ids);
+        var details = Platform.LauncherServices.TekSteamClient.Cm?.GetModDetails(ids) ?? [];
         bool updatesAvailable = false;
         lock (List)
         {

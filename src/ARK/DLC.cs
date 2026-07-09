@@ -10,6 +10,13 @@ class DLC
     static string? s_cachedRootPath;
     static DLC[] s_cachedList = [];
 
+    public static void InvalidateCache()
+    {
+        s_cachedAppId = 0;
+        s_cachedRootPath = null;
+        s_cachedList = [];
+    }
+
     /// <summary>Current status of the DLC.</summary>
     Status _status;
     readonly string _rootPath;
@@ -66,6 +73,10 @@ class DLC
                 LauncherLog.Warning(ex, "DLC manifest query failed for AppId={AppId}, DepotId={DepotId}",
                     ActiveGameManager.Current.SteamAppId, DepotId);
             }
+        }
+        else
+        {
+            LauncherLog.Debug("IsInstalledByManifest: TekSteamClient not loaded, skipping manifest check. DepotId={DepotId}", DepotId);
         }
 
         try
@@ -283,9 +294,12 @@ class DLC
         if (s_cachedAppId == appId && string.Equals(s_cachedRootPath, rootPath, StringComparison.OrdinalIgnoreCase) && s_cachedList.Length > 0)
             return s_cachedList;
 
+        LauncherLog.Debug("DLC.GetList: rebuilding DLC list. AppId={AppId}, RootPath={RootPath}, CatalogCount={CatalogCount}",
+            appId, rootPath, context.DlcCatalog.Count);
         s_cachedAppId = appId;
         s_cachedRootPath = rootPath;
         s_cachedList = BuildList(rootPath, context.DlcCatalog);
+        LauncherLog.Debug("DLC.GetList: built {Count} DLC entries", s_cachedList.Length);
         return s_cachedList;
     }
 

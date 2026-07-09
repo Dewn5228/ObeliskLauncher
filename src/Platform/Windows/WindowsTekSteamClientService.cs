@@ -2,11 +2,15 @@ namespace ObeliskLauncher.Platform;
 
 sealed class WindowsTekSteamClientService : ITekSteamClientService
 {
-    public bool IsLoaded => Context is not null && AppManager is not null;
+    public bool IsLoaded => Context is not null && AppManager is not null && Cm is not null;
+
+    public bool IsLibraryLoaded => Context is not null && Cm is not null;
 
     public TEKSteamClient.LibCtx? Context { get; private set; }
 
     public TEKSteamClient.AppManager? AppManager { get; private set; }
+
+    public TEKSteamClient.CmClient? Cm { get; private set; }
 
     public TEKSteamClient.Error CheckForUpdates(int timeoutMs) => AppManager!.CheckForUpdates(timeoutMs);
 
@@ -23,11 +27,24 @@ sealed class WindowsTekSteamClientService : ITekSteamClientService
         return appManager.GetItemDesc(id);
     }
 
-    public void Initialize(TEKSteamClient.LibCtx ctx, TEKSteamClient.AppManager appManager)
+    public void Initialize(TEKSteamClient.LibCtx ctx, TEKSteamClient.AppManager appManager, TEKSteamClient.CmClient cm)
     {
         Close();
         Context = ctx;
         AppManager = appManager;
+        Cm = cm;
+    }
+
+    public void ReplaceAppManager(TEKSteamClient.AppManager appManager)
+    {
+        AppManager?.Close();
+        AppManager = appManager;
+    }
+
+    public void CloseAppManager()
+    {
+        AppManager?.Close();
+        AppManager = null;
     }
 
     public void LockItemDescs() => AppManager!.LockItemDescs();
@@ -35,8 +52,10 @@ sealed class WindowsTekSteamClientService : ITekSteamClientService
     public void Close()
     {
         AppManager?.Close();
+        Cm?.Close();
         Context?.Close();
         AppManager = null;
+        Cm = null;
         Context = null;
     }
 

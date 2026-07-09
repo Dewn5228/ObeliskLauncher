@@ -286,7 +286,7 @@ public sealed class ModsSectionScreenViewModel : LauncherSectionScreenViewModel
             var (success, details) = await TimeoutHelper.ExecuteWithTimeoutAsync(
                 async ct =>
                 {
-                    var result = await Task.Run(() => Steam.CM.Client.GetModDetails(id), ct);
+                    var result = await Task.Run(() => Platform.LauncherServices.TekSteamClient.Cm?.GetModDetails(id) ?? [], ct);
                     return result.Length == 0 ? default : result[0];
                 },
                 timeoutMs: 15000,
@@ -427,7 +427,10 @@ public sealed class ModsSectionScreenViewModel : LauncherSectionScreenViewModel
 
     static (uint Total, Mod.ModDetails[] Details) QueryWorkshop(uint page, string? search)
     {
-        var details = Steam.CM.Client.QueryMods(page, search, out uint total);
+        var cm = Platform.LauncherServices.TekSteamClient.Cm;
+        if (cm is null)
+            return (0, []);
+        var details = cm.QueryMods(page, search, out uint total);
         return (total, details);
     }
 

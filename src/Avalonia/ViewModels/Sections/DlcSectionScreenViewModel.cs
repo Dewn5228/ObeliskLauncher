@@ -100,15 +100,29 @@ public sealed class DlcSectionScreenViewModel : LauncherSectionScreenViewModel
 
     public override void Activate()
     {
-        Rows.Clear();
-        foreach (var dlc in DLC.List.Where(dlc => dlc.DepotId != 0))
+        try
         {
-            dlc.SyncInstalledStatus();
-            Rows.Add(new DlcRowViewModel(dlc));
-        }
+            LauncherLog.Debug("DlcSectionScreenViewModel.Activate: starting. DLC.List count={Count}",
+                DLC.List.Count);
+            Rows.Clear();
+            int added = 0;
+            foreach (var dlc in DLC.List.Where(dlc => dlc.DepotId != 0))
+            {
+                dlc.SyncInstalledStatus();
+                Rows.Add(new DlcRowViewModel(dlc));
+                added++;
+            }
+            LauncherLog.Debug("DlcSectionScreenViewModel.Activate: added {Added} DLC rows (of {Total} total, {Filtered} had DepotId=0)",
+                added, DLC.List.Count, DLC.List.Count - added);
 
-        foreach (var row in Rows)
-            row.Refresh();
+            foreach (var row in Rows)
+                row.Refresh();
+        }
+        catch (Exception ex)
+        {
+            LauncherLog.Error(ex, "DlcSectionScreenViewModel.Activate: crash");
+            throw;
+        }
     }
 
     public async Task DeleteAsync(DlcRowViewModel row)

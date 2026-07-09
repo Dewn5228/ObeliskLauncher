@@ -273,7 +273,16 @@ static class Game
         }
     }
 
-    static uint GetEffectiveSpoofAppId() => CanUseSpacewar && UseSpacewar ? 480u : 0;
+	static uint GetEffectiveSpoofAppId()
+	{
+		if (!CanUseSpacewar)
+			return 0;
+		if (UseSpacewar)
+			return 480u;
+		if (!Steam.Api.IsAppOwned(ActiveGameManager.Current.RuntimeAppId))
+			return 480u;
+		return 0;
+	}
 
     static string ResolveExecutablePath()
     {

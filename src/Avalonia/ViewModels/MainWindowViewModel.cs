@@ -1,6 +1,7 @@
 using System.Linq;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using ObeliskLauncher.Servers;
 
 namespace ObeliskLauncher.Avalonia.ViewModels;
@@ -90,6 +91,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
     readonly bool _beginInstallation;
     readonly Dictionary<LauncherSection, LauncherSectionScreenViewModel> _screens;
+    static readonly SemaphoreSlim s_nativeAccessLock = new(1, 1);
     IReadOnlyList<LauncherNavGroupViewModel> _navigationGroups = [];
     ShellNoticeViewModel[] _baseNotices = [];
     bool _canRefreshShellStatus;
@@ -197,12 +199,21 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             if (_selectedSection == value)
                 return;
 
-            _selectedSection = value;
-            CurrentScreen = _screens[value];
-            CurrentScreen.Activate();
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(SelectedSectionTitle));
-            OnPropertyChanged(nameof(SelectedSectionDescription));
+            try
+            {
+                LauncherLog.Debug("SelectedSection: switching from {Old} to {New}", _selectedSection, value);
+                _selectedSection = value;
+                CurrentScreen = _screens[value];
+                CurrentScreen.Activate();
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(SelectedSectionTitle));
+                OnPropertyChanged(nameof(SelectedSectionDescription));
+            }
+            catch (Exception ex)
+            {
+                LauncherLog.Error(ex, "SelectedSection: crash while switching to {Section}", value);
+                throw;
+            }
         }
     }
 
@@ -251,6 +262,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             _gameUpdateAvailable = startup.GameUpdateAvailable;
             _dlcUpdatesAvailable = startup.DlcUpdatesAvailable;
             _catalogWarningMessage = startup.CatalogWarning;
+
+            if (startup.BootstrapResult.Success && !startup.BootstrapResult.RestartRequired)
+                GameCatalog.TriggerDeferredAsaSync();
+
             RebuildNotices();
         }
         finally
@@ -384,12 +399,22 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         if (IsBusy || !_canRefreshShellStatus || !LauncherServices.TekSteamClient.IsLoaded)
             return;
 
-        var status = await LauncherShellStartup.GetStatusSummaryAsync(_beginInstallation);
-        ApplyGameVersionStatus(status.GameVersionText, status.GameVersionTone);
-        _gameUpdateAvailable = status.GameUpdateAvailable;
-        _dlcUpdatesAvailable = status.DlcUpdatesAvailable;
-        _catalogWarningMessage = status.CatalogWarning;
-        ApplyNotices(BuildDynamicNotices(_gameUpdateAvailable, _dlcUpdatesAvailable));
+        await s_nativeAccessLock.WaitAsync();
+        try
+        {
+            if (!LauncherServices.TekSteamClient.IsLoaded)
+                return;
+            var status = await LauncherShellStartup.GetStatusSummaryAsync(_beginInstallation);
+            ApplyGameVersionStatus(status.GameVersionText, status.GameVersionTone);
+            _gameUpdateAvailable = status.GameUpdateAvailable;
+            _dlcUpdatesAvailable = status.DlcUpdatesAvailable;
+            _catalogWarningMessage = status.CatalogWarning;
+            ApplyNotices(BuildDynamicNotices(_gameUpdateAvailable, _dlcUpdatesAvailable));
+        }
+        finally
+        {
+            s_nativeAccessLock.Release();
+        }
     }
 
     public Task<bool> ReloadAfterGameSwitchAsync()
@@ -416,21 +441,30 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
         try
         {
+            LauncherLog.Information("ReloadAfterGameSwitchCoreAsync: switching game for {GameId}", ActiveGameManager.Current.Id);
+            DLC.InvalidateCache();
             LauncherServices.ServerBrowser.Shutdown();
-            LauncherServices.TekSteamClient.Close();
-            Steam.CM.Client.Disconnect();
-            Steam.App.UpdateUserStatus();
-            await Task.Delay(250);
 
             TekSteamClientBootstrapResult bootstrapResult = default;
             for (int attempt = 1; attempt <= 3; attempt++)
             {
-                bootstrapResult = await LauncherServices.TekSteamClientBootstrap.InitializeAsync(ActiveGameManager.Current.RootPath);
+                LauncherLog.Debug("ReloadAfterGameSwitchCoreAsync: switch attempt {Attempt}", attempt);
+                await s_nativeAccessLock.WaitAsync();
+                try
+                {
+                    bootstrapResult = await LauncherServices.TekSteamClientBootstrap.SwitchGameAsync(ActiveGameManager.Current.RootPath);
+                }
+                finally
+                {
+                    s_nativeAccessLock.Release();
+                }
+
+                LauncherLog.Debug("ReloadAfterGameSwitchCoreAsync: switch attempt {Attempt} returned. Success={Success}", attempt, bootstrapResult.Success);
                 if (bootstrapResult.Success && !bootstrapResult.RestartRequired && bootstrapResult.DownloadName is null)
                     break;
 
                 LauncherLog.Warning(
-                    "ReloadAfterGameSwitchAsync: tek-steamclient bootstrap attempt {Attempt} failed. Success={Success}, RestartRequired={RestartRequired}, DownloadName={DownloadName}, Error={Error}",
+                    "ReloadAfterGameSwitchAsync: tek-steamclient switch attempt {Attempt} failed. Success={Success}, RestartRequired={RestartRequired}, DownloadName={DownloadName}, Error={Error}",
                     attempt,
                     bootstrapResult.Success,
                     bootstrapResult.RestartRequired,
@@ -449,7 +483,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             if (!bootstrapResult.Success || bootstrapResult.RestartRequired || bootstrapResult.DownloadName is not null)
             {
                 LauncherLog.Warning(
-                    "ReloadAfterGameSwitchCoreAsync: bootstrap returned non-ready state. Success={Success}, RestartRequired={RestartRequired}, DownloadName={DownloadName}, Error={Error}",
+                    "ReloadAfterGameSwitchCoreAsync: switch returned non-ready state. Success={Success}, RestartRequired={RestartRequired}, DownloadName={DownloadName}, Error={Error}",
                     bootstrapResult.Success,
                     bootstrapResult.RestartRequired,
                     bootstrapResult.DownloadName ?? "<none>",
@@ -458,20 +492,39 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
                 return false;
             }
 
+            Steam.App.UpdateUserStatus();
+            LauncherLog.Debug("ReloadAfterGameSwitchCoreAsync: bootstrap succeeded, initializing mods");
             await Task.Run(Mod.InitializeList);
             await Task.Delay(2000).ContinueWith(delegate { Cluster.ReloadLists(); });
 
+            LauncherLog.Debug("ReloadAfterGameSwitchCoreAsync: getting status summary");
             var status = await LauncherShellStartup.GetStatusSummaryAsync(_beginInstallation);
             ApplyGameVersionStatus(status.GameVersionText, status.GameVersionTone);
             _gameUpdateAvailable = status.GameUpdateAvailable;
             _dlcUpdatesAvailable = status.DlcUpdatesAvailable;
             _catalogWarningMessage = status.CatalogWarning;
 
+            LauncherLog.Debug("ReloadAfterGameSwitchCoreAsync: activating all screens");
             foreach (var screen in _screens.Values)
-                screen.Activate();
+            {
+                try
+                {
+                    screen.Activate();
+                }
+                catch (Exception ex)
+                {
+                    LauncherLog.Error(ex, "ReloadAfterGameSwitchCoreAsync: screen Activate() crashed for screen {Screen}", screen.GetType().Name);
+                }
+            }
 
             RebuildNotices();
+            LauncherLog.Information("ReloadAfterGameSwitchCoreAsync: completed successfully");
             return true;
+        }
+        catch (Exception ex)
+        {
+            LauncherLog.Error(ex, "ReloadAfterGameSwitchCoreAsync: unhandled exception");
+            return false;
         }
         finally
         {
@@ -656,16 +709,24 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
     void SelectSectionInternal(LauncherSection section, string selectedNodeKey)
     {
-        _selectedNodeKey = selectedNodeKey;
-        if (_selectedSection == section)
+        try
         {
-            _screens[section].Activate();
-            OnPropertyChanged(nameof(SelectedSectionTitle));
-            OnPropertyChanged(nameof(SelectedSectionDescription));
-            return;
-        }
+            _selectedNodeKey = selectedNodeKey;
+            if (_selectedSection == section)
+            {
+                _screens[section].Activate();
+                OnPropertyChanged(nameof(SelectedSectionTitle));
+                OnPropertyChanged(nameof(SelectedSectionDescription));
+                return;
+            }
 
-        SelectedSection = section;
+            SelectedSection = section;
+        }
+        catch (Exception ex)
+        {
+            LauncherLog.Error(ex, "SelectSectionInternal: crash while switching to section {Section}", section);
+            throw;
+        }
     }
 
     LauncherNavNodeViewModel? FindNodeByKey(string key)

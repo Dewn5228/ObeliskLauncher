@@ -123,7 +123,7 @@ internal sealed class ServerModsUpdaterWindowViewModel : SteamTaskUpdaterWindowV
 
     Mod.ModDetails[] ResolveDetails()
     {
-        Mod.ModDetails[] details = Steam.CM.Client.GetModDetails(_modIds);
+        Mod.ModDetails[] details = Platform.LauncherServices.TekSteamClient.Cm?.GetModDetails(_modIds) ?? [];
         if (details.Length == 0)
             return [];
 

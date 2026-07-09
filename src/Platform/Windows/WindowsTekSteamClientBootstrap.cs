@@ -70,6 +70,18 @@ sealed class WindowsTekSteamClientBootstrap : ITekSteamClientBootstrap
             return new(false, false, appMng.CreationError.Message, null, null, null);
         }
 
+        TEKSteamClient.CmClient cm;
+        try
+        {
+            cm = new TEKSteamClient.CmClient(ctx);
+        }
+        catch (Exception ex)
+        {
+            appMng.Dispose();
+            ctx.Dispose();
+            return new(false, false, ex.Message, null, null, null);
+        }
+
         string modsDir = Path.Combine(gamePath, "Mods");
         try
         {
@@ -81,6 +93,7 @@ sealed class WindowsTekSteamClientBootstrap : ITekSteamClientBootstrap
         var res = appMng.SetWorkshopDir(modsDir);
         if (!res.Success)
         {
+            cm.Dispose();
             appMng.Dispose();
             ctx.Dispose();
             return new(false, false, res.Message, null, null, null);
@@ -97,7 +110,57 @@ sealed class WindowsTekSteamClientBootstrap : ITekSteamClientBootstrap
         if (s3MirrorRes.Uri != 0)
             Marshal.FreeHGlobal(s3MirrorRes.Uri);
 
-        LauncherServices.TekSteamClient.Initialize(ctx, appMng);
+        LauncherServices.TekSteamClient.Initialize(ctx, appMng, cm);
+        return new(true, false, null, null, null, warningMessage);
+    }
+
+    public async Task<TekSteamClientBootstrapResult> SwitchGameAsync(string gamePath)
+    {
+        TEKSteamClient.LibCtx? ctx = LauncherServices.TekSteamClient.Context;
+        if (ctx is null || !LauncherServices.TekSteamClient.IsLibraryLoaded)
+            return await InitializeAsync(gamePath);
+
+        LauncherServices.TekSteamClient.CloseAppManager();
+
+        var appMng = new TEKSteamClient.AppManager(ctx, gamePath);
+        if (appMng.IsInvalid)
+        {
+            string error = string.IsNullOrWhiteSpace(appMng.CreationError.Message)
+                ? "tek-steamclient AppManager creation failed with no additional details."
+                : appMng.CreationError.Message;
+            appMng.Dispose();
+            return new(false, false, error, null, null, null);
+        }
+
+        string modsDir = Path.Combine(gamePath, "Mods");
+        try
+        {
+            if (!Directory.Exists(modsDir))
+                Directory.CreateDirectory(modsDir);
+        }
+        catch { }
+
+        var res = appMng.SetWorkshopDir(modsDir);
+        if (!res.Success)
+        {
+            appMng.Dispose();
+            return new(false, false, res.Message, null, null, null);
+        }
+
+        var s3Res = await Task.Run(() => ctx.SyncS3Manifest("https://api.teknology-hub.com/s3"));
+        var s3MirrorRes = await Task.Run(() => ctx.SyncS3Manifest("https://de.api.teknology-hub.com/s3"));
+
+        string? warningMessage = null;
+        if (!s3Res.Success && !s3MirrorRes.Success)
+            warningMessage = $"Failed to connect to tek-s3u servers: {s3Res.AuxMessage}";
+        if (s3Res.Uri != 0)
+            Marshal.FreeHGlobal(s3Res.Uri);
+        if (s3MirrorRes.Uri != 0)
+            Marshal.FreeHGlobal(s3MirrorRes.Uri);
+
+        await Task.Run(() => appMng.CheckForUpdates(20000));
+
+        LauncherServices.TekSteamClient.ReplaceAppManager(appMng);
         return new(true, false, null, null, null, warningMessage);
     }
 

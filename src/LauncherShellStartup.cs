@@ -61,6 +61,7 @@ static class LauncherShellStartup
         if (!beginInstallation && await Task.Run(() => LauncherServices.TekSteamClient.CheckForUpdates(20000).Success))
             unsafe
             {
+                LauncherLog.Debug("GetStatusSummaryAsync: CheckForUpdates succeeded, checking DLC list");
                 static TEKSteamClient.AmItemDesc* GetDesc(uint appId, uint depotId)
                 {
                     if (!LauncherServices.TekSteamClient.IsLoaded)
@@ -88,6 +89,7 @@ static class LauncherShellStartup
                     gameVersionTone = gameUpdateAvailable ? LauncherShellTone.Warning : LauncherShellTone.Success;
                 }
 
+                LauncherLog.Debug("GetStatusSummaryAsync: iterating DLC.List (count={Count})", ARK.DLC.List.Count);
                 foreach (var dlc in ARK.DLC.List)
                 {
                     if (dlc.CurrentStatus != ARK.DLC.Status.Installed)

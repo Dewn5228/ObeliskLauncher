@@ -28,7 +28,7 @@ static class LauncherLog
                 rollingInterval: RollingInterval.Day,
                 retainedFileCountLimit: 14,
                 shared: true,
-                flushToDiskInterval: TimeSpan.FromSeconds(1),
+                flushToDiskInterval: TimeSpan.FromMilliseconds(50),
                 outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {Level:u3}] {Message:lj}{NewLine}{Exception}")
             .CreateLogger();
 
