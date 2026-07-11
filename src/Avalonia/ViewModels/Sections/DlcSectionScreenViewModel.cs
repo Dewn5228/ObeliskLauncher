@@ -13,19 +13,23 @@ public sealed class DlcRowViewModel : INotifyPropertyChanged
         _dlc = dlc;
     }
 
-    public bool CanDelete => _dlc.CurrentStatus is DLC.Status.Installed or DLC.Status.UpdateAvailable;
+    public bool CanDelete => _dlc.DepotId != 0 && (_dlc.CurrentStatus is DLC.Status.Installed or DLC.Status.UpdateAvailable);
 
-    public bool CanInstall => (int)_dlc.CurrentStatus % 3 == 0;
+    public bool CanInstall => _dlc.DepotId != 0 && (int)_dlc.CurrentStatus % 3 == 0;
 
-    public bool CanValidate => _dlc.CurrentStatus is DLC.Status.Installed or DLC.Status.UpdateAvailable;
+    public bool CanValidate => _dlc.DepotId != 0 && (_dlc.CurrentStatus is DLC.Status.Installed or DLC.Status.UpdateAvailable);
 
     internal DLC Dlc => _dlc;
 
     public string Name => _dlc.Name;
 
-    public string StatusColor => DlcWorkflow.GetStatusColor(_dlc.CurrentStatus);
+    public string StatusColor => _dlc.DepotId != 0
+        ? DlcWorkflow.GetStatusColor(_dlc.CurrentStatus)
+        : "#0AA63E";
 
-    public string StatusText => DlcWorkflow.GetStatusText(_dlc.CurrentStatus);
+    public string StatusText => _dlc.DepotId != 0
+        ? DlcWorkflow.GetStatusText(_dlc.CurrentStatus)
+        : Locale.Get("dlcTab.alwaysAvailable");
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -106,14 +110,14 @@ public sealed class DlcSectionScreenViewModel : LauncherSectionScreenViewModel
                 DLC.List.Count);
             Rows.Clear();
             int added = 0;
-            foreach (var dlc in DLC.List.Where(dlc => dlc.DepotId != 0))
+            foreach (var dlc in DLC.List)
             {
                 dlc.SyncInstalledStatus();
                 Rows.Add(new DlcRowViewModel(dlc));
                 added++;
             }
-            LauncherLog.Debug("DlcSectionScreenViewModel.Activate: added {Added} DLC rows (of {Total} total, {Filtered} had DepotId=0)",
-                added, DLC.List.Count, DLC.List.Count - added);
+            LauncherLog.Debug("DlcSectionScreenViewModel.Activate: added {Added} DLC rows (of {Total} total)",
+                added, DLC.List.Count);
 
             foreach (var row in Rows)
                 row.Refresh();

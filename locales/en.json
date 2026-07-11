@@ -109,7 +109,8 @@
   "dlcTab": {
     "tabTitle": "DLC",
     "dlcUpdatesAvailable": "DLC updates are available.",
-    "sectionNote": "Install, update, validate, and delete DLC content from the native launcher. Operations use the shared Steam task backend and refresh launcher status when they finish."
+    "sectionNote": "Install, update, validate, and delete DLC content from the native launcher. Operations use the shared Steam task backend and refresh launcher status when they finish.",
+    "alwaysAvailable": "Always Available"
   },
   "modsTab": {
     "installMod": "Install Mod",
