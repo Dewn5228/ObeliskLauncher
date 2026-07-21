@@ -28,6 +28,13 @@ public partial class FirstLaunchWindow : Window
         UpdateInstallVersionToggle();
 
         UpdateRequiredSpaceText();
+        UpdateExistingDescription();
+    }
+
+    void UpdateExistingDescription()
+    {
+        string exeName = GameCatalog.GetByGameId(_existingGameId).ExeFileName;
+        ExistingDescriptionText.Text = Locale.Get("firstLaunchWindow.selectFolderDescription", exeName);
     }
 
     async void BrowseExistingInstallPath(object? sender, RoutedEventArgs e)
@@ -105,6 +112,7 @@ public partial class FirstLaunchWindow : Window
         _existingGameId = ExistingAsaRadio.IsChecked == true ? GameCatalog.AsaGameId : GameCatalog.AseGameId;
         SyncExistingSuggestedPath();
         ExistingPathChanged(null, e);
+        UpdateExistingDescription();
     }
 
     void InstallGameChanged(object? sender, RoutedEventArgs e)

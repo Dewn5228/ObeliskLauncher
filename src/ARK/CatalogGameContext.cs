@@ -2,41 +2,41 @@ namespace ObeliskLauncher.ARK;
 
 sealed class CatalogGameContext(string gameId, string rootPath) : IGameContext
 {
-    readonly GameCatalogEntry _catalog = GameCatalog.GetByGameId(gameId);
+    GameCatalogEntry Catalog => GameCatalog.GetByGameId(gameId);
 
-    public uint SteamAppId => _catalog.SteamAppId;
+    public uint SteamAppId => Catalog.SteamAppId;
 
-    public uint RuntimeAppId => _catalog.RuntimeAppId;
+    public uint RuntimeAppId => Catalog.RuntimeAppId;
 
-    public uint MainDepotId => _catalog.MainDepotId;
+    public uint MainDepotId => Catalog.MainDepotId;
 
-    public uint WorkshopDepotId => _catalog.WorkshopDepotId;
+    public uint WorkshopDepotId => Catalog.WorkshopDepotId;
 
-    public string ServerGameDir => _catalog.ServerGameDir;
+    public string ServerGameDir => Catalog.ServerGameDir;
 
-    public IReadOnlyList<string> AcceptedServerGameDirs => _catalog.AcceptedServerGameDirs;
+    public IReadOnlyList<string> AcceptedServerGameDirs => Catalog.AcceptedServerGameDirs;
 
-    public string Id => _catalog.Id;
+    public string Id => Catalog.Id;
 
-    public string DisplayName => _catalog.DisplayName;
+    public string DisplayName => Catalog.DisplayName;
 
-    public string SteamFolderName => _catalog.SteamFolderName;
+    public string SteamFolderName => Catalog.SteamFolderName;
 
-    public string ExeFileName => _catalog.ExeFileName;
+    public string ExeFileName => Catalog.ExeFileName;
 
     public string RootPath { get; } = Path.GetFullPath(rootPath);
 
-    public string ExePath => _catalog.BuildExePath(RootPath);
+    public string ExePath => Catalog.BuildExePath(RootPath);
 
-    public string WorkshopDir => _catalog.BuildWorkshopPath(RootPath);
+    public string WorkshopDir => Catalog.BuildWorkshopPath(RootPath);
 
-    public IReadOnlyList<GameDlcInfo> DlcCatalog => _catalog.DlcCatalog;
+    public IReadOnlyList<GameDlcInfo> DlcCatalog => Catalog.DlcCatalog;
 
-    public IReadOnlyDictionary<uint, string> RuntimeDlcDisplayNames => _catalog.RuntimeDlcDisplayNames;
+    public IReadOnlyDictionary<uint, string> RuntimeDlcDisplayNames => Catalog.RuntimeDlcDisplayNames;
 
-    public IReadOnlyDictionary<uint, ulong> PreAquaticaManifestOverrides => _catalog.PreAquaticaManifestOverrides;
+    public IReadOnlyDictionary<uint, ulong> PreAquaticaManifestOverrides => Catalog.PreAquaticaManifestOverrides;
 
-    public bool SupportsSpacewarSpoof => _catalog.SupportsSpacewarSpoof;
+    public bool SupportsSpacewarSpoof => Catalog.SupportsSpacewarSpoof;
 
-    public bool IsWindowsBuild => _catalog.IsWindowsBuild;
+    public bool IsWindowsBuild => Catalog.IsWindowsBuild;
 }

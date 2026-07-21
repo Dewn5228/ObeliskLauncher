@@ -23,7 +23,7 @@
         <Border x:Name="ExistingInstallPanel" IsVisible="False" Padding="28" CornerRadius="20" Background="#132132" BorderBrush="#2A4C6D" BorderThickness="1">
           <StackPanel Spacing="16">
             <TextBlock Text="{u:Tr firstLaunchWindow.selectExistingFolder}" FontSize="24" FontWeight="SemiBold" />
-            <TextBlock Text="{u:Tr firstLaunchWindow.selectFolderDescription}" Opacity="0.8" TextWrapping="Wrap" />
+            <TextBlock x:Name="ExistingDescriptionText" Text="" Opacity="0.8" TextWrapping="Wrap" />
             <StackPanel Orientation="Horizontal" Spacing="18">
               <RadioButton x:Name="ExistingAseRadio" IsChecked="True" GroupName="ExistingGameType" Content="ARK: Survival Evolved (ASE)" IsCheckedChanged="ExistingGameChanged" />
               <RadioButton x:Name="ExistingAsaRadio" GroupName="ExistingGameType" Content="ARK: Survival Ascended (ASA)" IsCheckedChanged="ExistingGameChanged" />

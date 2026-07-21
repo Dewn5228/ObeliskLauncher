@@ -366,7 +366,7 @@
     "useExistingArk": "Использовать существующую установку ARK",
     "installNewFolder": "Установить ARK в новую папку",
     "selectExistingFolder": "Выбрать существующую папку ARK",
-    "selectFolderDescription": "Выбранная папка должна содержать ShooterGame/Binaries/Win64/ShooterGame.exe.",
+    "selectFolderDescription": "Выбранная папка должна содержать ShooterGame/Binaries/Win64/{0}.",
     "placeholderPathToArk": "/путь/к/ARK",
     "selectFolderToContinue": "Выберите папку, чтобы продолжить.",
     "continue": "Продолжить",

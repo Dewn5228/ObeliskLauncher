@@ -267,6 +267,10 @@ sealed class LinuxGameLauncher : IGameLauncher
                 startInfo.Environment["WINE_FULLSCREEN_FSR_STRENGTH"] = fsrStrength.Trim();
         }
 
+        string? sessionType = Environment.GetEnvironmentVariable("XDG_SESSION_TYPE");
+        if (string.Equals(sessionType, "wayland", StringComparison.OrdinalIgnoreCase) && !startInfo.Environment.ContainsKey("PROTON_ENABLE_WAYLAND"))
+            startInfo.Environment["PROTON_ENABLE_WAYLAND"] = "1";
+
         foreach (KeyValuePair<string, string> variable in ParseEnvironmentVariables(Settings.GetLinuxExtraEnvironmentVariables(gameId)))
             startInfo.Environment[variable.Key] = variable.Value;
     }

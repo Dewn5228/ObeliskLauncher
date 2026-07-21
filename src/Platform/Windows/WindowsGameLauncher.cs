@@ -43,10 +43,12 @@ sealed class WindowsGameLauncher : IGameLauncher
 
         fixed (byte* dataPtr = request.RuntimeSettings)
         {
+            string currentDir = Path.GetDirectoryName(Path.GetFullPath(request.ExecutablePath)) ?? ".";
+
             var injArgs = new TEKInjector.Args
             {
                 ExePath = Marshal.StringToHGlobalUni(request.ExecutablePath),
-                CurrentDir = 0,
+                CurrentDir = Marshal.StringToHGlobalUni(currentDir),
                 DllPath = Marshal.StringToHGlobalUni(RuntimePath),
                 Type = TEKInjector.LoadType.Pipe,
                 Argc = argv.Length,
@@ -62,6 +64,7 @@ sealed class WindowsGameLauncher : IGameLauncher
                 Marshal.FreeHGlobal(ptr);
             Marshal.FreeHGlobal(argvNative);
             Marshal.FreeHGlobal(injArgs.ExePath);
+            Marshal.FreeHGlobal(injArgs.CurrentDir);
             Marshal.FreeHGlobal(injArgs.DllPath);
 
             if (injArgs.Result == TEKInjector.Res.Ok)

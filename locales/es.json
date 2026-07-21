@@ -366,7 +366,7 @@
     "useExistingArk": "Usar una instalación de ARK existente",
     "installNewFolder": "Instalar ARK en una carpeta nueva",
     "selectExistingFolder": "Seleccionar una carpeta de ARK existente",
-    "selectFolderDescription": "La carpeta seleccionada debe contener ShooterGame/Binaries/Win64/ShooterGame.exe.",
+    "selectFolderDescription": "La carpeta seleccionada debe contener ShooterGame/Binaries/Win64/{0}.",
     "placeholderPathToArk": "/ruta/a/ARK",
     "selectFolderToContinue": "Selecciona una carpeta para continuar.",
     "continue": "Continuar",

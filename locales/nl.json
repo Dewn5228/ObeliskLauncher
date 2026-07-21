@@ -366,7 +366,7 @@
     "useExistingArk": "Gebruik een bestaande ARK-installatie",
     "installNewFolder": "Installeer ARK in een nieuwe map",
     "selectExistingFolder": "Selecteer een bestaande ARK-map",
-    "selectFolderDescription": "De geselecteerde map moet ShooterGame/Binaries/Win64/ShooterGame.exe bevatten.",
+    "selectFolderDescription": "De geselecteerde map moet ShooterGame/Binaries/Win64/{0} bevatten.",
     "placeholderPathToArk": "/pad/naar/ARK",
     "selectFolderToContinue": "Selecteer een map om door te gaan.",
     "continue": "Doorgaan",
