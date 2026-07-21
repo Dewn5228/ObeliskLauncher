@@ -191,12 +191,20 @@ static class Api
 	public static void Shutdown()
 	{
 		if (s_user != 0)
+		{
 			s_releaseUser(s_steamClient, s_pipe, s_user);
+			s_user = 0;
+		}
 		if (s_pipe != 0)
+		{
 			s_bReleaseSteamPipe(s_steamClient, s_pipe);
+			s_pipe = 0;
+		}
 		if (s_steamClient != IntPtr.Zero)
+		{
 			s_bShutdownIfAllPipesClosed(s_steamClient);
-		s_steamClient = IntPtr.Zero;
+			s_steamClient = IntPtr.Zero;
+		}
 	}
 	public static bool IsAppOwned(uint appId) => s_bIsSubscribedApp(s_steamApps, appId);
 	/// <summary>Gets specified server list via Steam client API.</summary>

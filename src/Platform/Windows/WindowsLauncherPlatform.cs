@@ -5,7 +5,8 @@ namespace ObeliskLauncher.Platform;
 sealed class WindowsLauncherPlatform : ILauncherPlatform
 {
     const string LauncherRegistryKey = @"SOFTWARE\ObeliskLauncher";
-    const string SteamRegistryKey = @"SOFTWARE\WOW6432Node\Valve\Steam";
+    const string SteamRegistryKey = @"SOFTWARE\Valve\Steam";
+    const string SteamRegistryNodeKey = @"SOFTWARE\WOW6432Node\Valve\Steam";
     const string SteamActiveProcessKey = @"SOFTWARE\Valve\Steam\ActiveProcess";
 
     public string AppDataFolder { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ObeliskLauncher");
@@ -20,9 +21,21 @@ sealed class WindowsLauncherPlatform : ILauncherPlatform
 
     public void SetLastLaunchedVersion(string version) => Registry.LocalMachine.CreateSubKey(LauncherRegistryKey).SetValue("LastLaunchedVersion", version);
 
-    public int? GetSteamProcessId() => (int?)Registry.LocalMachine.OpenSubKey(SteamRegistryKey)?.GetValue("SteamPID");
+    public int? GetSteamProcessId()
+    {
+        int? pid = (int?)Registry.LocalMachine.OpenSubKey(SteamRegistryKey)?.GetValue("SteamPID");
+        if (pid.HasValue)
+            return pid;
+        return (int?)Registry.LocalMachine.OpenSubKey(SteamRegistryNodeKey)?.GetValue("SteamPID");
+    }
 
-    public string? GetSteamInstallPath() => (string?)Registry.LocalMachine.OpenSubKey(SteamRegistryKey)?.GetValue("InstallPath");
+    public string? GetSteamInstallPath()
+    {
+        string? path = (string?)Registry.LocalMachine.OpenSubKey(SteamRegistryKey)?.GetValue("InstallPath");
+        if (!string.IsNullOrWhiteSpace(path))
+            return path;
+        return (string?)Registry.LocalMachine.OpenSubKey(SteamRegistryNodeKey)?.GetValue("InstallPath");
+    }
 
     public string? GetSteamClientDllPath() => (string?)Registry.CurrentUser.OpenSubKey(SteamActiveProcessKey)?.GetValue("SteamClientDll64");
 
