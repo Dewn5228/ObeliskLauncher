@@ -88,10 +88,18 @@ static class Api
 		if (s_user != 0)
 			return true;
 		if (!App.IsRunning)
+		{
+			LauncherLog.Warning("Steam API init failed: Steam process not detected");
 			return false;
+		}
 		string? dllPath = LauncherPlatform.Current.GetSteamClientDllPath();
 		if (dllPath is null)
+		{
+			LauncherLog.Warning("Steam API init failed: steamclient library not found. InstallPath={InstallPath}",
+				LauncherPlatform.Current.GetSteamInstallPath() ?? "none");
 			return false;
+		}
+		LauncherLog.Debug("Steam API init: using client library {DllPath}", dllPath);
 
 		string? envAppId = Environment.GetEnvironmentVariable("SteamAppId");
 		uint configuredAppId = uint.TryParse(envAppId, out uint parsed) ? parsed : 0;
@@ -140,7 +148,11 @@ static class Api
 		}
 
 		if (!connected)
+		{
+			LauncherLog.Warning("Steam API init failed: could not connect to a Steam user. TriedAppIds={TriedAppIds}",
+				string.Join(',', appIdsToTry));
 			return false;
+		}
 
 		s_releaseUser = Marshal.GetDelegateForFunctionPointer<ReleaseUser>(Marshal.ReadIntPtr(vfptr, 0x20));
 		var getISteamGenericInterface = Marshal.GetDelegateForFunctionPointer<GetISteamGenericInterface>(Marshal.ReadIntPtr(vfptr, 0x60));

@@ -60,31 +60,41 @@ sealed class LinuxLauncherPlatform : ILauncherPlatform
         }
     }
 
-    public string? GetSteamInstallPath()
+    public string? GetSteamInstallPath() => SelectSteamInstallPath(GetSteamCandidates());
+
+    public string? GetSteamClientDllPath() => SelectSteamClientDllPath(GetSteamCandidates());
+
+    internal static string? SelectSteamInstallPath(IEnumerable<string> candidates)
     {
-        foreach (string path in GetSteamCandidates())
-            if (Directory.Exists(path))
+        string? fallback = null;
+        foreach (string path in candidates)
+        {
+            if (!Directory.Exists(path))
+                continue;
+            if (File.Exists(Path.Combine(path, "config", "libraryfolders.vdf")))
                 return path;
-        return null;
+            fallback ??= path;
+        }
+
+        if (fallback is not null)
+            LauncherLog.Warning("Steam install directory has no config/libraryfolders.vdf. Path={Path}", fallback);
+        return fallback;
     }
 
-    public string? GetSteamClientDllPath()
+    internal static string? SelectSteamClientDllPath(IEnumerable<string> candidates)
     {
-        string? installPath = GetSteamInstallPath();
-        if (string.IsNullOrWhiteSpace(installPath))
-            return null;
-
-        string[] candidates =
-        [
-          Path.Combine(installPath, "linux64", "steamclient.so"),
-      Path.Combine(installPath, "steamrt64", "steamclient.so"),
-      Path.Combine(installPath, "ubuntu12_64", "steamclient.so"),
-      Path.Combine(installPath, "linux32", "steamclient.so"),
-      Path.Combine(installPath, "steamrt32", "steamclient.so"),
-      Path.Combine(installPath, "ubuntu12_32", "steamclient.so")
-        ];
-
-        return candidates.FirstOrDefault(File.Exists);
+        foreach (string installPath in candidates)
+        {
+            if (!Directory.Exists(installPath))
+                continue;
+            foreach (string architectureDir in s_steamClientDirs)
+            {
+                string candidate = Path.Combine(installPath, architectureDir, "steamclient.so");
+                if (File.Exists(candidate))
+                    return candidate;
+            }
+        }
+        return null;
     }
 
     public bool TryLoadModule(string modulePath) => NativeLibrary.TryLoad(modulePath, out _);
@@ -150,11 +160,15 @@ sealed class LinuxLauncherPlatform : ILauncherPlatform
         return Path.Combine(home, ".local", "share", "ObeliskLauncher");
     }
 
+    static readonly string[] s_steamClientDirs = ["linux64", "steamrt64", "ubuntu12_64"];
+
     static IEnumerable<string> GetSteamCandidates()
     {
         string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         yield return Path.Combine(home, ".local", "share", "Steam");
+        yield return Path.Combine(home, ".steam", "root");
         yield return Path.Combine(home, ".steam", "steam");
+        yield return Path.Combine(home, ".steam", "debian-installation");
         yield return Path.Combine(home, ".var", "app", "com.valvesoftware.Steam", ".local", "share", "Steam");
     }
 }
