@@ -109,7 +109,9 @@
   "dlcTab": {
     "tabTitle": "DLC",
     "dlcUpdatesAvailable": "Atualizações de DLC disponíveis.",
-    "sectionNote": "Instale, atualize, valide e exclua conteúdo de DLC pelo launcher nativo. As operações usam o backend de tarefas compartilhado da Steam e atualizam o status do launcher ao finalizar."
+    "sectionNote": "Instale, atualize, valide e exclua conteúdo de DLC pelo launcher nativo. As operações usam o backend de tarefas compartilhado da Steam e atualizam o status do launcher ao finalizar.",
+    "updateAll": "Atualizar tudo",
+    "alwaysAvailable": "Sempre disponível"
   },
   "modsTab": {
     "installMod": "Instalar Mod",

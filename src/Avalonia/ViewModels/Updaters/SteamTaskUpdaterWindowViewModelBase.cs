@@ -58,6 +58,10 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
     UpdaterStageViewModel? _currentStage;
     UpdaterProgressMode _progressMode;
     double _progressMaximum = 1;
+    string _speedText = string.Empty;
+    DateTime _speedSampleAt;
+    long _speedSampleBytes;
+    double _speedBps;
     string _progressText = "Waiting for job data...";
     double _progressValue;
     string _actionLabel = Locale.Get("common.pause");
@@ -118,6 +122,22 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
     }
 
     public bool HasProgressText => !string.IsNullOrWhiteSpace(ProgressText);
+
+    public string SpeedText
+    {
+        get => _speedText;
+        protected set
+        {
+            if (_speedText == value)
+                return;
+
+            _speedText = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(HasSpeedText));
+        }
+    }
+
+    public bool HasSpeedText => !string.IsNullOrWhiteSpace(SpeedText);
 
     public double ProgressValue
     {
@@ -225,6 +245,7 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
         ProgressValue = 1;
         IsProgressIndeterminate = false;
         ProgressText = "100%";
+        ClearSpeed();
         HandleSuccessfulResult(result);
         FinishCurrentStage(true);
         IsActionEnabled = false;
@@ -246,6 +267,7 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
             ProgressValue = 1;
             IsProgressIndeterminate = false;
             SetStatus(result.Message, Brushes.IndianRed);
+            ClearSpeed();
             if (result.Uri != 0)
                 Marshal.FreeHGlobal(result.Uri);
             FinishCurrentStage(false);
@@ -262,6 +284,7 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
                 ProgressMaximum = 1;
                 ProgressValue = 1;
                 IsProgressIndeterminate = false;
+                ClearSpeed();
                 SetStatus(Locale.Get("status.operationPaused"), Brushes.LimeGreen);
             }
             else
@@ -282,6 +305,15 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
         ProgressMaximum = 1;
         IsProgressIndeterminate = indeterminate;
         ProgressText = indeterminate ? GetIndeterminateProgressText() : GetDeterminateProgressText(0, 0);
+        ClearSpeed();
+    }
+
+    void ClearSpeed()
+    {
+        _speedSampleAt = default;
+        _speedSampleBytes = 0;
+        _speedBps = 0;
+        SpeedText = string.Empty;
     }
 
     protected void ResetTaskVisuals()
@@ -455,12 +487,14 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
             };
 
             long total = desc.Job.ProgressTotal;
+            var mode = _progressMode;
             PostToUi(() =>
             {
                 IsProgressIndeterminate = total <= 0;
                 ProgressMaximum = total <= 0 ? 1 : total;
                 ProgressValue = total <= 0 ? 0 : Math.Clamp(current, 0, total);
                 ProgressText = total <= 0 ? GetIndeterminateProgressText() : GetDeterminateProgressText(current, total);
+                UpdateSpeed(mode, current, total);
             });
         }
     }
@@ -479,6 +513,55 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
         UpdaterProgressMode.Percentage => "Preparing progress data...",
         _ => "Waiting for job data..."
     };
+
+    void UpdateSpeed(UpdaterProgressMode mode, long current, long total)
+    {
+        if (mode != UpdaterProgressMode.Binary || total <= 0 || current < 0)
+        {
+            if (!string.IsNullOrEmpty(SpeedText))
+                SpeedText = string.Empty;
+            return;
+        }
+
+        var now = DateTime.UtcNow;
+        if (_speedSampleAt == default)
+        {
+            _speedSampleAt = now;
+            _speedSampleBytes = current;
+            return;
+        }
+
+        if (current < _speedSampleBytes)
+        {
+            _speedSampleAt = now;
+            _speedSampleBytes = current;
+            _speedBps = 0;
+            SpeedText = string.Empty;
+            return;
+        }
+
+        double elapsed = (now - _speedSampleAt).TotalSeconds;
+        if (elapsed < 0.5)
+            return;
+
+        long delta = current - _speedSampleBytes;
+        double instant = delta / elapsed;
+        _speedBps = _speedBps <= 0 ? instant : _speedBps * 0.7 + instant * 0.3;
+        _speedSampleAt = now;
+        _speedSampleBytes = current;
+
+        if (_speedBps < 1 || current >= total)
+        {
+            SpeedText = _speedBps >= 1
+                ? $"{Locale.BytesToString((long)_speedBps)}/s"
+                : string.Empty;
+            return;
+        }
+
+        long remaining = total - current;
+        long etaSeconds = (long)Math.Ceiling(remaining / _speedBps);
+        SpeedText = $"{Locale.BytesToString((long)_speedBps)}/s \u2022 ETA {Locale.SecondsToString(etaSeconds)}";
+    }
 
     void SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {

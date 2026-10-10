@@ -109,7 +109,9 @@
   "dlcTab": {
     "tabTitle": "DLC",
     "dlcUpdatesAvailable": "DLC-updates zijn beschikbaar.",
-    "sectionNote": "Installeer, update, valideer en verwijder DLC-inhoud vanuit de systeemeigen launcher. Bewerkingen maken gebruik van de gedeelde Steam-taakbackend en verversen de launcher-status wanneer ze klaar zijn."
+    "sectionNote": "Installeer, update, valideer en verwijder DLC-inhoud vanuit de systeemeigen launcher. Bewerkingen maken gebruik van de gedeelde Steam-taakbackend en verversen de launcher-status wanneer ze klaar zijn.",
+    "updateAll": "Alles bijwerken",
+    "alwaysAvailable": "Altijd beschikbaar"
   },
   "modsTab": {
     "installMod": "Mod installeren",

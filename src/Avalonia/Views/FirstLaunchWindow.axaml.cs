@@ -33,8 +33,8 @@ public partial class FirstLaunchWindow : Window
 
     void UpdateExistingDescription()
     {
-        string exeName = GameCatalog.GetByGameId(_existingGameId).ExeFileName;
-        ExistingDescriptionText.Text = Locale.Get("firstLaunchWindow.selectFolderDescription", exeName);
+        var entry = GameCatalog.GetByGameId(_existingGameId);
+        ExistingDescriptionText.Text = Locale.Get("firstLaunchWindow.selectFolderDescription", entry.ExeFileName, entry.ExeRelativePath);
     }
 
     async void BrowseExistingInstallPath(object? sender, RoutedEventArgs e)

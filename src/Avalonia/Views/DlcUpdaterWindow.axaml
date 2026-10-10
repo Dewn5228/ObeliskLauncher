@@ -37,6 +37,9 @@
           <TextBlock Text="{Binding ProgressText}"
                      FontWeight="SemiBold"
                      IsVisible="{Binding HasProgressText}" />
+          <TextBlock Text="{Binding SpeedText}"
+                     Opacity="0.8"
+                     IsVisible="{Binding HasSpeedText}" />
           <TextBlock Text="{u:Tr dlcUpdaterWindow.closeNote}"
                      Opacity="0.74"
                      TextWrapping="Wrap" />

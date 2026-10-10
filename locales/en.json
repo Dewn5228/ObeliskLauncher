@@ -110,7 +110,8 @@
     "tabTitle": "DLC",
     "dlcUpdatesAvailable": "DLC updates are available.",
     "sectionNote": "Install, update, validate, and delete DLC content from the native launcher. Operations use the shared Steam task backend and refresh launcher status when they finish.",
-    "alwaysAvailable": "Always Available"
+    "alwaysAvailable": "Always Available",
+    "updateAll": "Update all"
   },
   "modsTab": {
     "installMod": "Install Mod",
@@ -367,7 +368,7 @@
     "useExistingArk": "Use an existing ARK installation",
     "installNewFolder": "Install ARK into a new folder",
     "selectExistingFolder": "Select an existing ARK folder",
-    "selectFolderDescription": "The selected folder must contain ShooterGame/Binaries/Win64/{0}.",
+    "selectFolderDescription": "Select the game root folder that contains {1} (looking for {0}). Do not select the Win64 folder itself.",
     "placeholderPathToArk": "/path/to/ARK",
     "selectFolderToContinue": "Select a folder to continue.",
     "continue": "Continue",

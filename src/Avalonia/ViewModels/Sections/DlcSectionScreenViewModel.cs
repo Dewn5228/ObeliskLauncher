@@ -54,6 +54,7 @@ public sealed class DlcRowViewModel : INotifyPropertyChanged
 public sealed class DlcSectionScreenViewModel : LauncherSectionScreenViewModel
 {
     bool _isBusy;
+    bool _hasUpdatableDlc;
     string _statusColor = "#D49B38";
     string _statusMessage = string.Empty;
 
@@ -64,6 +65,12 @@ public sealed class DlcSectionScreenViewModel : LauncherSectionScreenViewModel
     }
 
     public bool HasStatus => !string.IsNullOrWhiteSpace(StatusMessage);
+
+    public bool HasUpdatableDlc
+    {
+        get => _hasUpdatableDlc;
+        private set => SetProperty(ref _hasUpdatableDlc, value);
+    }
 
     public bool IsBusy
     {
@@ -121,6 +128,8 @@ public sealed class DlcSectionScreenViewModel : LauncherSectionScreenViewModel
 
             foreach (var row in Rows)
                 row.Refresh();
+
+            HasUpdatableDlc = Rows.Any(row => row.Dlc.CurrentStatus == DLC.Status.UpdateAvailable && row.Dlc.DepotId != 0);
         }
         catch (Exception ex)
         {
@@ -128,6 +137,9 @@ public sealed class DlcSectionScreenViewModel : LauncherSectionScreenViewModel
             throw;
         }
     }
+
+    internal IReadOnlyList<DLC> GetUpdatableDlcs()
+        => [.. Rows.Where(row => row.Dlc.CurrentStatus == DLC.Status.UpdateAvailable && row.Dlc.DepotId != 0).Select(row => row.Dlc)];
 
     public async Task DeleteAsync(DlcRowViewModel row)
     {

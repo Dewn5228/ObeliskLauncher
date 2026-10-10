@@ -109,7 +109,9 @@
   "dlcTab": {
     "tabTitle": "DLC",
     "dlcUpdatesAvailable": "Hay actualizaciones de DLC disponibles.",
-    "sectionNote": "Instala, actualiza, valida y elimina contenido DLC desde el lanzador nativo. Las operaciones utilizan el motor de tareas compartido de Steam y actualizan el estado al finalizar."
+    "sectionNote": "Instala, actualiza, valida y elimina contenido DLC desde el lanzador nativo. Las operaciones utilizan el motor de tareas compartido de Steam y actualizan el estado al finalizar.",
+    "updateAll": "Actualizar todo",
+    "alwaysAvailable": "Siempre disponible"
   },
   "modsTab": {
     "installMod": "Instalar mod",

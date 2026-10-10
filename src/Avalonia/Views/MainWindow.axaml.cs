@@ -497,6 +497,31 @@ public partial class MainWindow : Window
         window.Show(this);
     }
 
+    void OpenDlcBatchUpdater(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainWindowViewModel viewModel || viewModel.CurrentScreen is not DlcSectionScreenViewModel screen)
+            return;
+
+        if (!LauncherServices.TekSteamClient.IsLoaded)
+        {
+            ShowSteamClientUnavailable();
+            return;
+        }
+
+        var dlcs = screen.GetUpdatableDlcs();
+        if (dlcs.Count == 0)
+            return;
+
+        var window = new DlcBatchUpdaterWindow(dlcs);
+        screen.Activate();
+        window.Closed += async (_, _) =>
+        {
+            screen.Activate();
+            await viewModel.RefreshShellStatusAsync();
+        };
+        window.Show(this);
+    }
+
     async void CopyInstalledModId(object? sender, RoutedEventArgs e)
     {
         if (sender is not Control { DataContext: ModRowViewModel row })

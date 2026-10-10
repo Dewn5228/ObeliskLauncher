@@ -146,6 +146,9 @@
         <Border Padding="16" CornerRadius="12" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1" IsVisible="{Binding HasStatus}">
           <TextBlock Text="{Binding StatusMessage}" Foreground="{Binding StatusColor}" TextWrapping="Wrap" />
         </Border>
+        <Border Padding="16" CornerRadius="12" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1">
+          <Button Content="{u:Tr dlcTab.updateAll}" Click="OpenDlcBatchUpdater" IsEnabled="{Binding HasUpdatableDlc}" />
+        </Border>
         <ItemsControl ItemsSource="{Binding Rows}">
           <ItemsControl.ItemTemplate>
             <DataTemplate DataType="vm:DlcRowViewModel">

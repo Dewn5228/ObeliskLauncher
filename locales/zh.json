@@ -109,7 +109,9 @@
   "dlcTab": {
     "tabTitle": "DLC",
     "dlcUpdatesAvailable": "有可用的 DLC 更新。",
-    "sectionNote": "通过原生启动器安装、更新、验证和删除 DLC 内容。操作使用共享的 Steam 任务后端，并在完成后刷新启动器状态。"
+    "sectionNote": "通过原生启动器安装、更新、验证和删除 DLC 内容。操作使用共享的 Steam 任务后端，并在完成后刷新启动器状态。",
+    "updateAll": "全部更新",
+    "alwaysAvailable": "始终可用"
   },
   "modsTab": {
     "installMod": "安装模组",
