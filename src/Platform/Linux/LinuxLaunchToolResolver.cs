@@ -36,6 +36,7 @@ static class LinuxLaunchToolResolver
 
         options.AddRange(DiscoverTools(GetSearchRoots(gamePath), importedToolIds)
           .OrderBy(option => option.Kind)
+          .ThenByDescending(option => GetToolScore(option, null))
           .ThenBy(option => option.DisplayName, StringComparer.CurrentCultureIgnoreCase));
 
         string normalizedSelection = NormalizeSelection(selectedId);
@@ -51,6 +52,42 @@ static class LinuxLaunchToolResolver
     public static string NormalizeSelection(string? selection)
       => string.IsNullOrWhiteSpace(selection) ? AutomaticId : selection;
 
+    public static int GetToolScore(LinuxLaunchToolOption option, string? compatToolName)
+      => ScoreTool(option, compatToolName);
+
+    public static LinuxLaunchToolOption? GetBestPick(IEnumerable<LinuxLaunchToolOption> tools, string? compatToolName = null)
+    {
+        var usable = tools.Where(tool => !tool.Id.Equals(AutomaticId, StringComparison.OrdinalIgnoreCase)).ToList();
+        return usable.Where(tool => tool.Kind == LinuxLaunchToolKind.Proton)
+            .OrderByDescending(tool => ScoreTool(tool, compatToolName))
+            .ThenBy(tool => tool.DisplayName, StringComparer.CurrentCultureIgnoreCase)
+            .FirstOrDefault()
+          ?? usable.Where(tool => tool.Kind == LinuxLaunchToolKind.Wine)
+            .OrderByDescending(tool => ScoreTool(tool, compatToolName))
+            .ThenBy(tool => tool.DisplayName, StringComparer.CurrentCultureIgnoreCase)
+            .FirstOrDefault();
+    }
+
+    public static string DescribePickReason(LinuxLaunchToolOption option, string? compatToolName = null)
+    {
+        if (!string.IsNullOrWhiteSpace(compatToolName) && MatchesToolName(option, compatToolName))
+            return Locale.Get("linuxToolRank.steamAssigned");
+        if (option.Kind == LinuxLaunchToolKind.Wine)
+            return Locale.Get("linuxToolRank.wineFallback");
+        if (option.DisplayName.Contains("Experimental", StringComparison.OrdinalIgnoreCase))
+            return Locale.Get("linuxToolRank.experimental");
+        string toolDirectoryName = GetToolDirectoryName(option);
+        if (IsGeFamilyName(toolDirectoryName))
+            return Locale.Get("linuxToolRank.geBuild");
+        if (toolDirectoryName.Contains("cachy", StringComparison.OrdinalIgnoreCase)
+            || option.ExecutablePath.Contains("cachy", StringComparison.OrdinalIgnoreCase))
+            return Locale.Get("linuxToolRank.cachy");
+        if (IsThirdPartyRunnerPath(option.ExecutablePath.Replace('\\', '/'))
+            || option.ExecutablePath.Replace('\\', '/').Contains("/compatibilitytools.d/", StringComparison.OrdinalIgnoreCase))
+            return Locale.Get("linuxToolRank.userManaged");
+        return Locale.Get("linuxToolRank.stockProton");
+    }
+
     public static bool TryResolve(string? selectionId, string steamInstallPath, string libraryRoot, string? compatToolName, out LinuxLaunchToolOption? option, out string? errorMessage)
     {
         string normalizedSelection = NormalizeSelection(selectionId);
@@ -65,7 +102,7 @@ static class LinuxLaunchToolResolver
                 return true;
             }
 
-            errorMessage = "Could not resolve a usable Proton or Wine launch tool on Linux. Install a Proton compatibility tool in Steam or ensure Wine is available in PATH.";
+            errorMessage = "Could not resolve a usable Proton or Wine launch tool on Linux. Install a Proton compatibility tool in Steam (or a Wine/Proton runner in Bottles, Lutris, or Heroic) or ensure Wine is available in PATH.";
             return false;
         }
 
@@ -121,6 +158,20 @@ static class LinuxLaunchToolResolver
                     options.Add(option);
         }
 
+        foreach (string compatDirectory in GetWellKnownCompatDirectories())
+        {
+            foreach (LinuxLaunchToolOption option in EnumerateCollectionTools(compatDirectory, null))
+                if (seenIds.Add(option.Id))
+                    options.Add(option);
+        }
+
+        foreach ((string directory, string label) in GetWellKnownRunnerCollections())
+        {
+            foreach (LinuxLaunchToolOption option in EnumerateCollectionTools(directory, label))
+                if (seenIds.Add(option.Id))
+                    options.Add(option);
+        }
+
         foreach (LinuxLaunchToolOption option in EnumerateWineToolsFromPath())
             if (seenIds.Add(option.Id))
                 options.Add(option);
@@ -155,24 +206,7 @@ static class LinuxLaunchToolResolver
     }
 
     static LinuxLaunchToolOption? TryResolveAutomatic(IReadOnlyList<LinuxLaunchToolOption> tools, string? compatToolName)
-    {
-        IEnumerable<LinuxLaunchToolOption> protonTools = tools.Where(tool => tool.Kind == LinuxLaunchToolKind.Proton);
-        if (!string.IsNullOrWhiteSpace(compatToolName))
-        {
-            LinuxLaunchToolOption? exact = protonTools.FirstOrDefault(tool => MatchesToolName(tool, compatToolName));
-            if (exact is not null)
-                return exact;
-        }
-
-        LinuxLaunchToolOption? firstProton = protonTools
-          .OrderByDescending(tool => ScoreTool(tool, compatToolName))
-          .ThenBy(tool => tool.DisplayName, StringComparer.CurrentCultureIgnoreCase)
-          .FirstOrDefault();
-        if (firstProton is not null)
-            return firstProton;
-
-        return tools.FirstOrDefault(tool => tool.Kind == LinuxLaunchToolKind.Wine);
-    }
+      => GetBestPick(tools, compatToolName);
 
     static bool MatchesToolName(LinuxLaunchToolOption option, string compatToolName)
     {
@@ -185,24 +219,64 @@ static class LinuxLaunchToolResolver
 
     static int ScoreTool(LinuxLaunchToolOption option, string? compatToolName)
     {
-        int score = 0;
         if (!string.IsNullOrWhiteSpace(compatToolName) && MatchesToolName(option, compatToolName))
-            score += 100;
+            return 1000;
 
+        string toolDirectoryName = GetToolDirectoryName(option);
         string normalizedPath = option.ExecutablePath.Replace('\\', '/');
-        if (normalizedPath.Contains("/compatibilitytools.d/", StringComparison.OrdinalIgnoreCase))
-            score += 60;
-        if (normalizedPath.Contains("cachyos", StringComparison.OrdinalIgnoreCase)
-            || option.DisplayName.Contains("cachyos", StringComparison.OrdinalIgnoreCase))
-            score += 60;
+        bool userManaged = normalizedPath.Contains("/compatibilitytools.d/", StringComparison.OrdinalIgnoreCase)
+            || IsThirdPartyRunnerPath(normalizedPath);
 
-        if (option.DisplayName.StartsWith("Proton ", StringComparison.OrdinalIgnoreCase))
-            score += 30;
-        if (option.DisplayName.Contains("Experimental", StringComparison.OrdinalIgnoreCase))
-            score += 20;
-        if (option.DisplayName.Contains("GE", StringComparison.OrdinalIgnoreCase))
-            score += 10;
-        return score;
+        if (option.Kind == LinuxLaunchToolKind.Wine)
+        {
+            if (IsTopTierWineRunner(toolDirectoryName))
+                return 100;
+            int wineScore = 0;
+            if (IsGeFamilyName(toolDirectoryName))
+                wineScore += 50;
+            if (userManaged)
+                wineScore += 25;
+            return wineScore;
+        }
+
+        if (IsGeFamilyName(toolDirectoryName))
+            return 500;
+        if (toolDirectoryName.Contains("cachy", StringComparison.OrdinalIgnoreCase))
+            return 450;
+        if (toolDirectoryName.Contains("bleeding", StringComparison.OrdinalIgnoreCase))
+            return 425;
+        if (toolDirectoryName.Contains("experimental", StringComparison.OrdinalIgnoreCase))
+            return 400;
+        if (userManaged)
+            return 250;
+        return 100;
+    }
+
+    static bool IsTopTierWineRunner(string toolDirectoryName)
+      => toolDirectoryName.StartsWith("soda", StringComparison.OrdinalIgnoreCase)
+        || toolDirectoryName.StartsWith("caffe", StringComparison.OrdinalIgnoreCase)
+        || toolDirectoryName.Contains("kron4ek", StringComparison.OrdinalIgnoreCase);
+
+    static bool IsGeFamilyName(string toolDirectoryName)
+      => toolDirectoryName.Contains("GE-Proton", StringComparison.OrdinalIgnoreCase)
+        || toolDirectoryName.Contains("Wine-GE", StringComparison.OrdinalIgnoreCase)
+        || toolDirectoryName.StartsWith("GE-", StringComparison.OrdinalIgnoreCase);
+
+    static string GetToolDirectoryName(LinuxLaunchToolOption option)
+    {
+        string? directory = Path.GetDirectoryName(option.ExecutablePath);
+        if (option.Kind == LinuxLaunchToolKind.Wine)
+        {
+            for (int i = 0; i < 2 && directory is not null; i++)
+            {
+                string name = Path.GetFileName(directory);
+                if (!name.Equals("bin", StringComparison.OrdinalIgnoreCase)
+                    && !name.Equals("files", StringComparison.OrdinalIgnoreCase))
+                    break;
+                directory = Path.GetDirectoryName(directory);
+            }
+        }
+        return Path.GetFileName(directory ?? option.ExecutablePath);
     }
 
     static IEnumerable<LinuxLaunchToolOption> EnumerateProtonTools(string root)
@@ -261,6 +335,63 @@ static class LinuxLaunchToolResolver
         yield return Path.Combine(root, "compatibilitytools.d");
     }
 
+    static IEnumerable<string> GetWellKnownCompatDirectories()
+    {
+        string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        if (!string.IsNullOrWhiteSpace(home))
+        {
+            yield return Path.Combine(home, ".local", "share", "Steam", "compatibilitytools.d");
+            yield return Path.Combine(home, ".var", "app", "com.valvesoftware.Steam", "data", "Steam", "compatibilitytools.d");
+        }
+    }
+
+    static IEnumerable<(string Directory, string Label)> GetWellKnownRunnerCollections()
+    {
+        string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        if (string.IsNullOrWhiteSpace(home))
+            yield break;
+
+        string dataHome = Environment.GetEnvironmentVariable("XDG_DATA_HOME") is string xdgData
+            && !string.IsNullOrWhiteSpace(xdgData)
+            ? xdgData
+            : Path.Combine(home, ".local", "share");
+        string configHome = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME") is string xdgConfig
+            && !string.IsNullOrWhiteSpace(xdgConfig)
+            ? xdgConfig
+            : Path.Combine(home, ".config");
+
+        yield return (Path.Combine(dataHome, "bottles", "runners"), "Bottles");
+        yield return (Path.Combine(home, ".var", "app", "com.usebottles.bottles", "data", "bottles", "runners"), "Bottles");
+        yield return (Path.Combine(dataHome, "lutris", "runners", "wine"), "Lutris");
+        yield return (Path.Combine(dataHome, "lutris", "runners", "proton"), "Lutris");
+        yield return (Path.Combine(configHome, "heroic", "tools", "wine"), "Heroic");
+        yield return (Path.Combine(configHome, "heroic", "tools", "proton"), "Heroic");
+    }
+
+    static IEnumerable<LinuxLaunchToolOption> EnumerateCollectionTools(string baseDirectory, string? label)
+    {
+        foreach (string toolDirectory in EnumerateDirectoriesSafe(baseDirectory))
+        {
+            string name = Path.GetFileName(toolDirectory);
+            string displayName = string.IsNullOrWhiteSpace(label) ? name : $"{name} ({label})";
+
+            string protonPath = Path.Combine(toolDirectory, "proton");
+            if (File.Exists(protonPath))
+            {
+                string fullPath = Path.GetFullPath(protonPath);
+                yield return new($"proton:{fullPath}", displayName, LinuxLaunchToolKind.Proton, fullPath);
+                continue;
+            }
+
+            string? winePath = FindWineExecutable(toolDirectory);
+            if (winePath is not null)
+            {
+                string fullPath = Path.GetFullPath(winePath);
+                yield return new($"wine:{fullPath}", $"{displayName} (Wine)", LinuxLaunchToolKind.Wine, fullPath);
+            }
+        }
+    }
+
     static IEnumerable<string> EnumerateDirectoriesSafe(string directory)
     {
         try
@@ -284,6 +415,11 @@ static class LinuxLaunchToolResolver
             return [];
         }
     }
+
+    static bool IsThirdPartyRunnerPath(string normalizedPath)
+      => normalizedPath.Contains("/bottles/runners/", StringComparison.OrdinalIgnoreCase)
+        || normalizedPath.Contains("/lutris/runners/", StringComparison.OrdinalIgnoreCase)
+        || normalizedPath.Contains("/heroic/tools/", StringComparison.OrdinalIgnoreCase);
 
     static string? FindWineExecutable(string toolDirectory)
     {

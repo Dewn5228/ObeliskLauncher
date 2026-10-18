@@ -24,6 +24,7 @@
           <StackPanel Spacing="16">
             <TextBlock Text="{u:Tr firstLaunchWindow.selectExistingFolder}" FontSize="24" FontWeight="SemiBold" />
             <TextBlock x:Name="ExistingDescriptionText" Text="" Opacity="0.8" TextWrapping="Wrap" />
+            <TextBlock x:Name="ExistingToolHintText" Text="" Opacity="0.8" TextWrapping="Wrap" Foreground="#7FD08A" IsVisible="False" />
             <StackPanel Orientation="Horizontal" Spacing="18">
               <RadioButton x:Name="ExistingAseRadio" IsChecked="True" GroupName="ExistingGameType" Content="ARK: Survival Evolved (ASE)" IsCheckedChanged="ExistingGameChanged" />
               <RadioButton x:Name="ExistingAsaRadio" GroupName="ExistingGameType" Content="ARK: Survival Ascended (ASA)" IsCheckedChanged="ExistingGameChanged" />
@@ -45,6 +46,7 @@
           <StackPanel Spacing="16">
             <TextBlock Text="{u:Tr firstLaunchWindow.chooseInstallFolder}" FontSize="24" FontWeight="SemiBold" />
             <TextBlock Text="{u:Tr firstLaunchWindow.chooseInstallDescription}" Opacity="0.8" TextWrapping="Wrap" />
+            <TextBlock x:Name="InstallToolHintText" Text="" Opacity="0.8" TextWrapping="Wrap" Foreground="#7FD08A" IsVisible="False" />
             <StackPanel Orientation="Horizontal" Spacing="18">
               <RadioButton x:Name="InstallAseRadio" IsChecked="True" GroupName="InstallGameType" Content="ARK: Survival Evolved (ASE)" IsCheckedChanged="InstallGameChanged" />
               <RadioButton x:Name="InstallAsaRadio" GroupName="InstallGameType" Content="ARK: Survival Ascended (ASA)" IsCheckedChanged="InstallGameChanged" />

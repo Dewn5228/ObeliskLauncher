@@ -318,8 +318,10 @@
                 </DataTemplate>
               </ComboBox.ItemTemplate>
             </ComboBox>
+            <TextBlock Text="{Binding AseBestToolHint}" IsVisible="{Binding HasAseBestToolHint}" TextWrapping="Wrap" Foreground="#7FD08A" />
             <WrapPanel>
-              <Button Content="{u:Tr mainWindow.importProtonPath}" Click="ImportAseLinuxProtonTool" />
+              <Button Content="{u:Tr mainWindow.useBestTool}" Click="UseBestAseLinuxLaunchTool" />
+              <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.importProtonPath}" Click="ImportAseLinuxProtonTool" />
               <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.importWinePath}" Click="ImportAseLinuxWineTool" />
             </WrapPanel>
             <TextBlock Text="{Binding LinuxLaunchToolNote}" TextWrapping="Wrap" Foreground="#A7C4E3" />
@@ -378,8 +380,10 @@
                 </DataTemplate>
               </ComboBox.ItemTemplate>
             </ComboBox>
+            <TextBlock Text="{Binding AsaBestToolHint}" IsVisible="{Binding HasAsaBestToolHint}" TextWrapping="Wrap" Foreground="#7FD08A" />
             <WrapPanel>
-              <Button Content="{u:Tr mainWindow.importProtonPath}" Click="ImportAsaLinuxProtonTool" />
+              <Button Content="{u:Tr mainWindow.useBestTool}" Click="UseBestAsaLinuxLaunchTool" />
+              <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.importProtonPath}" Click="ImportAsaLinuxProtonTool" />
               <Button Margin="10,0,0,0" Content="{u:Tr mainWindow.importWinePath}" Click="ImportAsaLinuxWineTool" />
             </WrapPanel>
             <TextBlock Text="{Binding LinuxLaunchToolNote}" TextWrapping="Wrap" Foreground="#A7C4E3" />

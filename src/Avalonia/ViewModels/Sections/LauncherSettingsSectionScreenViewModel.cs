@@ -105,6 +105,53 @@ public abstract class LauncherSettingsSectionScreenViewModel : LauncherSectionSc
 
     public string LinuxLaunchToolNote => Locale.Get("launcherSettingsTab.linuxLaunchToolNote");
 
+    public string AseBestToolHint => GetBestToolHint(AseScopeId);
+
+    public string AsaBestToolHint => GetBestToolHint(AsaScopeId);
+
+    public bool HasAseBestToolHint => !string.IsNullOrWhiteSpace(AseBestToolHint);
+
+    public bool HasAsaBestToolHint => !string.IsNullOrWhiteSpace(AsaBestToolHint);
+
+    public bool PinBestLinuxLaunchToolForGame(string gameId)
+    {
+        LinuxLaunchToolOption? best = LinuxLaunchToolResolver.GetBestPick(LinuxLaunchTools);
+        if (best is null)
+            return false;
+
+        for (int index = 0; index < LinuxLaunchTools.Count; index++)
+        {
+            if (!LinuxLaunchTools[index].Id.Equals(best.Id, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (gameId == AsaScopeId)
+                SetLinuxLaunchToolByIndex(index, gameId, nameof(SelectedAsaLinuxLaunchToolIndex), nameof(SelectedAsaLinuxLaunchTool));
+            else
+                SetLinuxLaunchToolByIndex(index, gameId, nameof(SelectedAseLinuxLaunchToolIndex), nameof(SelectedAseLinuxLaunchTool));
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool PinBestAseLinuxLaunchTool() => PinBestLinuxLaunchToolForGame(AseScopeId);
+
+    public bool PinBestAsaLinuxLaunchTool() => PinBestLinuxLaunchToolForGame(AsaScopeId);
+
+    string GetBestToolHint(string gameId)
+    {
+        if (!OperatingSystem.IsLinux())
+            return string.Empty;
+
+        LinuxLaunchToolOption? best = LinuxLaunchToolResolver.GetBestPick(LinuxLaunchTools);
+        if (best is null)
+            return string.Empty;
+
+        return string.Format(Locale.Get("mainWindow.bestToolHint"),
+            best.DisplayName,
+            LinuxLaunchToolResolver.DescribePickReason(best));
+    }
+
     public LinuxLaunchToolOption? SelectedAseLinuxLaunchTool
     {
         get => ResolveSelectedLinuxLaunchTool(LinuxLaunchTools, AseScopeId);
@@ -576,6 +623,10 @@ public abstract class LauncherSettingsSectionScreenViewModel : LauncherSectionSc
         OnPropertyChanged(nameof(AsaGamePath));
         OnPropertyChanged(nameof(SelectedAseLinuxLaunchTool));
         OnPropertyChanged(nameof(SelectedAsaLinuxLaunchTool));
+        OnPropertyChanged(nameof(AseBestToolHint));
+        OnPropertyChanged(nameof(AsaBestToolHint));
+        OnPropertyChanged(nameof(HasAseBestToolHint));
+        OnPropertyChanged(nameof(HasAsaBestToolHint));
         OnPropertyChanged(nameof(AseLinuxCustomPrefixPath));
         OnPropertyChanged(nameof(AsaLinuxCustomPrefixPath));
         OnPropertyChanged(nameof(AseLinuxExtraEnvironmentVariables));
@@ -680,6 +731,10 @@ public abstract class LauncherSettingsSectionScreenViewModel : LauncherSectionSc
         PersistSettings();
         OnPropertyChanged(nameof(SelectedAseLinuxLaunchTool));
         OnPropertyChanged(nameof(SelectedAsaLinuxLaunchTool));
+        OnPropertyChanged(nameof(AseBestToolHint));
+        OnPropertyChanged(nameof(AsaBestToolHint));
+        OnPropertyChanged(nameof(HasAseBestToolHint));
+        OnPropertyChanged(nameof(HasAsaBestToolHint));
         OnPropertyChanged(nameof(AseLinuxCustomPrefixPath));
         OnPropertyChanged(nameof(AsaLinuxCustomPrefixPath));
         OnPropertyChanged(nameof(AseLinuxExtraEnvironmentVariables));
@@ -807,6 +862,10 @@ public abstract class LauncherSettingsSectionScreenViewModel : LauncherSectionSc
         OnPropertyChanged(nameof(SelectedAsaLinuxLaunchToolIndex));
         OnPropertyChanged(nameof(SelectedAseLinuxLaunchTool));
         OnPropertyChanged(nameof(SelectedAsaLinuxLaunchTool));
+        OnPropertyChanged(nameof(AseBestToolHint));
+        OnPropertyChanged(nameof(AsaBestToolHint));
+        OnPropertyChanged(nameof(HasAseBestToolHint));
+        OnPropertyChanged(nameof(HasAsaBestToolHint));
         OnPropertyChanged(nameof(PreAquaticaVisible));
     }
 

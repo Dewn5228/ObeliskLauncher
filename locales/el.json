@@ -359,7 +359,10 @@
     "placeholderGamescopeArgs": "-W 1920 -H 1080 -r 60",
     "placeholderWineFsrStrength": "0-5, προαιρετικό",
     "placeholderExtraEnv": "KEY=value\nANOTHER_KEY=value",
-    "placeholderLaunchWrappers": "Μία εντολή ανά γραμμή\nobs-gamecapture mangohud"
+    "placeholderLaunchWrappers": "Μία εντολή ανά γραμμή\nobs-gamecapture mangohud",
+    "useBestTool": "Χρήση του καλύτερου διαθέσιμου",
+    "bestToolHint": "Καλύτερη επιλογή: {0} ({1})",
+    "noBestToolFound": "Δεν βρέθηκε χρησιμοποιήσιμο εργαλείο Proton ή Wine."
   },
   "firstLaunchWindow": {
     "title": "Εγκατάσταση Obelisk Launcher",
@@ -381,7 +384,9 @@
     "requiredDiskSpace": "Απαιτούμενος χώρος: 129 GB",
     "beginInstallation": "Έναρξη εγκατάστασης",
     "option1": "Εγκατάσταση / επιδιόρθωση μέσω Steam (προτείνεται)",
-    "option2": "Επιλογή προσαρμοσμένου φακέλου παιχνιδιού"
+    "option2": "Επιλογή προσαρμοσμένου φακέλου παιχνιδιού",
+    "bestToolHint": "Εργαλείο εκκίνησης Linux: αυτόματο → {0} ({1})",
+    "noToolFound": "Εργαλείο εκκίνησης Linux: δεν βρέθηκε συμβατός δρομέας."
   },
   "fatalErrorWindow": {
     "title": "Μοιραίο σφάλμα"
@@ -409,5 +414,14 @@
     "tabTitle": "Ενημέρωση Παιχνιδιού"
   },
   "gameUpdateAvailable": "Υπάρχει διαθέσιμη ενημέρωση παιχνιδιού.",
-  "updateFinished": "Η ενημέρωση ολοκληρώθηκε."
+  "updateFinished": "Η ενημέρωση ολοκληρώθηκε.",
+  "linuxToolRank": {
+    "steamAssigned": "εργαλείο συμβατότητας που όρισε το Steam",
+    "experimental": "πειραματική έκδοση αιχμής",
+    "geBuild": "έκδοση GloriousEggroll (GE)",
+    "cachy": "βελτιστοποιημένη έκδοση CachyOS",
+    "userManaged": "δρομέας εγκατεστημένος από τον χρήστη",
+    "stockProton": "βασικό Proton της Valve",
+    "wineFallback": "εφεδρικό Wine (δεν βρέθηκε Proton)"
+  }
 }

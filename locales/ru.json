@@ -359,7 +359,10 @@
     "placeholderGamescopeArgs": "-W 1920 -H 1080 -r 60",
     "placeholderWineFsrStrength": "0-5, опционально",
     "placeholderExtraEnv": "KEY=value\nANOTHER_KEY=value",
-    "placeholderLaunchWrappers": "По одной команде на строку\nobs-gamecapture mangohud"
+    "placeholderLaunchWrappers": "По одной команде на строку\nobs-gamecapture mangohud",
+    "useBestTool": "Использовать лучший доступный",
+    "bestToolHint": "Лучший вариант: {0} ({1})",
+    "noBestToolFound": "Подходящий инструмент Proton или Wine не найден."
   },
   "firstLaunchWindow": {
     "title": "Настройка Obelisk Launcher",
@@ -381,7 +384,9 @@
     "requiredDiskSpace": "Требуемое место: 129 ГБ",
     "beginInstallation": "Начать установку",
     "option1": "Установить / восстановить через Steam (рекомендуется)",
-    "option2": "Указать свою папку игры"
+    "option2": "Указать свою папку игры",
+    "bestToolHint": "Инструмент запуска Linux: автоматически → {0} ({1})",
+    "noToolFound": "Инструмент запуска Linux: совместимый раннер пока не найден."
   },
   "fatalErrorWindow": {
     "title": "Критическая ошибка"
@@ -409,5 +414,14 @@
     "tabTitle": "Обновление игры"
   },
   "gameUpdateAvailable": "Доступно обновление игры.",
-  "updateFinished": "Обновление завершено."
+  "updateFinished": "Обновление завершено.",
+  "linuxToolRank": {
+    "steamAssigned": "инструмент совместимости, назначенный Steam",
+    "experimental": "новейшая Experimental-сборка",
+    "geBuild": "сборка GloriousEggroll (GE)",
+    "cachy": "оптимизированная сборка CachyOS",
+    "userManaged": "раннер, установленный пользователем",
+    "stockProton": "стандартный Proton от Valve",
+    "wineFallback": "запасной вариант Wine (Proton не найден)"
+  }
 }

@@ -359,7 +359,10 @@
     "placeholderGamescopeArgs": "-W 1920 -H 1080 -r 60",
     "placeholderWineFsrStrength": "0-5, optional",
     "placeholderExtraEnv": "KEY=value\nANOTHER_KEY=value",
-    "placeholderLaunchWrappers": "One wrapper command per line\nobs-gamecapture mangohud"
+    "placeholderLaunchWrappers": "One wrapper command per line\nobs-gamecapture mangohud",
+    "useBestTool": "Use best available",
+    "bestToolHint": "Best match: {0} ({1})",
+    "noBestToolFound": "No usable Proton or Wine tool found."
   },
   "firstLaunchWindow": {
     "title": "Obelisk Launcher Setup",
@@ -381,7 +384,9 @@
     "requiredDiskSpace": "Required disk space: 129 GB",
     "beginInstallation": "Begin installation",
     "option1": "Install / repair game files through Steam (recommended)",
-    "option2": "Specify a custom game folder"
+    "option2": "Specify a custom game folder",
+    "bestToolHint": "Linux launch tool: automatic → {0} ({1})",
+    "noToolFound": "Linux launch tool: no compatible runner found yet."
   },
   "fatalErrorWindow": {
     "title": "Fatal Error"
@@ -409,5 +414,14 @@
     "tabTitle": "Update Game"
   },
   "gameUpdateAvailable": "Game update is available.",
-  "updateFinished": "Update finished."
+  "updateFinished": "Update finished.",
+  "linuxToolRank": {
+    "steamAssigned": "Steam's assigned compatibility tool",
+    "experimental": "bleeding-edge Experimental build",
+    "geBuild": "GloriousEggroll (GE) build",
+    "cachy": "CachyOS optimized build",
+    "userManaged": "user-installed runner",
+    "stockProton": "stock Valve Proton",
+    "wineFallback": "Wine fallback (no Proton found)"
+  }
 }

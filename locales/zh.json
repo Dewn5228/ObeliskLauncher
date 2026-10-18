@@ -359,7 +359,10 @@
     "placeholderGamescopeArgs": "-W 1920 -H 1080 -r 60",
     "placeholderWineFsrStrength": "0-5，可选",
     "placeholderExtraEnv": "KEY=value\nANOTHER_KEY=value",
-    "placeholderLaunchWrappers": "每行一个包装器命令\nobs-gamecapture mangohud"
+    "placeholderLaunchWrappers": "每行一个包装器命令\nobs-gamecapture mangohud",
+    "useBestTool": "使用最佳可用项",
+    "bestToolHint": "最佳匹配：{0}（{1}）",
+    "noBestToolFound": "未找到可用的 Proton 或 Wine 工具。"
   },
   "firstLaunchWindow": {
     "title": "TEK 启动器安装",
@@ -381,7 +384,9 @@
     "requiredDiskSpace": "所需磁盘空间：129 GB",
     "beginInstallation": "开始安装",
     "option1": "通过 Steam 安装 / 修复游戏文件（推荐）",
-    "option2": "指定自定义游戏文件夹"
+    "option2": "指定自定义游戏文件夹",
+    "bestToolHint": "Linux 启动工具：自动 → {0}（{1}）",
+    "noToolFound": "Linux 启动工具：尚未找到兼容的运行器。"
   },
   "fatalErrorWindow": {
     "title": "致命错误"
@@ -409,5 +414,14 @@
     "tabTitle": "更新游戏"
   },
   "gameUpdateAvailable": "游戏更新可用。",
-  "updateFinished": "更新完成。"
+  "updateFinished": "更新完成。",
+  "linuxToolRank": {
+    "steamAssigned": "Steam 指定的兼容工具",
+    "experimental": "前沿 Experimental 构建",
+    "geBuild": "GloriousEggroll (GE) 构建",
+    "cachy": "CachyOS 优化构建",
+    "userManaged": "用户安装的运行器",
+    "stockProton": "Valve 官方 Proton",
+    "wineFallback": "Wine 回退（未找到 Proton）"
+  }
 }

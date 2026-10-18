@@ -226,8 +226,19 @@ public partial class MainWindow : Window
     }
 
     async void ImportAseLinuxProtonTool(object? sender, RoutedEventArgs e) => await ImportLinuxLaunchToolForGameAsync(GameCatalog.AseGameId, LinuxLaunchToolKind.Proton, Locale.Get("mainWindow.importProtonPath"));
-
     async void ImportAseLinuxWineTool(object? sender, RoutedEventArgs e) => await ImportLinuxLaunchToolForGameAsync(GameCatalog.AseGameId, LinuxLaunchToolKind.Wine, Locale.Get("mainWindow.importWinePath"));
+
+    void UseBestAseLinuxLaunchTool(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel { CurrentScreen: LauncherSettingsSectionScreenViewModel screen } && !screen.PinBestAseLinuxLaunchTool())
+            Messages.Show("common.warning", Locale.Get("mainWindow.noBestToolFound"));
+    }
+
+    void UseBestAsaLinuxLaunchTool(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel { CurrentScreen: LauncherSettingsSectionScreenViewModel screen } && !screen.PinBestAsaLinuxLaunchTool())
+            Messages.Show("common.warning", Locale.Get("mainWindow.noBestToolFound"));
+    }
 
     async void ImportAsaLinuxProtonTool(object? sender, RoutedEventArgs e) => await ImportLinuxLaunchToolForGameAsync(GameCatalog.AsaGameId, LinuxLaunchToolKind.Proton, Locale.Get("mainWindow.importProtonPath"));
 

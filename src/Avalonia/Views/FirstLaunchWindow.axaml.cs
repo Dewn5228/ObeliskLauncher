@@ -4,6 +4,7 @@ using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using ObeliskLauncher.ARK;
 using ObeliskLauncher.Data;
+using ObeliskLauncher.Platform;
 using ObeliskLauncher.UI;
 
 namespace ObeliskLauncher.Avalonia.Views;
@@ -29,12 +30,42 @@ public partial class FirstLaunchWindow : Window
 
         UpdateRequiredSpaceText();
         UpdateExistingDescription();
+        UpdateExistingToolHint();
+        UpdateInstallToolHint();
     }
 
     void UpdateExistingDescription()
     {
         var entry = GameCatalog.GetByGameId(_existingGameId);
         ExistingDescriptionText.Text = Locale.Get("firstLaunchWindow.selectFolderDescription", entry.ExeFileName, entry.ExeRelativePath);
+    }
+
+    void UpdateExistingToolHint()
+    {
+        string hint = GetLaunchToolHint(_existingInstallPath);
+        ExistingToolHintText.Text = hint;
+        ExistingToolHintText.IsVisible = !string.IsNullOrWhiteSpace(hint);
+    }
+
+    void UpdateInstallToolHint()
+    {
+        string hint = GetLaunchToolHint(_installPath);
+        InstallToolHintText.Text = hint;
+        InstallToolHintText.IsVisible = !string.IsNullOrWhiteSpace(hint);
+    }
+
+    static string GetLaunchToolHint(string? gamePath)
+    {
+        if (!OperatingSystem.IsLinux())
+            return string.Empty;
+
+        var options = LinuxLaunchToolResolver.GetAvailableOptions(gamePath: gamePath);
+        LinuxLaunchToolOption? best = LinuxLaunchToolResolver.GetBestPick(options);
+        return best is null
+            ? Locale.Get("firstLaunchWindow.noToolFound")
+            : string.Format(Locale.Get("firstLaunchWindow.bestToolHint"),
+                best.DisplayName,
+                LinuxLaunchToolResolver.DescribePickReason(best));
     }
 
     async void BrowseExistingInstallPath(object? sender, RoutedEventArgs e)
@@ -77,6 +108,7 @@ public partial class FirstLaunchWindow : Window
             _existingInstallPath = null;
             ContinueExistingButton.IsEnabled = false;
             SetStatus(ExistingStatusText, Locale.Get("firstLaunchWindow.selectFolderToContinue"), "#D49B38");
+            UpdateExistingToolHint();
             return;
         }
 
@@ -93,12 +125,14 @@ public partial class FirstLaunchWindow : Window
             _existingInstallPath = null;
             SetStatus(ExistingStatusText, Locale.Get("status.gameFilesNotFound"), "#D4573B");
         }
+        UpdateExistingToolHint();
     }
 
     void InstallPathChanged(object? sender, RoutedEventArgs e)
     {
         _installPath = InstallPathBox.Text?.Trim();
         RefreshInstallState();
+        UpdateInstallToolHint();
     }
 
     void ShowExistingInstallFlow(object? sender, RoutedEventArgs e) => SetPanelVisibility(showExistingInstall: true);
@@ -113,6 +147,7 @@ public partial class FirstLaunchWindow : Window
         SyncExistingSuggestedPath();
         ExistingPathChanged(null, e);
         UpdateExistingDescription();
+        UpdateExistingToolHint();
     }
 
     void InstallGameChanged(object? sender, RoutedEventArgs e)
@@ -120,6 +155,7 @@ public partial class FirstLaunchWindow : Window
         _installGameId = InstallAsaRadio.IsChecked == true ? GameCatalog.AsaGameId : GameCatalog.AseGameId;
         UpdateInstallVersionToggle();
         RefreshInstallState();
+        UpdateInstallToolHint();
     }
 
     void VersionChanged(object? sender, RoutedEventArgs e)

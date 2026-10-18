@@ -359,7 +359,10 @@
     "placeholderGamescopeArgs": "-W 1920 -H 1080 -r 60",
     "placeholderWineFsrStrength": "0-5, optioneel",
     "placeholderExtraEnv": "KEY=value\nANOTHER_KEY=value",
-    "placeholderLaunchWrappers": "Eén wrapper-commando per regel\nobs-gamecapture mangohud"
+    "placeholderLaunchWrappers": "Eén wrapper-commando per regel\nobs-gamecapture mangohud",
+    "useBestTool": "Beste beschikbare gebruiken",
+    "bestToolHint": "Beste match: {0} ({1})",
+    "noBestToolFound": "Geen bruikbare Proton- of Wine-tool gevonden."
   },
   "firstLaunchWindow": {
     "title": "Obelisk Launcher Setup",
@@ -381,7 +384,9 @@
     "requiredDiskSpace": "Benodigde schijfruimte: 129 GB",
     "beginInstallation": "Installatie starten",
     "option1": "Spelbestanden installeren / herstellen via Steam (aanbevolen)",
-    "option2": "Een aangepaste spelmap opgeven"
+    "option2": "Een aangepaste spelmap opgeven",
+    "bestToolHint": "Linux-startprogramma: automatisch → {0} ({1})",
+    "noToolFound": "Linux-startprogramma: nog geen compatibele runner gevonden."
   },
   "fatalErrorWindow": {
     "title": "Fatale Fout"
@@ -409,5 +414,14 @@
     "tabTitle": "Spel Bijwerken"
   },
   "gameUpdateAvailable": "Spelupdate is beschikbaar.",
-  "updateFinished": "Update voltooid."
+  "updateFinished": "Update voltooid.",
+  "linuxToolRank": {
+    "steamAssigned": "door Steam toegewezen compatibiliteitstool",
+    "experimental": "nieuwste Experimental-build",
+    "geBuild": "GloriousEggroll (GE)-build",
+    "cachy": "geoptimaliseerde CachyOS-build",
+    "userManaged": "door gebruiker geïnstalleerde runner",
+    "stockProton": "standaard Valve-Proton",
+    "wineFallback": "Wine als terugval (geen Proton gevonden)"
+  }
 }

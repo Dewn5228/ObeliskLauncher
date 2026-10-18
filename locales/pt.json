@@ -359,7 +359,10 @@
     "placeholderGamescopeArgs": "-W 1920 -H 1080 -r 60",
     "placeholderWineFsrStrength": "0-5, opcional",
     "placeholderExtraEnv": "KEY=value\nANOTHER_KEY=value",
-    "placeholderLaunchWrappers": "Um comando wrapper por linha\nobs-gamecapture mangohud"
+    "placeholderLaunchWrappers": "Um comando wrapper por linha\nobs-gamecapture mangohud",
+    "useBestTool": "Usar o melhor disponível",
+    "bestToolHint": "Melhor correspondência: {0} ({1})",
+    "noBestToolFound": "Nenhuma ferramenta Proton ou Wine utilizável encontrada."
   },
   "firstLaunchWindow": {
     "title": "Configuração do Obelisk Launcher",
@@ -381,7 +384,9 @@
     "requiredDiskSpace": "Espaço necessário: 129 GB",
     "beginInstallation": "Iniciar instalação",
     "option1": "Instalar / reparar arquivos via Steam (recomendado)",
-    "option2": "Especificar uma pasta de jogo personalizada"
+    "option2": "Especificar uma pasta de jogo personalizada",
+    "bestToolHint": "Ferramenta de inicialização do Linux: automática → {0} ({1})",
+    "noToolFound": "Ferramenta de inicialização do Linux: nenhum executor compatível encontrado ainda."
   },
   "fatalErrorWindow": {
     "title": "Erro Fatal"
@@ -409,5 +414,14 @@
     "tabTitle": "Atualizar Jogo"
   },
   "gameUpdateAvailable": "Uma atualização do jogo está disponível.",
-  "updateFinished": "Atualização finalizada."
+  "updateFinished": "Atualização finalizada.",
+  "linuxToolRank": {
+    "steamAssigned": "ferramenta de compatibilidade atribuída pelo Steam",
+    "experimental": "compilação Experimental mais recente",
+    "geBuild": "compilação GloriousEggroll (GE)",
+    "cachy": "compilação otimizada CachyOS",
+    "userManaged": "executor instalado pelo usuário",
+    "stockProton": "Proton padrão da Valve",
+    "wineFallback": "Wine como alternativa (nenhum Proton encontrado)"
+  }
 }
