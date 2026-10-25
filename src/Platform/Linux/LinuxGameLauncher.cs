@@ -79,7 +79,6 @@ sealed class LinuxGameLauncher : IGameLauncher
                 startInfo.WorkingDirectory,
                 string.Join(' ', startInfo.ArgumentList));
 
-            Steam.Api.Shutdown();
             try
             {
                 Process? process = Process.Start(startInfo);
@@ -100,10 +99,6 @@ sealed class LinuxGameLauncher : IGameLauncher
             {
                 LauncherLog.Error(ex, "Linux launch failed during Process.Start");
                 return new(false, $"Failed to launch ARK through Proton and TEK Injector: {ex.Message}");
-            }
-            finally
-            {
-                Steam.Api.Initialize();
             }
         }
 

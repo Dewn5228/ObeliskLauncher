@@ -59,22 +59,17 @@ static class GameRuntimeBootstrap
         var stopwatch = Stopwatch.StartNew();
         LauncherLog.Debug("GameRuntimeBootstrap: acquiring {DisplayName}. Asset={AssetName}", displayName, assetFileName);
 
-        string? cachedAssetPath = TryFindCachedAsset(assetFileName);
-        if (cachedAssetPath is not null)
-        {
-            stopwatch.Stop();
-            LauncherLog.Debug("GameRuntimeBootstrap: cache hit for {DisplayName} after {ElapsedMs} ms. Path={AssetPath}", displayName, stopwatch.ElapsedMilliseconds, cachedAssetPath);
-            return new(cachedAssetPath, null);
-        }
-
-        LauncherLog.Debug("GameRuntimeBootstrap: cache miss for {DisplayName}; requesting release metadata from {Url}", displayName, latestReleaseUrl);
+        LauncherLog.Debug("GameRuntimeBootstrap: checking latest release for {DisplayName} at {Url}", displayName, latestReleaseUrl);
 
         GitHubRelease? release = await Downloader.DownloadJsonAsync<GitHubRelease>(latestReleaseUrl).ConfigureAwait(false);
         if (release is not { TagName: not null, Assets: not null })
         {
             stopwatch.Stop();
             LauncherLog.Warning("GameRuntimeBootstrap: failed metadata query for {DisplayName} after {ElapsedMs} ms", displayName, stopwatch.ElapsedMilliseconds);
-            return new(null, $"Failed to query latest {displayName} release metadata from '{latestReleaseUrl}'.");
+            string? fallbackPath = TryFindCachedAsset(assetFileName);
+            return fallbackPath is not null
+                ? new(fallbackPath, null)
+                : new(null, $"Failed to query latest {displayName} release metadata from '{latestReleaseUrl}'.");
         }
         GitHubRelease releaseData = release.Value;
 
@@ -87,7 +82,10 @@ static class GameRuntimeBootstrap
         {
             stopwatch.Stop();
             LauncherLog.Warning("GameRuntimeBootstrap: release {TagName} does not contain {AssetName} for {DisplayName}", releaseData.TagName, assetFileName, displayName);
-            return new(null, $"Latest {displayName} release does not expose '{assetFileName}'.");
+            string? fallbackPath = TryFindCachedAsset(assetFileName);
+            return fallbackPath is not null
+                ? new(fallbackPath, null)
+                : new(null, $"Latest {displayName} release does not expose '{assetFileName}'.");
         }
         GitHubAsset asset = assetData.Value;
 
@@ -95,15 +93,38 @@ static class GameRuntimeBootstrap
         Directory.CreateDirectory(releaseDir);
 
         string assetPath = Path.Combine(releaseDir, asset.Name);
-        if (!File.Exists(assetPath))
+        if (File.Exists(assetPath) && (asset.Size is null || new FileInfo(assetPath).Length == asset.Size))
+        {
+            stopwatch.Stop();
+            LauncherLog.Debug("GameRuntimeBootstrap: cache hit for {DisplayName} release {TagName} after {ElapsedMs} ms. Path={AssetPath}", displayName, releaseData.TagName, stopwatch.ElapsedMilliseconds, assetPath);
+            return new(assetPath, null);
+        }
+
+        if (File.Exists(assetPath))
+            File.Delete(assetPath);
+
+        string downloadPath = assetPath + ".download";
+        try
         {
             LauncherLog.Debug("GameRuntimeBootstrap: downloading {DisplayName} from {Url} to {AssetPath}", displayName, asset.BrowserDownloadUrl, assetPath);
-            if (!await Downloader.DownloadFileAsync(assetPath, new EventHandlers(), asset.BrowserDownloadUrl).ConfigureAwait(false))
+            if (!await Downloader.DownloadFileAsync(downloadPath, new EventHandlers(), asset.BrowserDownloadUrl).ConfigureAwait(false)
+                || asset.Size is long expectedSize && new FileInfo(downloadPath).Length != expectedSize)
             {
                 stopwatch.Stop();
-                LauncherLog.Warning("GameRuntimeBootstrap: download failed for {DisplayName} after {ElapsedMs} ms", displayName, stopwatch.ElapsedMilliseconds);
-                return new(null, $"Failed to download {displayName} from '{asset.BrowserDownloadUrl}'.");
+                LauncherLog.Warning("GameRuntimeBootstrap: download failed or had an unexpected size for {DisplayName} after {ElapsedMs} ms", displayName, stopwatch.ElapsedMilliseconds);
+                File.Delete(downloadPath);
+                string? fallbackPath = TryFindCachedAsset(assetFileName);
+                return fallbackPath is not null
+                    ? new(fallbackPath, null)
+                    : new(null, $"Failed to download {displayName} from '{asset.BrowserDownloadUrl}'.");
             }
+
+            File.Move(downloadPath, assetPath, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(downloadPath))
+                File.Delete(downloadPath);
         }
 
         stopwatch.Stop();
@@ -149,6 +170,9 @@ static class GameRuntimeBootstrap
 
     readonly record struct GitHubAsset
     {
+        [JsonPropertyName("size")]
+        public long? Size { get; init; }
+
         [JsonPropertyName("browser_download_url")]
         public string? BrowserDownloadUrl { get; init; }
 

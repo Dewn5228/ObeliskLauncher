@@ -6,6 +6,12 @@ RID="${RID:-linux-x64}"
 CONFIGURATION="${CONFIGURATION:-Release}"
 OUTPUT_DIR="${OUTPUT_DIR:-artifacts/publish/${RID}}"
 SIGN_ASSEMBLY="${SIGN_ASSEMBLY:-false}"
+VERSION="${VERSION:-}"
+
+extra_args=()
+if [ -n "${VERSION}" ]; then
+  extra_args+=("-p:Version=${VERSION}")
+fi
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
@@ -20,6 +26,7 @@ dotnet publish ObeliskLauncher.csproj \
   --self-contained true \
   -p:PublishSingleFile=true \
   -p:IncludeNativeLibrariesForSelfExtract=true \
+  "${extra_args[@]}" \
   -o "${OUTPUT_DIR}"
 
 printf 'Linux publish completed: %s\n' "${OUTPUT_DIR}"

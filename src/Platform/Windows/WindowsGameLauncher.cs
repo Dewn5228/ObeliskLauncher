@@ -58,9 +58,7 @@ sealed class WindowsGameLauncher : IGameLauncher
                 Data = (nint)dataPtr
             };
 
-            Steam.Api.Shutdown();
             TEKInjector.RunGame(ref injArgs);
-            Steam.Api.Initialize();
 
             foreach (var ptr in argv)
                 Marshal.FreeHGlobal(ptr);

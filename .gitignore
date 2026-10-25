@@ -8,3 +8,4 @@ res/
 local/
 *.snk
 *.g.cs
+.opencode/
