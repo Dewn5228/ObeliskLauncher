@@ -114,26 +114,27 @@ static class Game
 
     /// <summary>Executes the game and optionally initiates connection to a server.</summary>
     /// <param name="server">Server to join, <see langword="null"/> if no server needs to be joined.</param>
-    public static void Launch(Server? server)
+    /// <returns><see langword="true"/> if the launch request was handed off successfully; otherwise, <see langword="false"/>.</returns>
+    public static bool Launch(Server? server)
     {
         if (!ActiveGameManager.IsConfigured)
         {
             Messages.Show("common.warning", Locale.Get("errors.noPathSelected"));
-            return;
+            return false;
         }
 
         string rootPath = ActiveGameManager.Current.RootPath;
         if (string.IsNullOrWhiteSpace(rootPath))
         {
             Messages.Show("common.warning", Locale.Get("errors.noPathSelected"));
-            return;
+            return false;
         }
 
         string exePath = ResolveExecutablePath();
         if (string.IsNullOrWhiteSpace(exePath))
         {
             Messages.Show("common.warning", Locale.Get("errors.noPathSelected"));
-            return;
+            return false;
         }
 
         LauncherLog.Information("Launch requested. GameId={GameId}, GameName={GameName}, RootPath={RootPath}, ExePath={ExePath}, Server={Server}",
@@ -156,24 +157,28 @@ static class Game
             LauncherLog.Warning("Launch blocked: files are considered corrupted. GameId={GameId}, ExePath={ExePath}", ActiveGameManager.Current.Id, ExePath);
             WriteLaunchAttemptLog(launchLog, "Launch blocked: game files look corrupted.");
             Messages.Show("common.error", Locale.Get("errors.launchFailCorrupted"));
+            return false;
         }
         else if (!Steam.App.IsRunning)
         {
             LauncherLog.Warning("Launch blocked: Steam is not running");
             WriteLaunchAttemptLog(launchLog, "Launch blocked: Steam is not running.");
             Messages.Show("common.error", Locale.Get("errors.launchFailSteamNotRunning"));
+            return false;
         }
         else if (!DirectXInstalled)
         {
             LauncherLog.Warning("Launch blocked: DirectX/runtime requirements are missing");
             WriteLaunchAttemptLog(launchLog, "Launch blocked: DirectX/runtime requirements are missing.");
             Messages.Show("common.error", string.Format(Locale.Get("errors.launchFailDirectXNotInstalled"), Locale.Get("errors.installDirectX")));
+            return false;
         }
         else if (server is not null && server.Map > MapCode.TheIsland && server.Map < MapCode.Mod && !DLC.Get(server.Map).IsInstalled)
         {
             LauncherLog.Warning("Launch blocked: required DLC is missing for server join. Map={Map}", server.Map);
             WriteLaunchAttemptLog(launchLog, $"Launch blocked: DLC '{server.Map}' is missing for server join.");
             Messages.Show("common.warning", Locale.Get("errors.joinFailDLCMissing"));
+            return false;
         }
         else
         {
@@ -185,7 +190,7 @@ static class Game
                 LauncherLog.Warning("Launch blocked: Steam user not logged in or unresolved");
                 WriteLaunchAttemptLog(launchLog, "Launch blocked: Steam user is not logged in or could not be resolved.");
                 Messages.Show("common.error", Locale.Get("errors.launchFailNotLoggedIntoSteam"));
-                return;
+                return false;
             }
 
             var args = new List<string>(LaunchParameters)
@@ -249,13 +254,14 @@ static class Game
                 LauncherLog.Error("Platform launcher failed. Error={Error}", launchResult.ErrorMessage ?? "unknown");
                 WriteLaunchAttemptLog(launchLog, $"Launch failed in platform launcher: {launchResult.ErrorMessage}");
                 Messages.Show("Error", launchResult.ErrorMessage!);
-                return;
+                return false;
             }
 
             LauncherLog.Information("Launch submitted successfully. GameId={GameId}, Server={Server}", ActiveGameManager.Current.Id, server?.Address ?? "none");
             WriteLaunchAttemptLog(launchLog, "Launch request submitted successfully.");
             if (Settings.CloseOnGameLaunch)
                 LauncherServices.Lifetime.Shutdown();
+            return true;
         }
     }
 

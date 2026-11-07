@@ -26,6 +26,13 @@ static class Program
             return;
         }
 
+        if (PlayCommand.TryRun(args, out int playExitCode))
+        {
+            LauncherLog.Information("Headless play command completed with exit code {ExitCode}", playExitCode);
+            Environment.ExitCode = playExitCode;
+            return;
+        }
+
         LauncherLog.Information("Launching Avalonia desktop lifetime");
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }

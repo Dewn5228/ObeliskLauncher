@@ -150,6 +150,8 @@ public sealed class PlaySectionScreenViewModel : LauncherSectionScreenViewModel
 
     public bool UseSpacewarVisible => Game.CanUseSpacewar;
 
+    public bool CanCreateShortcut => OperatingSystem.IsWindows();
+
     public Task LaunchAsync()
     {
         if (IsGameRunning)
@@ -183,6 +185,7 @@ public sealed class PlaySectionScreenViewModel : LauncherSectionScreenViewModel
         OnPropertyChanged(nameof(RunAsAdminVisible));
         OnPropertyChanged(nameof(UseSpacewar));
         OnPropertyChanged(nameof(UseSpacewarVisible));
+        OnPropertyChanged(nameof(CanCreateShortcut));
     }
 
     public override void RefreshLocale()

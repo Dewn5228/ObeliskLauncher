@@ -362,7 +362,10 @@
     "placeholderLaunchWrappers": "Eén wrapper-commando per regel\nobs-gamecapture mangohud",
     "useBestTool": "Beste beschikbare gebruiken",
     "bestToolHint": "Beste match: {0} ({1})",
-    "noBestToolFound": "Geen bruikbare Proton- of Wine-tool gevonden."
+    "noBestToolFound": "Geen bruikbare Proton- of Wine-tool gevonden.",
+    "createShortcut": "Snelkoppeling maken",
+    "chooseShortcutFolder": "Kies waar de snelkoppeling wordt gemaakt",
+    "shortcutCreated": "Snelkoppeling gemaakt:{0}"
   },
   "firstLaunchWindow": {
     "title": "Obelisk Launcher Setup",

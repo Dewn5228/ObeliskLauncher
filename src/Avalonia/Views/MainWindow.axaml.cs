@@ -340,18 +340,63 @@ public partial class MainWindow : Window
         Messages.Show("common.info", Locale.Get("common.ok"));
     }
 
-    async Task<string?> PickFolderPathAsync(string title)
+    async Task<string?> PickFolderPathAsync(string title, string? startFolder = null)
     {
         if (!StorageProvider.CanOpen)
             return null;
 
-        var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        var options = new FolderPickerOpenOptions
         {
             Title = title,
             AllowMultiple = false
-        });
+        };
+
+        if (!string.IsNullOrWhiteSpace(startFolder))
+        {
+            try
+            {
+                options.SuggestedStartLocation = await StorageProvider.TryGetFolderFromPathAsync(startFolder);
+            }
+            catch (Exception ex)
+            {
+                LauncherLog.Debug("Unable to set folder picker start location. Folder={Folder}, Error={Error}", startFolder, ex.Message);
+            }
+        }
+
+        var folders = await StorageProvider.OpenFolderPickerAsync(options);
 
         return folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
+    }
+
+    async void CreateGameShortcut(object? sender, RoutedEventArgs e)
+    {
+        if (!OperatingSystem.IsWindows())
+            return;
+
+        if (!ActiveGameManager.IsConfigured)
+        {
+            Messages.Show("common.warning", Locale.Get("errors.noPathSelected"));
+            return;
+        }
+
+        string? folder = await PickFolderPathAsync(
+            Locale.Get("mainWindow.chooseShortcutFolder"),
+            Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory));
+
+        if (string.IsNullOrWhiteSpace(folder))
+            return;
+
+        try
+        {
+            string path = WindowsShortcutService.CreateGameShortcut(folder, ActiveGameManager.Current.DisplayName, ActiveGameManager.Current.Id);
+            LauncherLog.Information("Game shortcut created. Path={Path}, GameId={GameId}", path, ActiveGameManager.Current.Id);
+            Messages.Show("common.info", string.Format(Locale.Get("mainWindow.shortcutCreated"), path));
+        }
+        catch (Exception ex)
+        {
+            LauncherLog.Error(ex, "Failed to create game shortcut. Folder={Folder}", folder);
+            Messages.Show("common.error", ex.Message);
+        }
     }
 
     async void CleanDownloadCache(object? sender, RoutedEventArgs e)

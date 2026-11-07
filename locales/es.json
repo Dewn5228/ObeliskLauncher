@@ -362,7 +362,10 @@
     "placeholderLaunchWrappers": "Un comando por línea\nobs-gamecapture mangohud",
     "useBestTool": "Usar la mejor disponible",
     "bestToolHint": "Mejor coincidencia: {0} ({1})",
-    "noBestToolFound": "No se encontró ninguna herramienta Proton o Wine utilizable."
+    "noBestToolFound": "No se encontró ninguna herramienta Proton o Wine utilizable.",
+    "createShortcut": "Crear acceso directo",
+    "chooseShortcutFolder": "Elige dónde crear el acceso directo",
+    "shortcutCreated": "Acceso directo creado:{0}"
   },
   "firstLaunchWindow": {
     "title": "Configuración de Obelisk Launcher",

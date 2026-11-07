@@ -362,7 +362,10 @@
     "placeholderLaunchWrappers": "每行一个包装器命令\nobs-gamecapture mangohud",
     "useBestTool": "使用最佳可用项",
     "bestToolHint": "最佳匹配：{0}（{1}）",
-    "noBestToolFound": "未找到可用的 Proton 或 Wine 工具。"
+    "noBestToolFound": "未找到可用的 Proton 或 Wine 工具。",
+    "createShortcut": "创建快捷方式",
+    "chooseShortcutFolder": "选择快捷方式的创建位置",
+    "shortcutCreated": "快捷方式已创建：{0}"
   },
   "firstLaunchWindow": {
     "title": "TEK 启动器安装",

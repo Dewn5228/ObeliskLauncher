@@ -26,6 +26,7 @@
             <TextBlock Text="{Binding LaunchBehaviorNote}" IsVisible="{Binding LaunchBehaviorNoteVisible}" Opacity="0.78" TextWrapping="Wrap" />
             <CheckBox Content="{u:Tr mainWindow.runGameAsAdmin}" IsChecked="{Binding RunAsAdmin}" IsVisible="{Binding RunAsAdminVisible}" />
             <CheckBox Content="{u:Tr mainWindow.useSpacewar}" IsChecked="{Binding UseSpacewar}" IsVisible="{Binding UseSpacewarVisible}" />
+            <Button Content="{u:Tr mainWindow.createShortcut}" Click="CreateGameShortcut" IsVisible="{Binding CanCreateShortcut}" HorizontalAlignment="Left" />
           </StackPanel>
         </Border>
         <Grid ColumnDefinitions="*,*">

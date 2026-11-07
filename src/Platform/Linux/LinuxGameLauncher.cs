@@ -72,8 +72,18 @@ sealed class LinuxGameLauncher : IGameLauncher
 
             WriteLaunchDebugInfo(context, assets, request, settingsPath, startInfo);
 
-            startInfo.RedirectStandardOutput = true;
-            startInfo.RedirectStandardError = true;
+            if (LauncherBootstrap.HeadlessMode)
+            {
+                string headlessLogPath = GetChildLogPath(context.GameId);
+                startInfo = WrapWithFileLogging(startInfo, headlessLogPath);
+                LauncherLog.Information("Headless Linux launch output capture enabled. File={File}", headlessLogPath);
+            }
+            else
+            {
+                startInfo.RedirectStandardOutput = true;
+                startInfo.RedirectStandardError = true;
+            }
+
             LauncherLog.Debug("Linux launch command prepared. FileName={FileName}, WorkingDirectory={WorkingDirectory}, Args={Args}",
                 startInfo.FileName,
                 startInfo.WorkingDirectory,
@@ -89,8 +99,16 @@ sealed class LinuxGameLauncher : IGameLauncher
                 }
 
                 LauncherLog.Information("Linux launch process started. PID={Pid}, ProcessName={ProcessName}", process.Id, process.ProcessName);
-                AttachProcessOutputLogging(process, context.GameId);
-                _ = Task.Run(() => LogEarlyProcessOutcome(process));
+                if (!LauncherBootstrap.HeadlessMode)
+                {
+                    AttachProcessOutputLogging(process, context.GameId);
+                    _ = Task.Run(() => LogEarlyProcessOutcome(process));
+                }
+                else
+                {
+                    process.Dispose();
+                }
+
                 launchStopwatch.Stop();
                 LauncherLog.Debug("Linux launch pipeline finished in {ElapsedMs} ms", launchStopwatch.ElapsedMilliseconds);
                 return new(true, null);
@@ -636,13 +654,40 @@ sealed class LinuxGameLauncher : IGameLauncher
         }
     }
 
+    static string GetChildLogPath(string gameId)
+    {
+        string logsDir = Path.Combine(LauncherPlatform.Current.AppDataFolder, "logs");
+        Directory.CreateDirectory(logsDir);
+        return Path.Combine(logsDir, $"launch-child-{DateTime.Now:yyyyMMdd-HHmmss}-{gameId}.log");
+    }
+
+    static ProcessStartInfo WrapWithFileLogging(ProcessStartInfo original, string logPath)
+    {
+        var wrapped = new ProcessStartInfo("sh")
+        {
+            UseShellExecute = false,
+            WorkingDirectory = original.WorkingDirectory
+        };
+
+        foreach (var variable in original.Environment)
+            wrapped.Environment[variable.Key] = variable.Value;
+
+        wrapped.ArgumentList.Add("-c");
+        wrapped.ArgumentList.Add("exec \"$@\" >>\"$0\" 2>&1");
+        wrapped.ArgumentList.Add(logPath);
+        wrapped.ArgumentList.Add(original.FileName);
+
+        foreach (string argument in original.ArgumentList)
+            wrapped.ArgumentList.Add(argument);
+
+        return wrapped;
+    }
+
     static void AttachProcessOutputLogging(Process process, string gameId)
     {
         try
         {
-            string logsDir = Path.Combine(LauncherPlatform.Current.AppDataFolder, "logs");
-            Directory.CreateDirectory(logsDir);
-            string filePath = Path.Combine(logsDir, $"launch-child-{DateTime.Now:yyyyMMdd-HHmmss}-{gameId}.log");
+            string filePath = GetChildLogPath(gameId);
 
             var writer = new StreamWriter(filePath, false) { AutoFlush = true };
             object gate = new();

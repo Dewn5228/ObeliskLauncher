@@ -10,6 +10,8 @@ static class LauncherBootstrap
 
     public static readonly string Version = GetVersion();
 
+    public static bool HeadlessMode { get; set; }
+
     public static LauncherBootstrapResult InitializeCore()
     {
         LauncherLog.Information("InitializeCore started. AppDataFolder={AppDataFolder}", AppDataFolder);

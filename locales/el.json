@@ -362,7 +362,10 @@
     "placeholderLaunchWrappers": "Μία εντολή ανά γραμμή\nobs-gamecapture mangohud",
     "useBestTool": "Χρήση του καλύτερου διαθέσιμου",
     "bestToolHint": "Καλύτερη επιλογή: {0} ({1})",
-    "noBestToolFound": "Δεν βρέθηκε χρησιμοποιήσιμο εργαλείο Proton ή Wine."
+    "noBestToolFound": "Δεν βρέθηκε χρησιμοποιήσιμο εργαλείο Proton ή Wine.",
+    "createShortcut": "Δημιουργία συντόμευσης",
+    "chooseShortcutFolder": "Επιλέξτε πού θα δημιουργηθεί η συντόμευση",
+    "shortcutCreated": "Η συντόμευση δημιουργήθηκε:{0}"
   },
   "firstLaunchWindow": {
     "title": "Εγκατάσταση Obelisk Launcher",

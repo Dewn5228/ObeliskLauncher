@@ -362,7 +362,10 @@
     "placeholderLaunchWrappers": "По одной команде на строку\nobs-gamecapture mangohud",
     "useBestTool": "Использовать лучший доступный",
     "bestToolHint": "Лучший вариант: {0} ({1})",
-    "noBestToolFound": "Подходящий инструмент Proton или Wine не найден."
+    "noBestToolFound": "Подходящий инструмент Proton или Wine не найден.",
+    "createShortcut": "Создать ярлык",
+    "chooseShortcutFolder": "Выберите папку для ярлыка",
+    "shortcutCreated": "Ярлык создан:{0}"
   },
   "firstLaunchWindow": {
     "title": "Настройка Obelisk Launcher",
