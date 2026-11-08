@@ -8,6 +8,10 @@ static class GameRuntimeBootstrap
 {
     const string LatestInjectorReleaseUrl = "https://api.github.com/repos/teknology-hub/tek-injector/releases/latest";
     const string LatestRuntimeReleaseUrl = "https://api.github.com/repos/teknology-hub/tek-game-runtime/releases/latest";
+    const string PrimaryMirrorRoot = "https://teknology-hub.com/software";
+    const string SecondaryMirrorRoot = "https://de.teknology-hub.com/software";
+    const string InjectorRepositoryName = "tek-injector";
+    const string RuntimeRepositoryName = "tek-game-runtime";
 
     static string CacheRoot => Path.Combine(LauncherBootstrap.AppDataFolder,
         OperatingSystem.IsWindows() ? "tek-game-runtime-windows" : "tek-game-runtime-linux");
@@ -23,7 +27,7 @@ static class GameRuntimeBootstrap
             Directory.CreateDirectory(CacheRoot);
 
             var injectorStopwatch = Stopwatch.StartNew();
-            var injectorResult = AcquireAssetAsync(LatestInjectorReleaseUrl, InjectorAssetName, "TEK Injector").GetAwaiter().GetResult();
+            var injectorResult = AcquireAssetAsync(LatestInjectorReleaseUrl, InjectorAssetName, "TEK Injector", InjectorRepositoryName).GetAwaiter().GetResult();
             injectorStopwatch.Stop();
             if (injectorResult.AssetPath is null)
             {
@@ -33,7 +37,7 @@ static class GameRuntimeBootstrap
             LauncherLog.Debug("GameRuntimeBootstrap: TEK Injector ready in {ElapsedMs} ms. Path={AssetPath}", injectorStopwatch.ElapsedMilliseconds, injectorResult.AssetPath);
 
             var runtimeStopwatch = Stopwatch.StartNew();
-            var runtimeResult = AcquireAssetAsync(LatestRuntimeReleaseUrl, "libtek-game-runtime.dll", "TEK Game Runtime").GetAwaiter().GetResult();
+            var runtimeResult = AcquireAssetAsync(LatestRuntimeReleaseUrl, "libtek-game-runtime.dll", "TEK Game Runtime", RuntimeRepositoryName).GetAwaiter().GetResult();
             runtimeStopwatch.Stop();
             if (runtimeResult.AssetPath is null)
             {
@@ -54,10 +58,21 @@ static class GameRuntimeBootstrap
         }
     }
 
-    static async Task<AssetAcquireResult> AcquireAssetAsync(string latestReleaseUrl, string assetFileName, string displayName)
+    static async Task<AssetAcquireResult> AcquireAssetAsync(string latestReleaseUrl, string assetFileName, string displayName, string repositoryName)
+    {
+        var mirrorResult = await AcquireFromMirrorAsync(assetFileName, displayName, repositoryName).ConfigureAwait(false);
+        if (mirrorResult.AssetPath is not null)
+            return mirrorResult;
+
+        LauncherLog.Warning("GameRuntimeBootstrap: teknology-hub mirrors failed for {DisplayName}; falling back to GitHub. Error={Error}",
+            displayName, mirrorResult.ErrorMessage ?? "unknown");
+        return await AcquireFromGitHubAsync(latestReleaseUrl, assetFileName, displayName).ConfigureAwait(false);
+    }
+
+    static async Task<AssetAcquireResult> AcquireFromGitHubAsync(string latestReleaseUrl, string assetFileName, string displayName)
     {
         var stopwatch = Stopwatch.StartNew();
-        LauncherLog.Debug("GameRuntimeBootstrap: acquiring {DisplayName}. Asset={AssetName}", displayName, assetFileName);
+        LauncherLog.Debug("GameRuntimeBootstrap: acquiring {DisplayName} from GitHub. Asset={AssetName}", displayName, assetFileName);
 
         LauncherLog.Debug("GameRuntimeBootstrap: checking latest release for {DisplayName} at {Url}", displayName, latestReleaseUrl);
 
@@ -66,10 +81,8 @@ static class GameRuntimeBootstrap
         {
             stopwatch.Stop();
             LauncherLog.Warning("GameRuntimeBootstrap: failed metadata query for {DisplayName} after {ElapsedMs} ms", displayName, stopwatch.ElapsedMilliseconds);
-            string? fallbackPath = TryFindCachedAsset(assetFileName);
-            return fallbackPath is not null
-                ? new(fallbackPath, null)
-                : new(null, $"Failed to query latest {displayName} release metadata from '{latestReleaseUrl}'.");
+            return FallBackToCache(assetFileName,
+                $"Failed to query latest {displayName} release metadata from '{latestReleaseUrl}'.");
         }
         GitHubRelease releaseData = release.Value;
 
@@ -82,10 +95,8 @@ static class GameRuntimeBootstrap
         {
             stopwatch.Stop();
             LauncherLog.Warning("GameRuntimeBootstrap: release {TagName} does not contain {AssetName} for {DisplayName}", releaseData.TagName, assetFileName, displayName);
-            string? fallbackPath = TryFindCachedAsset(assetFileName);
-            return fallbackPath is not null
-                ? new(fallbackPath, null)
-                : new(null, $"Latest {displayName} release does not expose '{assetFileName}'.");
+            return FallBackToCache(assetFileName,
+                $"Latest {displayName} release does not expose '{assetFileName}'.");
         }
         GitHubAsset asset = assetData.Value;
 
@@ -113,10 +124,8 @@ static class GameRuntimeBootstrap
                 stopwatch.Stop();
                 LauncherLog.Warning("GameRuntimeBootstrap: download failed or had an unexpected size for {DisplayName} after {ElapsedMs} ms", displayName, stopwatch.ElapsedMilliseconds);
                 File.Delete(downloadPath);
-                string? fallbackPath = TryFindCachedAsset(assetFileName);
-                return fallbackPath is not null
-                    ? new(fallbackPath, null)
-                    : new(null, $"Failed to download {displayName} from '{asset.BrowserDownloadUrl}'.");
+                return FallBackToCache(assetFileName,
+                    $"Failed to download {displayName} from '{asset.BrowserDownloadUrl}'.");
             }
 
             File.Move(downloadPath, assetPath, overwrite: true);
@@ -128,36 +137,142 @@ static class GameRuntimeBootstrap
         }
 
         stopwatch.Stop();
-        LauncherLog.Debug("GameRuntimeBootstrap: acquired {DisplayName} in {ElapsedMs} ms. Path={AssetPath}", displayName, stopwatch.ElapsedMilliseconds, assetPath);
+        LauncherLog.Debug("GameRuntimeBootstrap: acquired {DisplayName} from GitHub in {ElapsedMs} ms. Path={AssetPath}", displayName, stopwatch.ElapsedMilliseconds, assetPath);
         return new(assetPath, null);
+    }
+
+    static AssetAcquireResult FallBackToCache(string assetFileName, string errorMessage)
+    {
+        string? fallbackPath = TryFindCachedAsset(assetFileName);
+        return fallbackPath is not null
+            ? new(fallbackPath, null)
+            : new(null, errorMessage);
+    }
+
+    static async Task<AssetAcquireResult> AcquireFromMirrorAsync(string assetFileName, string displayName, string repositoryName)
+    {
+        var stopwatch = Stopwatch.StartNew();
+
+        string? latestVersion = await Downloader.DownloadStringAsync(
+            BuildVersionUrl(PrimaryMirrorRoot, repositoryName),
+            BuildVersionUrl(SecondaryMirrorRoot, repositoryName)).ConfigureAwait(false);
+        latestVersion = NormalizeMirrorVersion(latestVersion);
+        if (latestVersion is null)
+        {
+            stopwatch.Stop();
+            LauncherLog.Warning("GameRuntimeBootstrap: failed to query {DisplayName} version from teknology-hub mirrors after {ElapsedMs} ms",
+                displayName, stopwatch.ElapsedMilliseconds);
+            return new(null, $"Failed to query latest {displayName} version from teknology-hub mirrors.");
+        }
+
+        string versionDirectory = Path.Combine(CacheRoot, $"v{latestVersion}");
+        string assetPath = Path.Combine(versionDirectory, assetFileName);
+        if (File.Exists(assetPath) && new FileInfo(assetPath).Length > 0)
+        {
+            stopwatch.Stop();
+            LauncherLog.Debug("GameRuntimeBootstrap: mirror cache hit for {DisplayName} v{Version} after {ElapsedMs} ms. Path={AssetPath}",
+                displayName, latestVersion, stopwatch.ElapsedMilliseconds, assetPath);
+            return new(assetPath, null);
+        }
+
+        string primaryUrl = BuildMirrorUrl(PrimaryMirrorRoot, repositoryName, assetFileName);
+        string secondaryUrl = BuildMirrorUrl(SecondaryMirrorRoot, repositoryName, assetFileName);
+        string downloadPath = assetPath + ".download";
+        try
+        {
+            Directory.CreateDirectory(versionDirectory);
+            LauncherLog.Debug("GameRuntimeBootstrap: downloading {DisplayName} v{Version} from mirrors. Primary={PrimaryUrl}, Secondary={SecondaryUrl}",
+                displayName, latestVersion, primaryUrl, secondaryUrl);
+
+            if (!await Downloader.DownloadFileAsync(downloadPath, new EventHandlers(), primaryUrl, secondaryUrl).ConfigureAwait(false)
+                || !File.Exists(downloadPath)
+                || new FileInfo(downloadPath).Length == 0)
+            {
+                stopwatch.Stop();
+                LauncherLog.Warning("GameRuntimeBootstrap: mirror download failed for {DisplayName} v{Version} after {ElapsedMs} ms",
+                    displayName, latestVersion, stopwatch.ElapsedMilliseconds);
+                return new(null, $"Failed to download {displayName} v{latestVersion} from teknology-hub mirrors.");
+            }
+
+            File.Move(downloadPath, assetPath, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(downloadPath))
+                File.Delete(downloadPath);
+        }
+
+        stopwatch.Stop();
+        LauncherLog.Information("GameRuntimeBootstrap: acquired {DisplayName} v{Version} from mirror in {ElapsedMs} ms. Path={AssetPath}",
+            displayName, latestVersion, stopwatch.ElapsedMilliseconds, assetPath);
+        return new(assetPath, null);
+    }
+
+    internal static string BuildVersionUrl(string root, string repositoryName)
+        => $"{root}/{repositoryName}/version";
+
+    internal static string? NormalizeMirrorVersion(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return null;
+
+        string version = value.Trim();
+        if (version.StartsWith("v", StringComparison.OrdinalIgnoreCase))
+            version = version[1..];
+        version = version.Split('-')[0].Trim();
+        return Version.TryParse(version, out _) ? version : null;
     }
 
     static string? TryFindCachedAsset(string fileName)
     {
-        IEnumerator<string>? enumerator = null;
+        IEnumerable<string> candidates;
         try
         {
-            enumerator = Directory.EnumerateFiles(CacheRoot, fileName, SearchOption.AllDirectories).GetEnumerator();
+            candidates = Directory.EnumerateFiles(CacheRoot, fileName, SearchOption.AllDirectories);
         }
         catch
         {
             return null;
         }
 
-        using (enumerator)
-            while (true)
-                try
+        string? bestPath = null;
+        Version? bestVersion = null;
+        try
+        {
+            foreach (string path in candidates)
+            {
+                if (!File.Exists(path))
+                    continue;
+
+                Version? version = TryGetVersionFromPath(path);
+                if (bestPath is null || version is not null && (bestVersion is null || version > bestVersion))
                 {
-                    if (!enumerator.MoveNext())
-                        return null;
-                    if (File.Exists(enumerator.Current))
-                        return enumerator.Current;
+                    bestPath = path;
+                    bestVersion = version;
                 }
-                catch
-                {
-                    return null;
-                }
+            }
+        }
+        catch
+        {
+        }
+
+        return bestPath;
     }
+
+    internal static Version? TryGetVersionFromPath(string path)
+    {
+        string? directoryName = Path.GetFileName(Path.GetDirectoryName(path));
+        if (string.IsNullOrWhiteSpace(directoryName))
+            return null;
+
+        string value = directoryName.StartsWith("v", StringComparison.OrdinalIgnoreCase)
+            ? directoryName[1..]
+            : directoryName;
+        return Version.TryParse(value, out Version? version) ? version : null;
+    }
+
+    internal static string BuildMirrorUrl(string root, string repositoryName, string assetFileName)
+        => $"{root}/{repositoryName}/releases/latest/win-x86_64-static/{assetFileName}";
 
     static string SanitizePathSegment(string value)
     {
