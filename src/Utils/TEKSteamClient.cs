@@ -40,19 +40,57 @@ static partial class TEKSteamClient
         if (!IsTekSteamClientLibraryName(libraryName))
             return IntPtr.Zero;
 
+        return EnsureLibraryLoaded();
+    }
+
+    /// <summary>Loads the tek-steamclient library from a trusted path only.</summary>
+    /// <remarks>
+    /// The canonical copy lives in the launcher data folder. A copy next to the
+    /// launcher executable must never be picked up, since Windows' default probe
+    /// order would prefer it and load an outdated or foreign library.
+    /// </remarks>
+    public static IntPtr EnsureLibraryLoaded()
+    {
         lock (s_librarySync)
         {
             if (s_libraryHandle != IntPtr.Zero)
                 return s_libraryHandle;
 
-            if (!string.IsNullOrWhiteSpace(s_libraryPath))
+            string? candidate = SelectLibraryPath(s_libraryPath, DllPath, File.Exists);
+            if (candidate is null)
             {
-                s_libraryHandle = NativeLibrary.Load(s_libraryPath);
-                return s_libraryHandle;
+                throw new DllNotFoundException(
+                    $"The tek-steamclient library was not found at '{DllPath}'. "
+                    + "Remove any libtek-steamclient copy next to the launcher executable and restart the launcher.");
             }
-        }
 
-        return IntPtr.Zero;
+            s_libraryPath = candidate;
+            s_libraryHandle = NativeLibrary.Load(candidate);
+            return s_libraryHandle;
+        }
+    }
+
+    /// <summary>Unloads the tek-steamclient library and clears the cached handle.</summary>
+    public static void ResetLibrary()
+    {
+        lock (s_librarySync)
+        {
+            if (s_libraryHandle != IntPtr.Zero)
+            {
+                NativeLibrary.Free(s_libraryHandle);
+                s_libraryHandle = IntPtr.Zero;
+            }
+
+            s_libraryPath = null;
+        }
+    }
+
+    internal static string? SelectLibraryPath(string? registeredPath, string canonicalPath, Func<string, bool> fileExists)
+    {
+        if (!string.IsNullOrWhiteSpace(registeredPath) && fileExists(registeredPath))
+            return registeredPath;
+
+        return fileExists(canonicalPath) ? canonicalPath : null;
     }
 
     static bool IsTekSteamClientLibraryName(string libraryName)

@@ -11,6 +11,8 @@ sealed class WindowsTekSteamClientBootstrap : ITekSteamClientBootstrap
 
     public async Task<TekSteamClientBootstrapResult> InitializeAsync(string gamePath)
     {
+        WarnAboutStrayLibrary();
+
         var latestTscVer = await Downloader.DownloadStringAsync(PrimaryVersionUrl, MirrorVersionUrl);
         for (bool updated = false; ;)
         {
@@ -25,13 +27,13 @@ sealed class WindowsTekSteamClientBootstrap : ITekSteamClientBootstrap
             if (updated)
                 return new(true, true, null, null, null, null);
 
-            nint handle;
             try
             {
-                handle = NativeLibrary.Load(TEKSteamClient.DllPath);
+                TEKSteamClient.EnsureLibraryLoaded();
             }
             catch (BadImageFormatException)
             {
+                TEKSteamClient.ResetLibrary();
                 File.Delete(TEKSteamClient.DllPath);
                 continue;
             }
@@ -42,14 +44,16 @@ sealed class WindowsTekSteamClientBootstrap : ITekSteamClientBootstrap
                 string normalizedCurrent = NormalizeVersion(Marshal.PtrToStringUTF8(TEKSteamClient.GetVersion())!);
                 if (Version.TryParse(normalizedLatest, out var latestVersion) && Version.TryParse(normalizedCurrent, out var currentVersion) && latestVersion > currentVersion)
                 {
+                    TEKSteamClient.ResetLibrary();
                     try
                     {
-                        NativeLibrary.Free(handle);
-                        NativeLibrary.Free(handle);
-                        File.Delete(Path.Combine(Path.GetDirectoryName(Environment.ProcessPath) ?? Environment.CurrentDirectory, "libtek-steamclient-2.dll"));
+                        File.Delete(TEKSteamClient.DllPath);
                     }
-                    catch { }
-                    File.Delete(TEKSteamClient.DllPath);
+                    catch (Exception ex)
+                    {
+                        LauncherLog.Warning(ex, "Failed to delete outdated tek-steamclient library at {Path}", TEKSteamClient.DllPath);
+                    }
+
                     updated = true;
                     continue;
                 }
@@ -162,6 +166,20 @@ sealed class WindowsTekSteamClientBootstrap : ITekSteamClientBootstrap
 
         LauncherServices.TekSteamClient.ReplaceAppManager(appMng);
         return new(true, false, null, null, null, warningMessage);
+    }
+
+    static void WarnAboutStrayLibrary()
+    {
+        string? exeDirectory = Path.GetDirectoryName(Environment.ProcessPath);
+        if (string.IsNullOrWhiteSpace(exeDirectory))
+            return;
+
+        string strayPath = Path.Combine(exeDirectory, "libtek-steamclient-2.dll");
+        if (!File.Exists(strayPath))
+            return;
+
+        LauncherLog.Warning("Ignoring libtek-steamclient-2.dll located next to the launcher; only the copy in the launcher data folder is loaded. StrayPath={StrayPath}, CanonicalPath={CanonicalPath}",
+            strayPath, TEKSteamClient.DllPath);
     }
 
     static string NormalizeVersion(string version) => version.Contains('-') ? version.Split('-')[0] : version;
