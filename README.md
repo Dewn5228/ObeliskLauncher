@@ -31,8 +31,6 @@ Currently supported:
 + Simplified Chinese
 + Dutch
 
-New localizations are currently not accepted due to ongoing complete rework of the app
-
 ## License
 
 Obelisk Launcher is licensed under the [MIT](LICENSE.TXT) license.
