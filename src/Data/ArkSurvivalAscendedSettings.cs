@@ -15,6 +15,7 @@ static class ArkSurvivalAscendedSettings
     static bool s_linuxUseGamescope;
     static bool s_linuxUseGamescopeFsr;
     static bool s_linuxUseMangoHud;
+    static bool s_linuxUseSteamOverlay = true;
     static bool s_linuxUseVkBasalt;
     static bool s_linuxUseWineFullscreenFsr;
     static string s_linuxWineFullscreenFsrStrength = string.Empty;
@@ -31,6 +32,7 @@ static class ArkSurvivalAscendedSettings
         s_linuxUseGamescope = json.AsaLinuxUseGamescope ?? false;
         s_linuxUseGamescopeFsr = json.AsaLinuxUseGamescopeFsr ?? false;
         s_linuxUseMangoHud = json.AsaLinuxUseMangoHud ?? false;
+        s_linuxUseSteamOverlay = json.AsaLinuxUseSteamOverlay ?? true;
         s_linuxUseVkBasalt = json.AsaLinuxUseVkBasalt ?? false;
         s_linuxUseWineFullscreenFsr = json.AsaLinuxUseWineFullscreenFsr ?? false;
         s_linuxWineFullscreenFsrStrength = Settings.NormalizeText(json.AsaLinuxWineFullscreenFsrStrength);
@@ -42,7 +44,7 @@ static class ArkSurvivalAscendedSettings
         out string? extraEnvironmentVariables, out string? launchWrappers, out bool? useGameMode,
         out bool? useGamescope, out string? gamescopeArguments, out bool? useGamescopeFsr,
         out string? gamescopeSharpness, out bool? useMangoHud, out bool? useVkBasalt,
-        out bool? useWineFullscreenFsr, out string? wineFullscreenFsrStrength)
+        out bool? useWineFullscreenFsr, out string? wineFullscreenFsrStrength, out bool? useSteamOverlay)
     {
         launchTool = s_linuxLaunchTool;
         compatDataPath = s_linuxCompatDataPath;
@@ -54,6 +56,7 @@ static class ArkSurvivalAscendedSettings
         useGamescopeFsr = s_linuxUseGamescopeFsr ? true : null;
         gamescopeSharpness = s_linuxGamescopeSharpness;
         useMangoHud = s_linuxUseMangoHud ? true : null;
+        useSteamOverlay = s_linuxUseSteamOverlay ? null : false;
         useVkBasalt = s_linuxUseVkBasalt ? true : null;
         useWineFullscreenFsr = s_linuxUseWineFullscreenFsr ? true : null;
         wineFullscreenFsrStrength = s_linuxWineFullscreenFsrStrength;
@@ -119,6 +122,12 @@ static class ArkSurvivalAscendedSettings
     public static void SetLinuxUseMangoHud(bool value)
       => s_linuxUseMangoHud = value;
 
+    public static bool GetLinuxUseSteamOverlay()
+      => s_linuxUseSteamOverlay;
+
+    public static void SetLinuxUseSteamOverlay(bool value)
+      => s_linuxUseSteamOverlay = value;
+
     public static bool GetLinuxUseVkBasalt()
       => s_linuxUseVkBasalt;
 
@@ -156,6 +165,7 @@ static class ArkSurvivalAscendedSettings
         bool? AsaLinuxUseGamescopeFsr,
         string? AsaLinuxGamescopeSharpness,
         bool? AsaLinuxUseMangoHud,
+        bool? AsaLinuxUseSteamOverlay,
         bool? AsaLinuxUseVkBasalt,
         bool? AsaLinuxUseWineFullscreenFsr,
         string? AsaLinuxWineFullscreenFsrStrength);

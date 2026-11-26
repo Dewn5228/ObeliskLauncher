@@ -342,6 +342,7 @@
               <CheckBox Content="{u:Tr mainWindow.gamemoderun}" IsChecked="{Binding AseLinuxUseGameMode}" />
               <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.gamescope}" IsChecked="{Binding AseLinuxUseGamescope}" />
               <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.mangohud}" IsChecked="{Binding AseLinuxUseMangoHud}" />
+              <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.steamOverlay}" IsChecked="{Binding AseLinuxUseSteamOverlay}" />
               <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.vkbasalt}" IsChecked="{Binding AseLinuxUseVkBasalt}" />
               <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.wineFsr}" IsChecked="{Binding AseLinuxUseWineFullscreenFsr}" />
             </WrapPanel>
@@ -404,6 +405,7 @@
               <CheckBox Content="{u:Tr mainWindow.gamemoderun}" IsChecked="{Binding AsaLinuxUseGameMode}" />
               <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.gamescope}" IsChecked="{Binding AsaLinuxUseGamescope}" />
               <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.mangohud}" IsChecked="{Binding AsaLinuxUseMangoHud}" />
+              <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.steamOverlay}" IsChecked="{Binding AsaLinuxUseSteamOverlay}" />
               <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.vkbasalt}" IsChecked="{Binding AsaLinuxUseVkBasalt}" />
               <CheckBox Margin="14,0,0,0" Content="{u:Tr mainWindow.wineFsr}" IsChecked="{Binding AsaLinuxUseWineFullscreenFsr}" />
             </WrapPanel>

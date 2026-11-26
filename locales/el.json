@@ -365,7 +365,8 @@
     "noBestToolFound": "Δεν βρέθηκε χρησιμοποιήσιμο εργαλείο Proton ή Wine.",
     "createShortcut": "Δημιουργία συντόμευσης",
     "chooseShortcutFolder": "Επιλέξτε πού θα δημιουργηθεί η συντόμευση",
-    "shortcutCreated": "Η συντόμευση δημιουργήθηκε:{0}"
+    "shortcutCreated": "Η συντόμευση δημιουργήθηκε:{0}",
+    "steamOverlay": "Επικάλυψη Steam"
   },
   "firstLaunchWindow": {
     "title": "Εγκατάσταση Obelisk Launcher",

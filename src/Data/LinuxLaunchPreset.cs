@@ -24,6 +24,8 @@ public sealed class LinuxLaunchPreset
 
     public bool UseMangoHud { get; set; }
 
+    public bool UseSteamOverlay { get; set; } = true;
+
     public bool UseVkBasalt { get; set; }
 
     public bool UseWineFullscreenFsr { get; set; }

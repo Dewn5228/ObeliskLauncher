@@ -365,7 +365,8 @@
     "noBestToolFound": "Geen bruikbare Proton- of Wine-tool gevonden.",
     "createShortcut": "Snelkoppeling maken",
     "chooseShortcutFolder": "Kies waar de snelkoppeling wordt gemaakt",
-    "shortcutCreated": "Snelkoppeling gemaakt:{0}"
+    "shortcutCreated": "Snelkoppeling gemaakt:{0}",
+    "steamOverlay": "Steam-overlay"
   },
   "firstLaunchWindow": {
     "title": "Obelisk Launcher Setup",

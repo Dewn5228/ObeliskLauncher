@@ -66,7 +66,7 @@ sealed class LinuxGameLauncher : IGameLauncher
               ? CreateWineStartInfo(context, assets, request, settingsPath)
               : CreateProtonStartInfo(context, assets, request, settingsPath);
 
-            ApplyConfiguredEnvironment(startInfo, context.GameId, context.LaunchTool.Kind);
+            ApplyConfiguredEnvironment(startInfo, context.GameId, context.LaunchTool.Kind, context.SteamInstallPath);
             SanitizeInheritedLibraryPaths(startInfo);
             startInfo = WrapLaunchStartInfo(startInfo, context.GameId, context.LaunchTool.Kind);
 
@@ -269,7 +269,7 @@ sealed class LinuxGameLauncher : IGameLauncher
         settings[propertyName] = ToWinePath(path);
     }
 
-    static void ApplyConfiguredEnvironment(ProcessStartInfo startInfo, string gameId, LinuxLaunchToolKind toolKind)
+    static void ApplyConfiguredEnvironment(ProcessStartInfo startInfo, string gameId, LinuxLaunchToolKind toolKind, string steamInstallPath)
     {
         if (Settings.GetLinuxUseVkBasalt(gameId))
             startInfo.Environment["ENABLE_VKBASALT"] = "1";
@@ -291,6 +291,42 @@ sealed class LinuxGameLauncher : IGameLauncher
 
         foreach (KeyValuePair<string, string> variable in ParseEnvironmentVariables(Settings.GetLinuxExtraEnvironmentVariables(gameId)))
             startInfo.Environment[variable.Key] = variable.Value;
+
+        if (Settings.GetLinuxUseSteamOverlay(gameId))
+            ApplySteamOverlayPreload(startInfo, steamInstallPath);
+    }
+
+    static void ApplySteamOverlayPreload(ProcessStartInfo startInfo, string steamInstallPath)
+    {
+        string overlayPath = Path.Combine(steamInstallPath, "ubuntu12_64", "gameoverlayrenderer.so");
+        if (!File.Exists(overlayPath))
+        {
+            LauncherLog.Warning("Steam overlay renderer was not found at {OverlayPath}; skipping overlay preload. SteamInstallPath={SteamInstallPath}",
+                overlayPath, steamInstallPath);
+            return;
+        }
+
+        startInfo.Environment.TryGetValue("LD_PRELOAD", out string? existingValue);
+        string? mergedValue = BuildOverlayPreloadValue(existingValue, overlayPath);
+        if (mergedValue is null)
+            return;
+
+        startInfo.Environment["LD_PRELOAD"] = mergedValue;
+        LauncherLog.Debug("Linux launch enabled Steam overlay preload. OverlayPath={OverlayPath}", overlayPath);
+    }
+
+    internal static string? BuildOverlayPreloadValue(string? existingValue, string overlayPath)
+    {
+        string[] existingEntries = (existingValue ?? string.Empty)
+            .Split([' ', ':'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        string overlayFileName = Path.GetFileName(overlayPath);
+        if (existingEntries.Any(entry => string.Equals(Path.GetFileName(entry), overlayFileName, StringComparison.Ordinal)))
+            return null;
+
+        return existingEntries.Length == 0
+            ? overlayPath
+            : $"{overlayPath} {string.Join(' ', existingEntries)}";
     }
 
     static void SanitizeInheritedLibraryPaths(ProcessStartInfo startInfo)

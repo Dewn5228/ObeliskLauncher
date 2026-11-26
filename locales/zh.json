@@ -365,7 +365,8 @@
     "noBestToolFound": "未找到可用的 Proton 或 Wine 工具。",
     "createShortcut": "创建快捷方式",
     "chooseShortcutFolder": "选择快捷方式的创建位置",
-    "shortcutCreated": "快捷方式已创建：{0}"
+    "shortcutCreated": "快捷方式已创建：{0}",
+    "steamOverlay": "Steam 覆盖层"
   },
   "firstLaunchWindow": {
     "title": "TEK 启动器安装",

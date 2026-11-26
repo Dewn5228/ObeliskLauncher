@@ -456,6 +456,34 @@ public abstract class LauncherSettingsSectionScreenViewModel : LauncherSectionSc
         }
     }
 
+    public bool AseLinuxUseSteamOverlay
+    {
+        get => Settings.GetLinuxUseSteamOverlay(AseScopeId);
+        set
+        {
+            if (Settings.GetLinuxUseSteamOverlay(AseScopeId) == value)
+                return;
+
+            Settings.SetLinuxUseSteamOverlay(value, AseScopeId);
+            OnPropertyChanged();
+            PersistSettings();
+        }
+    }
+
+    public bool AsaLinuxUseSteamOverlay
+    {
+        get => Settings.GetLinuxUseSteamOverlay(AsaScopeId);
+        set
+        {
+            if (Settings.GetLinuxUseSteamOverlay(AsaScopeId) == value)
+                return;
+
+            Settings.SetLinuxUseSteamOverlay(value, AsaScopeId);
+            OnPropertyChanged();
+            PersistSettings();
+        }
+    }
+
     public bool AsaLinuxUseMangoHud
     {
         get => Settings.GetLinuxUseMangoHud(AsaScopeId);
@@ -645,6 +673,8 @@ public abstract class LauncherSettingsSectionScreenViewModel : LauncherSectionSc
         OnPropertyChanged(nameof(AsaLinuxGamescopeSharpness));
         OnPropertyChanged(nameof(AseLinuxUseMangoHud));
         OnPropertyChanged(nameof(AsaLinuxUseMangoHud));
+        OnPropertyChanged(nameof(AseLinuxUseSteamOverlay));
+        OnPropertyChanged(nameof(AsaLinuxUseSteamOverlay));
         OnPropertyChanged(nameof(AseLinuxUseVkBasalt));
         OnPropertyChanged(nameof(AsaLinuxUseVkBasalt));
         OnPropertyChanged(nameof(AseLinuxUseWineFullscreenFsr));
@@ -723,6 +753,7 @@ public abstract class LauncherSettingsSectionScreenViewModel : LauncherSectionSc
             Settings.SetLinuxUseGamescopeFsr(preset.UseGamescopeFsr, gameId);
             Settings.SetLinuxGamescopeSharpness(preset.GamescopeSharpness ?? string.Empty, gameId);
             Settings.SetLinuxUseMangoHud(preset.UseMangoHud, gameId);
+            Settings.SetLinuxUseSteamOverlay(preset.UseSteamOverlay, gameId);
             Settings.SetLinuxUseVkBasalt(preset.UseVkBasalt, gameId);
             Settings.SetLinuxUseWineFullscreenFsr(preset.UseWineFullscreenFsr, gameId);
             Settings.SetLinuxWineFullscreenFsrStrength(preset.WineFullscreenFsrStrength ?? string.Empty, gameId);
@@ -753,6 +784,8 @@ public abstract class LauncherSettingsSectionScreenViewModel : LauncherSectionSc
         OnPropertyChanged(nameof(AsaLinuxGamescopeSharpness));
         OnPropertyChanged(nameof(AseLinuxUseMangoHud));
         OnPropertyChanged(nameof(AsaLinuxUseMangoHud));
+        OnPropertyChanged(nameof(AseLinuxUseSteamOverlay));
+        OnPropertyChanged(nameof(AsaLinuxUseSteamOverlay));
         OnPropertyChanged(nameof(AseLinuxUseVkBasalt));
         OnPropertyChanged(nameof(AsaLinuxUseVkBasalt));
         OnPropertyChanged(nameof(AseLinuxUseWineFullscreenFsr));

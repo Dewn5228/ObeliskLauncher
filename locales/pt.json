@@ -365,7 +365,8 @@
     "noBestToolFound": "Nenhuma ferramenta Proton ou Wine utilizável encontrada.",
     "createShortcut": "Criar atalho",
     "chooseShortcutFolder": "Escolha onde criar o atalho",
-    "shortcutCreated": "Atalho criado:{0}"
+    "shortcutCreated": "Atalho criado:{0}",
+    "steamOverlay": "Sobreposição da Steam"
   },
   "firstLaunchWindow": {
     "title": "Configuração do Obelisk Launcher",

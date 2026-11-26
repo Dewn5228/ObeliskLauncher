@@ -5,7 +5,7 @@ namespace ObeliskLauncher.Data;
 /// <summary>Manages global launcher settings and delegates per-game settings to per-game classes.</summary>
 static class Settings
 {
-    const int LinuxPresetSchemaVersion = 2;
+    const int LinuxPresetSchemaVersion = 3;
     static readonly List<string> s_customLinuxLaunchToolIds = new();
     static readonly List<LinuxLaunchPreset> s_linuxLaunchPresets = new();
     static readonly Dictionary<string, string> s_gamePaths = new(StringComparer.OrdinalIgnoreCase);
@@ -100,6 +100,7 @@ static class Settings
             json.AseLinuxUseGamescopeFsr,
             json.AseLinuxGamescopeSharpness,
             json.AseLinuxUseMangoHud,
+            json.AseLinuxUseSteamOverlay,
             json.AseLinuxUseVkBasalt,
             json.AseLinuxUseWineFullscreenFsr,
             json.AseLinuxWineFullscreenFsrStrength,
@@ -117,6 +118,7 @@ static class Settings
             json.AsaLinuxUseGamescopeFsr,
             json.AsaLinuxGamescopeSharpness,
             json.AsaLinuxUseMangoHud,
+            json.AsaLinuxUseSteamOverlay,
             json.AsaLinuxUseVkBasalt,
             json.AsaLinuxUseWineFullscreenFsr,
             json.AsaLinuxWineFullscreenFsrStrength);
@@ -162,6 +164,7 @@ static class Settings
             out var aseLinuxUseVkBasalt,
             out var aseLinuxUseWineFullscreenFsr,
             out var aseLinuxWineFullscreenFsrStrength,
+            out var aseLinuxUseSteamOverlay,
             out var launchParameters);
 
         // Get per-game settings from ASA
@@ -178,7 +181,8 @@ static class Settings
             out var asaLinuxUseMangoHud,
             out var asaLinuxUseVkBasalt,
             out var asaLinuxUseWineFullscreenFsr,
-            out var asaLinuxWineFullscreenFsrStrength);
+            out var asaLinuxWineFullscreenFsrStrength,
+            out var asaLinuxUseSteamOverlay);
 
         var json = new Json(
             CloseOnGameLaunch,
@@ -204,6 +208,7 @@ static class Settings
             aseLinuxUseGamescopeFsr,
             aseLinuxGamescopeSharpness,
             aseLinuxUseMangoHud,
+            aseLinuxUseSteamOverlay,
             aseLinuxUseVkBasalt,
             aseLinuxUseWineFullscreenFsr,
             aseLinuxWineFullscreenFsrStrength,
@@ -217,6 +222,7 @@ static class Settings
             asaLinuxUseGamescopeFsr,
             asaLinuxGamescopeSharpness,
             asaLinuxUseMangoHud,
+            asaLinuxUseSteamOverlay,
             asaLinuxUseVkBasalt,
             asaLinuxUseWineFullscreenFsr,
             asaLinuxWineFullscreenFsrStrength,
@@ -243,6 +249,7 @@ static class Settings
         UseGamescopeFsr = GetLinuxUseGamescopeFsr(gameId),
         GamescopeSharpness = GetLinuxGamescopeSharpness(gameId),
         UseMangoHud = GetLinuxUseMangoHud(gameId),
+        UseSteamOverlay = GetLinuxUseSteamOverlay(gameId),
         UseVkBasalt = GetLinuxUseVkBasalt(gameId),
         UseWineFullscreenFsr = GetLinuxUseWineFullscreenFsr(gameId),
         WineFullscreenFsrStrength = GetLinuxWineFullscreenFsrStrength(gameId)
@@ -322,6 +329,9 @@ static class Settings
             preset.PrefixPath = NormalizeDirectoryPath(preset.PrefixPath);
             preset.LaunchWrappers = NormalizeMultilineText(preset.LaunchWrappers);
         }
+
+        if (schemaVersion < 3)
+            preset.UseSteamOverlay = true;
 
         return preset;
     }
@@ -550,6 +560,23 @@ static class Settings
             ArkSurvivalEvolvedSettings.SetLinuxUseMangoHud(value);
     }
 
+    public static bool GetLinuxUseSteamOverlay(string? gameId = null)
+    {
+        string resolvedGameId = ResolveScopedGameId(gameId);
+        return IsAsaGameId(resolvedGameId)
+            ? ArkSurvivalAscendedSettings.GetLinuxUseSteamOverlay()
+            : ArkSurvivalEvolvedSettings.GetLinuxUseSteamOverlay();
+    }
+
+    public static void SetLinuxUseSteamOverlay(bool value, string? gameId = null)
+    {
+        string resolvedGameId = ResolveScopedGameId(gameId);
+        if (IsAsaGameId(resolvedGameId))
+            ArkSurvivalAscendedSettings.SetLinuxUseSteamOverlay(value);
+        else
+            ArkSurvivalEvolvedSettings.SetLinuxUseSteamOverlay(value);
+    }
+
     public static bool GetLinuxUseVkBasalt(string? gameId = null)
     {
         string resolvedGameId = ResolveScopedGameId(gameId);
@@ -626,6 +653,7 @@ static class Settings
         bool? AseLinuxUseGamescopeFsr,
         string? AseLinuxGamescopeSharpness,
         bool? AseLinuxUseMangoHud,
+        bool? AseLinuxUseSteamOverlay,
         bool? AseLinuxUseVkBasalt,
         bool? AseLinuxUseWineFullscreenFsr,
         string? AseLinuxWineFullscreenFsrStrength,
@@ -639,6 +667,7 @@ static class Settings
         bool? AsaLinuxUseGamescopeFsr,
         string? AsaLinuxGamescopeSharpness,
         bool? AsaLinuxUseMangoHud,
+        bool? AsaLinuxUseSteamOverlay,
         bool? AsaLinuxUseVkBasalt,
         bool? AsaLinuxUseWineFullscreenFsr,
         string? AsaLinuxWineFullscreenFsrStrength,

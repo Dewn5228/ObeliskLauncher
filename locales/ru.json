@@ -365,7 +365,8 @@
     "noBestToolFound": "Подходящий инструмент Proton или Wine не найден.",
     "createShortcut": "Создать ярлык",
     "chooseShortcutFolder": "Выберите папку для ярлыка",
-    "shortcutCreated": "Ярлык создан:{0}"
+    "shortcutCreated": "Ярлык создан:{0}",
+    "steamOverlay": "Оверлей Steam"
   },
   "firstLaunchWindow": {
     "title": "Настройка Obelisk Launcher",

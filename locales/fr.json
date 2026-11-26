@@ -365,7 +365,8 @@
     "noBestToolFound": "Aucun outil Proton ou Wine utilisable trouvé.",
     "createShortcut": "Créer un raccourci",
     "chooseShortcutFolder": "Choisissez où créer le raccourci",
-    "shortcutCreated": "Raccourci créé :{0}"
+    "shortcutCreated": "Raccourci créé :{0}",
+    "steamOverlay": "Superposition Steam"
   },
   "firstLaunchWindow": {
     "title": "Configuration Obelisk Launcher",
