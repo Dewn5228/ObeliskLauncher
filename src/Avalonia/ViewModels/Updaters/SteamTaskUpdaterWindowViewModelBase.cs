@@ -62,12 +62,14 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
     DateTime _speedSampleAt;
     long _speedSampleBytes;
     double _speedBps;
-    string _progressText = "Waiting for job data...";
+    string _progressText = Locale.Get("customUI.waitingForJobData");
     double _progressValue;
     string _actionLabel = Locale.Get("common.pause");
     string? _spaceMessage;
     IBrush _statusBrush = Brushes.Goldenrod;
     string _statusText = string.Empty;
+    string _errorTechnicalDetails = string.Empty;
+    string _etaText = string.Empty;
     Thread? _taskThread;
     string _title;
 
@@ -123,6 +125,22 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
 
     public bool HasProgressText => !string.IsNullOrWhiteSpace(ProgressText);
 
+    public TextAlignment NumericTextAlignment => Locale.CurrentLanguage == "ar" ? TextAlignment.Right : TextAlignment.Left;
+
+    public string ErrorTechnicalDetails
+    {
+        get => _errorTechnicalDetails;
+        private set
+        {
+            if (_errorTechnicalDetails == value) return;
+            _errorTechnicalDetails = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(HasErrorTechnicalDetails));
+        }
+    }
+
+    public bool HasErrorTechnicalDetails => !string.IsNullOrWhiteSpace(_errorTechnicalDetails);
+
     public string SpeedText
     {
         get => _speedText;
@@ -138,6 +156,21 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
     }
 
     public bool HasSpeedText => !string.IsNullOrWhiteSpace(SpeedText);
+
+    public string EtaText
+    {
+        get => _etaText;
+        private set
+        {
+            if (_etaText == value)
+                return;
+            _etaText = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(HasEtaText));
+        }
+    }
+
+    public bool HasEtaText => !string.IsNullOrWhiteSpace(EtaText);
 
     public double ProgressValue
     {
@@ -256,6 +289,7 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
     protected virtual void OnTaskStarting()
     {
         SetPauseState();
+        ErrorTechnicalDetails = string.Empty;
         SetStatus(Locale.Get("modsTab.fetchingData"), Brushes.Goldenrod);
     }
 
@@ -266,7 +300,18 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
             ProgressMaximum = 1;
             ProgressValue = 1;
             IsProgressIndeterminate = false;
-            SetStatus(result.Message, Brushes.IndianRed);
+            string originalDiagnostic = result.Message;
+            string userMessage = Locale.CurrentLanguage == "ar"
+                ? (result.Type == 4 && result.Primary == 77 && result.Auxiliary == 28
+                    ? Locale.Get("customUI.downloadTimeout")
+                    : result.Primary == 77
+                        ? Locale.Get("customUI.steamChunkFailed")
+                        : string.Format(Locale.Get("customUI.downloadErrorGeneric"), result.Type, result.Primary, result.Auxiliary))
+                : originalDiagnostic;
+            ErrorTechnicalDetails = string.Equals(userMessage, originalDiagnostic, StringComparison.Ordinal)
+                ? string.Empty
+                : originalDiagnostic;
+            SetStatus(userMessage, Brushes.IndianRed);
             ClearSpeed();
             if (result.Uri != 0)
                 Marshal.FreeHGlobal(result.Uri);
@@ -314,6 +359,7 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
         _speedSampleBytes = 0;
         _speedBps = 0;
         SpeedText = string.Empty;
+        EtaText = string.Empty;
     }
 
     protected void ResetTaskVisuals()
@@ -499,19 +545,31 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
         }
     }
 
+    // Byte amounts in download UI stay in Latin order with standard MB/GB
+    // abbreviations. The underlying byte counts and game data are untouched.
+    static string DownloadBytes(long bytes)
+    {
+        string number = Locale.BytesToString(bytes, out _);
+        string unit = bytes >= 1073741824 ? "GB"
+                    : bytes >= 1048576 ? "MB" : "KB";
+        return number + "\u00A0" + unit;
+    }
+
     string GetDeterminateProgressText(long current, long total) => _progressMode switch
     {
-        UpdaterProgressMode.Binary => $"{Locale.BytesToString(current)} / {Locale.BytesToString(total)}",
-        UpdaterProgressMode.Numbers => $"{current:N0} / {total:N0}",
-        _ => $"{Math.Clamp(total == 0 ? 0 : current * 100.0 / total, 0, 100):0.#}%"
+        UpdaterProgressMode.Binary => Locale.CurrentLanguage == "ar"
+            ? $"{DownloadBytes(current)} / {DownloadBytes(total)}"
+            : $"{Locale.BytesToString(current)} / {Locale.BytesToString(total)}",
+        UpdaterProgressMode.Numbers => Locale.CurrentLanguage == "ar" ? FormattableString.Invariant($"{current:N0} / {total:N0}") : $"{current:N0} / {total:N0}",
+        _ => Locale.CurrentLanguage == "ar" ? FormattableString.Invariant($"{Math.Clamp(total == 0 ? 0 : current * 100.0 / total, 0, 100):0.#}%") : $"{Math.Clamp(total == 0 ? 0 : current * 100.0 / total, 0, 100):0.#}%"
     };
 
     string GetIndeterminateProgressText() => _progressMode switch
     {
-        UpdaterProgressMode.Binary => "Preparing download size...",
-        UpdaterProgressMode.Numbers => "Preparing file list...",
-        UpdaterProgressMode.Percentage => "Preparing progress data...",
-        _ => "Waiting for job data..."
+        UpdaterProgressMode.Binary => Locale.Get("customUI.preparingDownloadSize"),
+        UpdaterProgressMode.Numbers => Locale.Get("customUI.preparingFileList"),
+        UpdaterProgressMode.Percentage => Locale.Get("customUI.preparingProgressData"),
+        _ => Locale.Get("customUI.waitingForJobData")
     };
 
     void UpdateSpeed(UpdaterProgressMode mode, long current, long total)
@@ -520,6 +578,7 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
         {
             if (!string.IsNullOrEmpty(SpeedText))
                 SpeedText = string.Empty;
+            EtaText = string.Empty;
             return;
         }
 
@@ -537,6 +596,7 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
             _speedSampleBytes = current;
             _speedBps = 0;
             SpeedText = string.Empty;
+            EtaText = string.Empty;
             return;
         }
 
@@ -553,14 +613,26 @@ internal abstract class SteamTaskUpdaterWindowViewModelBase : INotifyPropertyCha
         if (_speedBps < 1 || current >= total)
         {
             SpeedText = _speedBps >= 1
-                ? $"{Locale.BytesToString((long)_speedBps)}/s"
+                ? Locale.CurrentLanguage == "ar"
+                    ? $"{DownloadBytes((long)_speedBps)}/s"
+                    : $"{Locale.BytesToString((long)_speedBps)}/{Locale.Get("customUI.perSecond")}"
                 : string.Empty;
+            EtaText = string.Empty;
             return;
         }
 
         long remaining = total - current;
         long etaSeconds = (long)Math.Ceiling(remaining / _speedBps);
-        SpeedText = $"{Locale.BytesToString((long)_speedBps)}/s \u2022 ETA {Locale.SecondsToString(etaSeconds)}";
+        if (Locale.CurrentLanguage == "ar")
+        {
+            SpeedText = $"{DownloadBytes((long)_speedBps)}/s";
+            EtaText = $"{Locale.Get("customUI.remainingTime")}: {Locale.SecondsToString(etaSeconds)}";
+        }
+        else
+        {
+            EtaText = string.Empty;
+            SpeedText = $"{Locale.BytesToString((long)_speedBps)}/{Locale.Get("customUI.perSecond")} \u2022 {Locale.Get("customUI.remainingTime")} {Locale.SecondsToString(etaSeconds)}";
+        }
     }
 
     void SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)

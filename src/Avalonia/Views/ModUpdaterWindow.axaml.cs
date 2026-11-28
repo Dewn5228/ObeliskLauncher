@@ -11,6 +11,7 @@ public partial class ModUpdaterWindow : Window
     public ModUpdaterWindow()
     {
         InitializeComponent();
+        ArabicUiDirection.Apply(this);
     }
 
     internal ModUpdaterWindow(Mod.ModDetails details, bool validate)

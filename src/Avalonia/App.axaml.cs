@@ -32,7 +32,7 @@ public partial class App : Application
             var bootstrapResult = LauncherBootstrap.InitializeCore();
             if (Program.IsAnotherInstanceRunning)
             {
-                var dialog = new AvaloniaDialogWindow(Locale.Get("common.error"), "Another instance of Obelisk Launcher is already running.", false);
+                var dialog = new AvaloniaDialogWindow(Locale.Get("common.error"), Locale.Get("customUI.duplicateLauncher"), false);
                 dialog.Closed += (_, _) => desktop.Shutdown();
                 desktop.MainWindow = dialog;
                 base.OnFrameworkInitializationCompleted();

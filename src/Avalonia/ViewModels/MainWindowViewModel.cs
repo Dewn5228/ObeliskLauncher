@@ -361,7 +361,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
                                 }
 
                                 RefreshNavigationGroups();
-                                return _bootstrapErrorMessage ?? "Game switch is still in progress. Please try again in a moment.";
+                                return _bootstrapErrorMessage ?? Locale.Get("customUI.gameSwitchPending");
                             }
                         }
                     }
@@ -547,7 +547,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             {
                 ActionKind = ShellNoticeActionKind.OpenLauncherReleasePage,
                 ActionLabel = Locale.Get("common.download"),
-                Message = "An update to the launcher is available."
+                Message = Locale.Get("customUI.launcherUpdateNotice")
             });
 
         if (_bootstrapWarningMessage is not null)
@@ -694,7 +694,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
         groups.Add(new LauncherNavGroupViewModel
         {
-            Title = "Global",
+            Title = Locale.Get("customUI.general"),
             IsVisible = true,
             IsExpanded = true,
             Children =

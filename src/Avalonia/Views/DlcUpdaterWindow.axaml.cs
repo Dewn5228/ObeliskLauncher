@@ -11,6 +11,7 @@ public partial class DlcUpdaterWindow : Window
     public DlcUpdaterWindow()
     {
         InitializeComponent();
+        ArabicUiDirection.Apply(this);
     }
 
     internal DlcUpdaterWindow(DLC dlc, bool validate)

@@ -41,7 +41,8 @@
       "mb": "MB",
       "gb": "GB"
     },
-    "updating": "Atualizando"
+    "updating": "Atualizando",
+    "download": "Baixar"
   },
   "time": {
     "second": "s",
@@ -163,7 +164,9 @@
     "adlerHashMismatch": "Hash de arquivo incompatível — o arquivo pode ter sido modificado após a geração da lista.",
     "alreadyInstalled": "{0} já está instalado.",
     "failedToLoadWorkshopModList": "Falha ao carregar a lista de mods da Workshop.",
-    "readyToInstall": "{0} pronto para instalar."
+    "readyToInstall": "{0} pronto para instalar.",
+    "modLookupTimeout": "A busca do mod expirou. Tente novamente.",
+    "workshopSearchTimeout": "A busca na Steam Workshop expirou. Tente novamente."
   },
   "serversTab": {
     "tabTitle": "Servidores",
@@ -242,7 +245,8 @@
     "deleteLauncherSettings": "Excluir configurações do launcher",
     "deleteLauncherSettingsPrompt": "Deseja excluir permanentemente todas as configurações do launcher?",
     "downloadFailed": "Falha no download: ",
-    "steamClientBootstrapFailed": "falha no bootstrap do tek-steamclient"
+    "steamClientBootstrapFailed": "falha no bootstrap do tek-steamclient",
+    "gamePathChangePrompt": "Alterar a pasta do jogo pode afetar seus arquivos ou downloads. Continuar?"
   },
   "version": {
     "launcherVersion": "Versão do launcher",
@@ -366,7 +370,9 @@
     "createShortcut": "Criar atalho",
     "chooseShortcutFolder": "Escolha onde criar o atalho",
     "shortcutCreated": "Atalho criado:{0}",
-    "steamOverlay": "Sobreposição da Steam"
+    "steamOverlay": "Sobreposição da Steam",
+    "clusterRefreshTimeout": "A atualização dos clusters expirou.",
+    "serverRefreshTimeout": "A atualização da lista de servidores expirou."
   },
   "firstLaunchWindow": {
     "title": "Configuração do Obelisk Launcher",
@@ -375,7 +381,7 @@
     "useExistingArk": "Usar uma instalação existente do ARK",
     "installNewFolder": "Instalar ARK em uma nova pasta",
     "selectExistingFolder": "Selecione uma pasta do ARK existente",
-    "selectFolderDescription": "A pasta deve conter ShooterGame/Binaries/Win64/{0}.",
+    "selectFolderDescription": "Selecione a pasta raiz do jogo que contém {1} (procurando {0}). Não selecione a pasta Win64 em si.",
     "placeholderPathToArk": "/caminho/para/ARK",
     "selectFolderToContinue": "Selecione uma pasta para continuar.",
     "continue": "Continuar",
@@ -427,5 +433,40 @@
     "userManaged": "executor instalado pelo usuário",
     "stockProton": "Proton padrão da Valve",
     "wineFallback": "Wine como alternativa (nenhum Proton encontrado)"
+  },
+  "customUI": {
+    "ark": "ARK",
+    "asaSettings": "Configurações do ASA",
+    "aseSettings": "Configurações do ASE",
+    "copied": "Copiado",
+    "dlcUpdaterLegacy": "Instalar ou atualizar DLC ainda requer a janela do atualizador antigo.",
+    "dlcValidationLegacy": "Validar DLC ainda requer a janela do atualizador antigo.",
+    "downloadErrorGeneric": "Não foi possível concluir a operação. Códigos de erro: tipo {0}, principal {1}, auxiliar {2}.",
+    "downloadTimeout": "O download de arquivos do Steam expirou. Os arquivos baixados não foram excluídos. Verifique a conexão e escolha Repetir.",
+    "duplicateLauncher": "Outra instância do Obelisk Launcher já está em execução.",
+    "gameAsa": "ARK: Survival Ascended (ASA)",
+    "gameAse": "ARK: Survival Evolved (ASE)",
+    "gameSwitchFailed": "Falha ao trocar de jogo. A configuração anterior foi restaurada.",
+    "gameSwitchPending": "A troca de jogo está em andamento. Tente novamente em instantes.",
+    "general": "Geral",
+    "globalSettings": "Configurações gerais",
+    "killGame": "Forçar encerramento",
+    "launchParametersSaved": "Os parâmetros de inicialização foram salvos.",
+    "launcherMissingFile": "O launcher não conseguiu baixar {0}. Abra a página de download, coloque o arquivo na pasta de dados do launcher e reinicie-o.",
+    "launcherUpdateNotice": "Há uma atualização do Obelisk Launcher disponível.",
+    "linuxUpdateManually": "As atualizações automáticas do launcher só estão disponíveis para Windows. No Linux, instale a versão mais recente manualmente.",
+    "modRemoved": "{0} foi removido dos mods instalados.",
+    "noChangelog": "Não há notas de versão para esta compilação.",
+    "openDataFolder": "Abrir pasta de dados",
+    "openDownloadPage": "Abrir página de download",
+    "openLink": "Abrir link",
+    "perSecond": "s",
+    "preparingDownloadSize": "Preparando o tamanho do download…",
+    "preparingFileList": "Preparando a lista de arquivos…",
+    "preparingProgressData": "Preparando os dados de progresso…",
+    "remainingTime": "Tempo restante",
+    "steamChunkFailed": "Não foi possível baixar um fragmento de arquivo do jogo do Steam. Verifique a conexão e escolha Repetir.",
+    "versionUnavailable": "Versão ainda não disponível",
+    "waitingForJobData": "Aguardando dados da tarefa de download…"
   }
 }

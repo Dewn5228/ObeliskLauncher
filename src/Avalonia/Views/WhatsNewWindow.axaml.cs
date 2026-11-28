@@ -88,7 +88,7 @@ public partial class WhatsNewWindow : Window
 
         Root.Children.Add(new TextBlock
         {
-            Text = "No changelog is available for this build.",
+            Text = Locale.Get("customUI.noChangelog"),
             TextWrapping = TextWrapping.Wrap,
             Foreground = s_itemForeground
         });

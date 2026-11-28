@@ -46,6 +46,6 @@ static class ModWorkflow
 
         string description = Describe(mod);
         await Task.Run(mod.Delete);
-        return new($"{description} removed from installed mods.", 1);
+        return new(string.Format(Locale.Get("customUI.modRemoved"), description), 1);
     }
 }

@@ -132,7 +132,7 @@
             </ItemsControl>
             <TextBlock Text="{u:Tr playTab.customLaunchParameters}" FontWeight="SemiBold" />
             <Grid ColumnDefinitions="*,Auto">
-              <TextBox Text="{Binding CustomLaunchParameters}" PlaceholderText="{u:Tr mainWindow.placeholderLaunchParams}" />
+              <TextBox Text="{Binding CustomLaunchParameters}" FlowDirection="LeftToRight" TextAlignment="Left" PlaceholderText="{u:Tr mainWindow.placeholderLaunchParams}" />
               <Button Grid.Column="1" Margin="12,0,0,0" Content="{u:Tr mainWindow.apply}" Click="ApplyGameOptionsCustomParameters" />
             </Grid>
           </StackPanel>
@@ -275,7 +275,7 @@
         </Border>
         <Border Padding="16" CornerRadius="12" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1">
           <StackPanel Spacing="10">
-            <TextBlock Text="Global settings" FontWeight="SemiBold" FontSize="16" />
+            <TextBlock Text="{u:Tr customUI.globalSettings}" FontWeight="SemiBold" FontSize="16" />
             <CheckBox Content="{u:Tr mainWindow.closeOnGameLaunch}" IsChecked="{Binding CloseOnGameLaunch}" IsCheckedChanged="SettingsCloseOnLaunchChanged" />
             <CheckBox Content="{u:Tr mainWindow.preAquaticaMode}" IsChecked="{Binding PreAquatica}" IsVisible="{Binding PreAquaticaVisible}" IsCheckedChanged="SettingsPreAquaticaChanged" />
           </StackPanel>
@@ -310,7 +310,7 @@
       <StackPanel Spacing="16">
         <Border Padding="16" CornerRadius="12" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1">
           <StackPanel Spacing="8">
-            <TextBlock Text="ASE settings" FontSize="20" FontWeight="SemiBold" />
+            <TextBlock Text="{u:Tr customUI.aseSettings}" FontSize="20" FontWeight="SemiBold" />
             <TextBlock Text="{u:Tr mainWindow.linuxCompatibilityTool}" FontWeight="SemiBold" />
             <ComboBox ItemsSource="{Binding LinuxLaunchTools}" SelectedIndex="{Binding SelectedAseLinuxLaunchToolIndex, Mode=TwoWay}" SelectionChanged="AseLinuxLaunchToolChanged">
               <ComboBox.ItemTemplate>
@@ -373,7 +373,7 @@
       <StackPanel Spacing="16">
         <Border Padding="16" CornerRadius="12" Background="#0C1A2C" BorderBrush="#274665" BorderThickness="1">
           <StackPanel Spacing="8">
-            <TextBlock Text="ASA settings" FontSize="20" FontWeight="SemiBold" />
+            <TextBlock Text="{u:Tr customUI.asaSettings}" FontSize="20" FontWeight="SemiBold" />
             <TextBlock Text="{u:Tr mainWindow.linuxCompatibilityTool}" FontWeight="SemiBold" />
             <ComboBox ItemsSource="{Binding LinuxLaunchTools}" SelectedIndex="{Binding SelectedAsaLinuxLaunchToolIndex, Mode=TwoWay}" SelectionChanged="AsaLinuxLaunchToolChanged">
               <ComboBox.ItemTemplate>
@@ -618,7 +618,7 @@
                                       BorderBrush="#2A4C6D"
                                       BorderThickness="1"
                                       CornerRadius="10"
-                                      HorizontalContentAlignment="Left"
+                                      HorizontalContentAlignment="Stretch"
                                       Click="SelectNavigationNode"
                                       Classes.selected="{Binding IsSelected}">
                                 <Button.Styles>

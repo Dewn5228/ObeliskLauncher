@@ -11,6 +11,7 @@ public partial class ServerModsUpdaterWindow : Window
     public ServerModsUpdaterWindow()
     {
         InitializeComponent();
+        ArabicUiDirection.Apply(this);
     }
 
     internal ServerModsUpdaterWindow(ulong[] modIds)

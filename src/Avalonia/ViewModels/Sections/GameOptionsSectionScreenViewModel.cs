@@ -164,7 +164,7 @@ public sealed class GameOptionsSectionScreenViewModel : LauncherSectionScreenVie
     public void ApplyCustomLaunchParameters()
     {
         GameOptionsWorkflow.SetCustomLaunchParameters(CustomLaunchParameters);
-        SetStatus("Launch parameters updated.", 1);
+        SetStatus(Locale.Get("customUI.launchParametersSaved"), 1);
         Activate();
     }
 

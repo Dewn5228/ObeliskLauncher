@@ -193,7 +193,7 @@ static class Game
                 return false;
             }
 
-            var args = new List<string>(LaunchParameters)
+            var args = new List<string>(LaunchParameters.Where(parameter => !parameter.StartsWith("-culture=", StringComparison.OrdinalIgnoreCase)))
             {
                 $"-culture={CultureCodes[Language]}"
             };
@@ -253,7 +253,7 @@ static class Game
             {
                 LauncherLog.Error("Platform launcher failed. Error={Error}", launchResult.ErrorMessage ?? "unknown");
                 WriteLaunchAttemptLog(launchLog, $"Launch failed in platform launcher: {launchResult.ErrorMessage}");
-                Messages.Show("Error", launchResult.ErrorMessage!);
+                Messages.Show("common.error", launchResult.ErrorMessage!);
                 return false;
             }
 

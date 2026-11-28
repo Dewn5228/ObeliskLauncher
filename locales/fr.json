@@ -41,7 +41,8 @@
       "mb": "Mo",
       "gb": "Go"
     },
-    "updating": "Mise à jour…"
+    "updating": "Mise à jour…",
+    "download": "Télécharger"
   },
   "time": {
     "second": "s",
@@ -163,7 +164,9 @@
     "adlerHashMismatch": "Discordance de hash Adler — le fichier peut avoir été modifié après la génération de la liste.",
     "failedToLoadWorkshopModList": "Échec du chargement de la liste des mods Workshop.",
     "readyToInstall": "{0} prêt à être installé.",
-    "alreadyInstalled": "{0} est déjà installé."
+    "alreadyInstalled": "{0} est déjà installé.",
+    "modLookupTimeout": "La recherche du mod a expiré. Réessayez.",
+    "workshopSearchTimeout": "La recherche dans le Steam Workshop a expiré. Réessayez."
   },
   "serversTab": {
     "tabTitle": "Serveurs",
@@ -242,7 +245,8 @@
     "deleteLauncherSettings": "Supprimer les paramètres du lanceur",
     "deleteLauncherSettingsPrompt": "Voulez-vous supprimer définitivement tous les paramètres du lanceur ?",
     "downloadFailed": "Échec du téléchargement : ",
-    "steamClientBootstrapFailed": "Échec du bootstrap de tek-steamclient"
+    "steamClientBootstrapFailed": "Échec du bootstrap de tek-steamclient",
+    "gamePathChangePrompt": "Changer le dossier du jeu peut affecter vos fichiers ou téléchargements. Continuer ?"
   },
   "version": {
     "launcherVersion": "Version du lanceur",
@@ -366,7 +370,9 @@
     "createShortcut": "Créer un raccourci",
     "chooseShortcutFolder": "Choisissez où créer le raccourci",
     "shortcutCreated": "Raccourci créé :{0}",
-    "steamOverlay": "Superposition Steam"
+    "steamOverlay": "Superposition Steam",
+    "clusterRefreshTimeout": "Le rafraîchissement des clusters a expiré.",
+    "serverRefreshTimeout": "Le rafraîchissement de la liste des serveurs a expiré."
   },
   "firstLaunchWindow": {
     "title": "Configuration Obelisk Launcher",
@@ -375,7 +381,7 @@
     "useExistingArk": "Utiliser une installation ARK existante",
     "installNewFolder": "Installer ARK dans un nouveau dossier",
     "selectExistingFolder": "Sélectionner un dossier ARK existant",
-    "selectFolderDescription": "Le dossier sélectionné doit contenir ShooterGame/Binaries/Win64/{0}.",
+    "selectFolderDescription": "Sélectionnez le dossier racine du jeu qui contient {1} (recherche de {0}). Ne sélectionnez pas le dossier Win64 lui-même.",
     "placeholderPathToArk": "/chemin/vers/ARK",
     "selectFolderToContinue": "Sélectionnez un dossier pour continuer.",
     "continue": "Continuer",
@@ -427,5 +433,40 @@
     "userManaged": "exécuteur installé par l'utilisateur",
     "stockProton": "Proton Valve standard",
     "wineFallback": "Wine de repli (aucun Proton trouvé)"
+  },
+  "customUI": {
+    "ark": "ARK",
+    "asaSettings": "Paramètres ASA",
+    "aseSettings": "Paramètres ASE",
+    "copied": "Copié",
+    "dlcUpdaterLegacy": "L’installation ou la mise à jour des DLC nécessite encore l’ancienne fenêtre de mise à jour.",
+    "dlcValidationLegacy": "La validation des DLC nécessite encore l’ancienne fenêtre de mise à jour.",
+    "downloadErrorGeneric": "L’opération n’a pas pu être terminée. Codes d’erreur : type {0}, principal {1}, auxiliaire {2}.",
+    "downloadTimeout": "Le téléchargement des fichiers depuis Steam a expiré. Vos fichiers téléchargés n’ont pas été supprimés. Vérifiez la connexion et choisissez Réessayer.",
+    "duplicateLauncher": "Une autre instance d’Obelisk Launcher est déjà en cours d’exécution.",
+    "gameAsa": "ARK: Survival Ascended (ASA)",
+    "gameAse": "ARK: Survival Evolved (ASE)",
+    "gameSwitchFailed": "Le changement de jeu a échoué. La configuration précédente a été restaurée.",
+    "gameSwitchPending": "Le changement de jeu est en cours. Réessayez dans un instant.",
+    "general": "Général",
+    "globalSettings": "Paramètres généraux",
+    "killGame": "Forcer l’arrêt",
+    "launchParametersSaved": "Les paramètres de lancement ont été enregistrés.",
+    "launcherMissingFile": "Le lanceur n’a pas pu télécharger {0}. Ouvrez la page de téléchargement, placez le fichier dans le dossier de données du lanceur et redémarrez-le.",
+    "launcherUpdateNotice": "Une mise à jour d’Obelisk Launcher est disponible.",
+    "linuxUpdateManually": "Les mises à jour automatiques du lanceur ne sont disponibles que pour Windows. Sous Linux, installez manuellement la dernière version.",
+    "modRemoved": "{0} a été retiré des mods installés.",
+    "noChangelog": "Aucune note de version n’est disponible pour cette version.",
+    "openDataFolder": "Ouvrir le dossier de données",
+    "openDownloadPage": "Ouvrir la page de téléchargement",
+    "openLink": "Ouvrir le lien",
+    "perSecond": "s",
+    "preparingDownloadSize": "Préparation de la taille du téléchargement…",
+    "preparingFileList": "Préparation de la liste des fichiers…",
+    "preparingProgressData": "Préparation des données de progression…",
+    "remainingTime": "Temps restant",
+    "steamChunkFailed": "Un fragment de fichier de jeu n’a pas pu être téléchargé depuis Steam. Vérifiez la connexion et choisissez Réessayer.",
+    "versionUnavailable": "Version pas encore disponible",
+    "waitingForJobData": "En attente des données de la tâche de téléchargement…"
   }
 }

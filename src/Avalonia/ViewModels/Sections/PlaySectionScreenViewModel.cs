@@ -38,6 +38,35 @@ public sealed class PlaySectionScreenViewModel : LauncherSectionScreenViewModel
     "中文 (台湾)"
     ];
 
+    static readonly string[] s_gameLanguagesArabic =
+    [
+        "الكتالونية",
+        "التشيكية",
+        "الدانماركية",
+        "الألمانية",
+        "الإنجليزية",
+        "الإسبانية",
+        "الباسكية",
+        "الفنلندية",
+        "الفرنسية",
+        "المجرية",
+        "الإيطالية",
+        "اليابانية",
+        "الجورجية",
+        "الكورية",
+        "الهولندية",
+        "البولندية",
+        "البرتغالية (البرازيل)",
+        "الروسية",
+        "السويدية",
+        "التايلاندية",
+        "التركية",
+        "الأوكرانية",
+        "الصينية",
+        "الصينية المبسطة",
+        "الصينية التقليدية (تايوان)"
+    ];
+
     static readonly string[] s_launcherLanguages =
     [
       "English",
@@ -47,7 +76,8 @@ public sealed class PlaySectionScreenViewModel : LauncherSectionScreenViewModel
     "Português",
     "Ελληνικά",
     "Русский",
-    "简体中文"
+    "简体中文",
+    "العربية"
     ];
 
     public PlaySectionScreenViewModel()
@@ -71,7 +101,7 @@ public sealed class PlaySectionScreenViewModel : LauncherSectionScreenViewModel
         get => Game.Language;
         set
         {
-            if (Game.Language == value)
+            if (value < 0 || value >= Game.CultureCodes.Length || Game.Language == value)
                 return;
 
             Game.Language = value;
@@ -79,7 +109,7 @@ public sealed class PlaySectionScreenViewModel : LauncherSectionScreenViewModel
         }
     }
 
-    public IReadOnlyList<string> GameLanguages => s_gameLanguages;
+    public IReadOnlyList<string> GameLanguages => Locale.CurrentLanguage == "ar" ? s_gameLanguagesArabic : s_gameLanguages;
 
     public int LauncherLanguageIndex
     {
@@ -118,7 +148,7 @@ public sealed class PlaySectionScreenViewModel : LauncherSectionScreenViewModel
         private set => SetProperty(ref _isGameRunning, value);
     }
 
-    public string PlayButtonText => IsGameRunning ? "Kill" : Locale.Get("mainWindow.play");
+    public string PlayButtonText => IsGameRunning ? Locale.Get("customUI.killGame") : Locale.Get("mainWindow.play");
 
     public bool RunAsAdmin
     {
@@ -194,6 +224,7 @@ public sealed class PlaySectionScreenViewModel : LauncherSectionScreenViewModel
         OnPropertyChanged(nameof(LaunchBehaviorNote));
         OnPropertyChanged(nameof(LauncherLanguageAvailabilityNote));
         OnPropertyChanged(nameof(LauncherLanguages));
+        OnPropertyChanged(nameof(GameLanguages));
     }
 
     static (string[] Labels, int[] IndexMap) BuildLauncherLanguageOptions()

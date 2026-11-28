@@ -82,7 +82,7 @@ public sealed class LauncherUpdateWindowViewModel : INotifyPropertyChanged
         {
             if (!OperatingSystem.IsWindows())
             {
-                StatusText = "Launcher self-update is only packaged for Windows right now. Open the latest release page and replace the launcher binary manually after Linux release artifacts are published.";
+                StatusText = Locale.Get("customUI.linuxUpdateManually");
                 StatusBrush = "#D49B38";
                 CanOpenReleasePage = true;
                 return;

@@ -41,7 +41,8 @@
       "mb": "МБ",
       "gb": "ГБ"
     },
-    "updating": "Обновление…"
+    "updating": "Обновление…",
+    "download": "Скачать"
   },
   "time": {
     "second": "с",
@@ -163,7 +164,9 @@
     "adlerHashMismatch": "Несовпадение хеша файла — файл мог быть изменен после генерации списка.",
     "failedToLoadWorkshopModList": "Не удалось загрузить список модов Workshop.",
     "readyToInstall": "{0} готов к установке.",
-    "alreadyInstalled": "{0} уже установлен."
+    "alreadyInstalled": "{0} уже установлен.",
+    "modLookupTimeout": "Время поиска мода истекло. Повторите попытку.",
+    "workshopSearchTimeout": "Время поиска в Steam Workshop истекло. Повторите попытку."
   },
   "serversTab": {
     "tabTitle": "Серверы",
@@ -242,7 +245,8 @@
     "deleteLauncherSettings": "Удалить настройки лаунчера",
     "deleteLauncherSettingsPrompt": "Вы хотите навсегда удалить все настройки лаунчера?",
     "downloadFailed": "Загрузка не удалась: ",
-    "steamClientBootstrapFailed": "Ошибка инициализации (bootstrap) tek-steamclient"
+    "steamClientBootstrapFailed": "Ошибка инициализации (bootstrap) tek-steamclient",
+    "gamePathChangePrompt": "Смена папки игры может повлиять на ваши файлы или загрузки. Продолжить?"
   },
   "version": {
     "launcherVersion": "Версия лаунчера",
@@ -366,7 +370,9 @@
     "createShortcut": "Создать ярлык",
     "chooseShortcutFolder": "Выберите папку для ярлыка",
     "shortcutCreated": "Ярлык создан:{0}",
-    "steamOverlay": "Оверлей Steam"
+    "steamOverlay": "Оверлей Steam",
+    "clusterRefreshTimeout": "Время обновления кластеров истекло.",
+    "serverRefreshTimeout": "Время обновления списка серверов истекло."
   },
   "firstLaunchWindow": {
     "title": "Настройка Obelisk Launcher",
@@ -375,7 +381,7 @@
     "useExistingArk": "Использовать существующую установку ARK",
     "installNewFolder": "Установить ARK в новую папку",
     "selectExistingFolder": "Выбрать существующую папку ARK",
-    "selectFolderDescription": "Выбранная папка должна содержать ShooterGame/Binaries/Win64/{0}.",
+    "selectFolderDescription": "Выберите корневую папку игры, содержащую {1} (ищется {0}). Не выбирайте саму папку Win64.",
     "placeholderPathToArk": "/путь/к/ARK",
     "selectFolderToContinue": "Выберите папку, чтобы продолжить.",
     "continue": "Продолжить",
@@ -427,5 +433,40 @@
     "userManaged": "раннер, установленный пользователем",
     "stockProton": "стандартный Proton от Valve",
     "wineFallback": "запасной вариант Wine (Proton не найден)"
+  },
+  "customUI": {
+    "ark": "ARK",
+    "asaSettings": "Настройки ASA",
+    "aseSettings": "Настройки ASE",
+    "copied": "Скопировано",
+    "dlcUpdaterLegacy": "Установка или обновление DLC по-прежнему требуют старого окна обновления.",
+    "dlcValidationLegacy": "Проверка DLC по-прежнему требует старого окна обновления.",
+    "downloadErrorGeneric": "Не удалось выполнить операцию. Коды ошибки: тип {0}, основной {1}, дополнительный {2}.",
+    "downloadTimeout": "Время загрузки файлов из Steam истекло. Загруженные файлы не удалены. Проверьте подключение и выберите «Повторить».",
+    "duplicateLauncher": "Другой экземпляр Obelisk Launcher уже запущен.",
+    "gameAsa": "ARK: Survival Ascended (ASA)",
+    "gameAse": "ARK: Survival Evolved (ASE)",
+    "gameSwitchFailed": "Не удалось переключить игру. Предыдущая конфигурация восстановлена.",
+    "gameSwitchPending": "Переключение игры выполняется. Повторите попытку чуть позже.",
+    "general": "Общие",
+    "globalSettings": "Общие настройки",
+    "killGame": "Принудительно завершить",
+    "launchParametersSaved": "Параметры запуска сохранены.",
+    "launcherMissingFile": "Лаунчеру не удалось загрузить {0}. Откройте страницу загрузки, поместите файл в папку данных лаунчера и перезапустите его.",
+    "launcherUpdateNotice": "Доступно обновление Obelisk Launcher.",
+    "linuxUpdateManually": "Автоматические обновления лаунчера сейчас доступны только для Windows. В Linux установите последнюю версию вручную.",
+    "modRemoved": "{0} удалён из установленных модов.",
+    "noChangelog": "Для этой версии нет примечаний к выпуску.",
+    "openDataFolder": "Открыть папку данных",
+    "openDownloadPage": "Открыть страницу загрузки",
+    "openLink": "Открыть ссылку",
+    "perSecond": "с",
+    "preparingDownloadSize": "Подготовка размера загрузки…",
+    "preparingFileList": "Подготовка списка файлов…",
+    "preparingProgressData": "Подготовка данных о ходе выполнения…",
+    "remainingTime": "Осталось",
+    "steamChunkFailed": "Не удалось загрузить часть игрового файла из Steam. Проверьте подключение и выберите «Повторить».",
+    "versionUnavailable": "Версия пока недоступна",
+    "waitingForJobData": "Ожидание данных задачи загрузки…"
   }
 }

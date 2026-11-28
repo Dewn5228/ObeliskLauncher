@@ -41,7 +41,8 @@
       "mb": "MB",
       "gb": "GB"
     },
-    "updating": "Bijwerken..."
+    "updating": "Bijwerken...",
+    "download": "Downloaden"
   },
   "time": {
     "second": "s",
@@ -163,7 +164,9 @@
     "adlerHashMismatch": "Hash-fout — het bestand kan gewijzigd zijn nadat de lijst was gegenereerd.",
     "alreadyInstalled": "{0} is al geïnstalleerd.",
     "failedToLoadWorkshopModList": "Laden van de Workshop mod-lijst mislukt.",
-    "readyToInstall": "{0} is klaar om te installeren."
+    "readyToInstall": "{0} is klaar om te installeren.",
+    "modLookupTimeout": "Het opzoeken van de mod is verlopen. Probeer het opnieuw.",
+    "workshopSearchTimeout": "Het zoeken in de Steam Workshop is verlopen. Probeer het opnieuw."
   },
   "serversTab": {
     "tabTitle": "Servers",
@@ -242,7 +245,8 @@
     "deleteLauncherSettings": "Launcher-instellingen verwijderen",
     "deleteLauncherSettingsPrompt": "Wil je alle launcher-instellingen permanent verwijderen?",
     "downloadFailed": "Download mislukt: ",
-    "steamClientBootstrapFailed": "tek-steamclient bootstrap mislukt"
+    "steamClientBootstrapFailed": "tek-steamclient bootstrap mislukt",
+    "gamePathChangePrompt": "Het wijzigen van de spelmap kan invloed hebben op je bestanden of downloads. Doorgaan?"
   },
   "version": {
     "launcherVersion": "Launcher-versie",
@@ -366,7 +370,9 @@
     "createShortcut": "Snelkoppeling maken",
     "chooseShortcutFolder": "Kies waar de snelkoppeling wordt gemaakt",
     "shortcutCreated": "Snelkoppeling gemaakt:{0}",
-    "steamOverlay": "Steam-overlay"
+    "steamOverlay": "Steam-overlay",
+    "clusterRefreshTimeout": "Het vernieuwen van clusters is verlopen.",
+    "serverRefreshTimeout": "Het vernieuwen van de serverlijst is verlopen."
   },
   "firstLaunchWindow": {
     "title": "Obelisk Launcher Setup",
@@ -375,7 +381,7 @@
     "useExistingArk": "Gebruik een bestaande ARK-installatie",
     "installNewFolder": "Installeer ARK in een nieuwe map",
     "selectExistingFolder": "Selecteer een bestaande ARK-map",
-    "selectFolderDescription": "De geselecteerde map moet ShooterGame/Binaries/Win64/{0} bevatten.",
+    "selectFolderDescription": "Selecteer de hoofdmap van het spel die {1} bevat (op zoek naar {0}). Selecteer niet de Win64-map zelf.",
     "placeholderPathToArk": "/pad/naar/ARK",
     "selectFolderToContinue": "Selecteer een map om door te gaan.",
     "continue": "Doorgaan",
@@ -427,5 +433,40 @@
     "userManaged": "door gebruiker geïnstalleerde runner",
     "stockProton": "standaard Valve-Proton",
     "wineFallback": "Wine als terugval (geen Proton gevonden)"
+  },
+  "customUI": {
+    "ark": "ARK",
+    "asaSettings": "ASA-instellingen",
+    "aseSettings": "ASE-instellingen",
+    "copied": "Gekopieerd",
+    "dlcUpdaterLegacy": "DLC installeren of bijwerken vereist nog steeds het oude updatervenster.",
+    "dlcValidationLegacy": "DLC valideren vereist nog steeds het oude updatervenster.",
+    "downloadErrorGeneric": "De bewerking kon niet worden voltooid. Foutcodes: type {0}, primair {1}, auxiliair {2}.",
+    "downloadTimeout": "Het downloaden van bestanden van Steam is verlopen. Je gedownloade bestanden zijn niet verwijderd. Controleer de verbinding en kies Opnieuw proberen.",
+    "duplicateLauncher": "Er is al een andere instantie van Obelisk Launcher actief.",
+    "gameAsa": "ARK: Survival Ascended (ASA)",
+    "gameAse": "ARK: Survival Evolved (ASE)",
+    "gameSwitchFailed": "Wisselen van spel mislukt. De vorige spelconfiguratie is hersteld.",
+    "gameSwitchPending": "Er wordt gewisseld van spel. Probeer het zo opnieuw.",
+    "general": "Algemeen",
+    "globalSettings": "Algemene instellingen",
+    "killGame": "Geforceerd stoppen",
+    "launchParametersSaved": "Startparameters zijn opgeslagen.",
+    "launcherMissingFile": "De launcher kon {0} niet downloaden. Open de downloadpagina, plaats het bestand in de gegevensmap van de launcher en start de launcher opnieuw.",
+    "launcherUpdateNotice": "Er is een update van Obelisk Launcher beschikbaar.",
+    "linuxUpdateManually": "Automatische launcher-updates zijn momenteel alleen voor Windows beschikbaar. Installeer op Linux de nieuwste versie handmatig.",
+    "modRemoved": "{0} is verwijderd uit de geïnstalleerde mods.",
+    "noChangelog": "Er zijn geen releaseopmerkingen voor deze versie.",
+    "openDataFolder": "Gegevensmap openen",
+    "openDownloadPage": "Downloadpagina openen",
+    "openLink": "Link openen",
+    "perSecond": "s",
+    "preparingDownloadSize": "Downloadgrootte voorbereiden…",
+    "preparingFileList": "Bestandslijst voorbereiden…",
+    "preparingProgressData": "Voortgangsgegevens voorbereiden…",
+    "remainingTime": "Resterende tijd",
+    "steamChunkFailed": "Een fragment van een gamebestand kon niet van Steam worden gedownload. Controleer de verbinding en kies Opnieuw proberen.",
+    "versionUnavailable": "Versie nog niet beschikbaar",
+    "waitingForJobData": "Wachten op gegevens van de downloadtaak…"
   }
 }

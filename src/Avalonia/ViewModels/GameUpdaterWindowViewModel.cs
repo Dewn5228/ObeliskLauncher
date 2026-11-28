@@ -23,7 +23,7 @@ internal sealed class GameUpdaterWindowViewModel : SteamTaskUpdaterWindowViewMod
     protected override unsafe void HandleSuccessfulResult(TEKSteamClient.Error result)
     {
         SetStatus(result.Primary == 85
-          ? string.Format(Locale.Get("common.alreadyUpToDate"), "ARK")
+          ? string.Format(Locale.Get("common.alreadyUpToDate"), Locale.Get("customUI.ark"))
           : Locale.Get("updateFinished"), global::Avalonia.Media.Brushes.LimeGreen);
     }
 

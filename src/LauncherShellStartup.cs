@@ -33,7 +33,7 @@ static class LauncherShellStartup
     public static async Task<LauncherShellStartupResult> InitializeAsync(bool beginInstallation)
     {
         IGameContext game = ActiveGameManager.Current;
-        string gameVersionText = Locale.Get(Game.IsCorrupted ? "?None?" : "common.na");
+        string gameVersionText = Locale.Get(Game.IsCorrupted ? "customUI.versionUnavailable" : "common.na");
         var gameVersionTone = Game.IsCorrupted ? LauncherShellTone.Error : LauncherShellTone.Neutral;
 
         bool launcherUpdateAvailable = await CheckLauncherUpdateAsync();
@@ -52,7 +52,7 @@ static class LauncherShellStartup
     public static async Task<LauncherShellStatusSummary> GetStatusSummaryAsync(bool beginInstallation)
     {
         IGameContext game = ActiveGameManager.Current;
-        string gameVersionText = Locale.Get(Game.IsCorrupted ? "?None?" : "common.na");
+        string gameVersionText = Locale.Get(Game.IsCorrupted ? "customUI.versionUnavailable" : "common.na");
         var gameVersionTone = Game.IsCorrupted ? LauncherShellTone.Error : LauncherShellTone.Neutral;
         bool gameUpdateAvailable = false;
         bool dlcUpdatesAvailable = false;

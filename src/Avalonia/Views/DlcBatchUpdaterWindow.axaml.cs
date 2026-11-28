@@ -12,6 +12,7 @@ public partial class DlcBatchUpdaterWindow : Window
     public DlcBatchUpdaterWindow()
     {
         InitializeComponent();
+        ArabicUiDirection.Apply(this);
     }
 
     internal DlcBatchUpdaterWindow(IReadOnlyList<DLC> dlcs)

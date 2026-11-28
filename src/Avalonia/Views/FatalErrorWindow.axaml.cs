@@ -30,6 +30,6 @@ public partial class FatalErrorWindow : Window
             return;
 
         await clipboard.SetTextAsync(ExceptionData.Text);
-        CopyErrorButton.Content = "Copied";
+        CopyErrorButton.Content = Locale.Get("customUI.copied");
     }
 }

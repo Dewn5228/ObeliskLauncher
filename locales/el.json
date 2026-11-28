@@ -41,7 +41,8 @@
       "mb": "MB",
       "gb": "GB"
     },
-    "updating": "Ενημέρωση…"
+    "updating": "Ενημέρωση…",
+    "download": "Λήψη"
   },
   "time": {
     "second": "δ",
@@ -163,7 +164,9 @@
     "adlerHashMismatch": "Ασυμφωνία hash αρχείου — το αρχείο μπορεί να έχει τροποποιηθεί μετά τη δημιουργία της λίστας.",
     "failedToLoadWorkshopModList": "Αποτυχία φόρτωσης της λίστας workshop mods.",
     "readyToInstall": "{0} έτοιμο για εγκατάσταση.",
-    "alreadyInstalled": "{0} είναι ήδη εγκατεστημένο."
+    "alreadyInstalled": "{0} είναι ήδη εγκατεστημένο.",
+    "modLookupTimeout": "Το χρονικό όριο αναζήτησης του mod έληξε. Δοκιμάστε ξανά.",
+    "workshopSearchTimeout": "Το χρονικό όριο αναζήτησης στο Steam Workshop έληξε. Δοκιμάστε ξανά."
   },
   "serversTab": {
     "tabTitle": "Servers",
@@ -242,7 +245,8 @@
     "deleteLauncherSettings": "Διαγραφή ρυθμίσεων launcher",
     "deleteLauncherSettingsPrompt": "Θέλετε να διαγράψετε μόνιμα όλες τις ρυθμίσεις του launcher;",
     "downloadFailed": "Η λήψη απέτυχε: ",
-    "steamClientBootstrapFailed": "Η προετοιμασία (bootstrap) του tek-steamclient απέτυχε"
+    "steamClientBootstrapFailed": "Η προετοιμασία (bootstrap) του tek-steamclient απέτυχε",
+    "gamePathChangePrompt": "Η αλλαγή του φακέλου παιχνιδιού μπορεί να επηρεάσει τα αρχεία ή τις λήψεις σας. Συνέχεια;"
   },
   "version": {
     "launcherVersion": "Έκδοση launcher",
@@ -366,7 +370,9 @@
     "createShortcut": "Δημιουργία συντόμευσης",
     "chooseShortcutFolder": "Επιλέξτε πού θα δημιουργηθεί η συντόμευση",
     "shortcutCreated": "Η συντόμευση δημιουργήθηκε:{0}",
-    "steamOverlay": "Επικάλυψη Steam"
+    "steamOverlay": "Επικάλυψη Steam",
+    "clusterRefreshTimeout": "Το χρονικό όριο ανανέωσης των clusters έληξε.",
+    "serverRefreshTimeout": "Το χρονικό όριο ανανέωσης της λίστας διακομιστών έληξε."
   },
   "firstLaunchWindow": {
     "title": "Εγκατάσταση Obelisk Launcher",
@@ -375,7 +381,7 @@
     "useExistingArk": "Χρήση υπάρχουσας εγκατάστασης ARK",
     "installNewFolder": "Εγκατάσταση ARK σε νέο φάκελο",
     "selectExistingFolder": "Επιλογή υπάρχοντος φακέλου ARK",
-    "selectFolderDescription": "Ο φάκελος πρέπει να περιέχει το ShooterGame/Binaries/Win64/{0}.",
+    "selectFolderDescription": "Επιλέξτε τον ριζικό φάκελο του παιχνιδιού που περιέχει {1} (αναζήτηση για {0}). Μην επιλέξετε τον ίδιο τον φάκελο Win64.",
     "placeholderPathToArk": "/διαδρομή/προς/ARK",
     "selectFolderToContinue": "Επιλέξτε έναν φάκελο για να συνεχίσετε.",
     "continue": "Συνέχεια",
@@ -427,5 +433,40 @@
     "userManaged": "δρομέας εγκατεστημένος από τον χρήστη",
     "stockProton": "βασικό Proton της Valve",
     "wineFallback": "εφεδρικό Wine (δεν βρέθηκε Proton)"
+  },
+  "customUI": {
+    "ark": "ARK",
+    "asaSettings": "Ρυθμίσεις ASA",
+    "aseSettings": "Ρυθμίσεις ASE",
+    "copied": "Αντιγράφηκε",
+    "dlcUpdaterLegacy": "Η εγκατάσταση ή ενημέρωση DLC απαιτεί ακόμη το παλιό παράθυρο ενημέρωσης.",
+    "dlcValidationLegacy": "Η επικύρωση DLC απαιτεί ακόμη το παλιό παράθυρο ενημέρωσης.",
+    "downloadErrorGeneric": "Η λειτουργία δεν ολοκληρώθηκε. Κωδικοί σφάλματος: τύπος {0}, κύριος {1}, βοηθητικός {2}.",
+    "downloadTimeout": "Το χρονικό όριο λήψης αρχείων από το Steam έληξε. Τα αρχεία που λήφθηκαν δεν διαγράφηκαν. Ελέγξτε τη σύνδεση και επιλέξτε Επανάληψη.",
+    "duplicateLauncher": "Μια άλλη παρουσία του Obelisk Launcher εκτελείται ήδη.",
+    "gameAsa": "ARK: Survival Ascended (ASA)",
+    "gameAse": "ARK: Survival Evolved (ASE)",
+    "gameSwitchFailed": "Η εναλλαγή παιχνιδιού απέτυχε. Η προηγούμενη ρύθμιση αποκαταστάθηκε.",
+    "gameSwitchPending": "Η εναλλαγή παιχνιδιού βρίσκεται σε εξέλιξη. Δοκιμάστε ξανά σε λίγο.",
+    "general": "Γενικά",
+    "globalSettings": "Γενικές ρυθμίσεις",
+    "killGame": "Αναγκαστικός τερματισμός",
+    "launchParametersSaved": "Οι παράμετροι εκκίνησης αποθηκεύτηκαν.",
+    "launcherMissingFile": "Το launcher δεν μπόρεσε να κάνει λήψη του {0}. Ανοίξτε τη σελίδα λήψης, τοποθετήστε το αρχείο στον φάκελο δεδομένων του launcher και επανεκκινήστε το.",
+    "launcherUpdateNotice": "Υπάρχει διαθέσιμη ενημέρωση του Obelisk Launcher.",
+    "linuxUpdateManually": "Οι αυτόματες ενημερώσεις του launcher διατίθενται προς το παρόν μόνο για Windows. Στο Linux, εγκαταστήστε χειροκίνητα την πιο πρόσφατη έκδοση.",
+    "modRemoved": "Το {0} αφαιρέθηκε από τα εγκατεστημένα mods.",
+    "noChangelog": "Δεν υπάρχουν σημειώσεις έκδοσης για αυτήν την έκδοση.",
+    "openDataFolder": "Άνοιγμα φακέλου δεδομένων",
+    "openDownloadPage": "Άνοιγμα σελίδας λήψης",
+    "openLink": "Άνοιγμα συνδέσμου",
+    "perSecond": "δ",
+    "preparingDownloadSize": "Προετοιμασία μεγέθους λήψης…",
+    "preparingFileList": "Προετοιμασία λίστας αρχείων…",
+    "preparingProgressData": "Προετοιμασία δεδομένων προόδου…",
+    "remainingTime": "Υπολειπόμενος χρόνος",
+    "steamChunkFailed": "Δεν ήταν δυνατή η λήψη ενός τμήματος αρχείου παιχνιδιού από το Steam. Ελέγξτε τη σύνδεση και επιλέξτε Επανάληψη.",
+    "versionUnavailable": "Η έκδοση δεν είναι ακόμη διαθέσιμη",
+    "waitingForJobData": "Αναμονή δεδομένων εργασίας λήψης…"
   }
 }

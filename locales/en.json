@@ -41,7 +41,8 @@
       "mb": "MB",
       "gb": "GB"
     },
-    "updating": "Updating"
+    "updating": "Updating",
+    "download": "Download"
   },
   "time": {
     "second": "s",
@@ -163,7 +164,9 @@
     "adlerHashMismatch": "File hash mismatch — the file may have been modified after the list was generated.",
     "failedToLoadWorkshopModList": "Failed to load workshop mod list.",
     "readyToInstall": "{0} ready to install.",
-    "alreadyInstalled": "{0} is already installed."
+    "alreadyInstalled": "{0} is already installed.",
+    "modLookupTimeout": "Mod lookup timed out. Please try again.",
+    "workshopSearchTimeout": "The Steam Workshop search timed out. Please try again."
   },
   "serversTab": {
     "tabTitle": "Servers",
@@ -242,7 +245,8 @@
     "deleteLauncherSettings": "Delete launcher settings",
     "deleteLauncherSettingsPrompt": "Do you want to permanently delete all launcher settings?",
     "downloadFailed": "Download failed: ",
-    "steamClientBootstrapFailed": "tek-steamclient bootstrap failed"
+    "steamClientBootstrapFailed": "tek-steamclient bootstrap failed",
+    "gamePathChangePrompt": "Changing the game folder may affect your files or downloads. Continue?"
   },
   "version": {
     "launcherVersion": "Launcher version",
@@ -366,7 +370,9 @@
     "createShortcut": "Create shortcut",
     "chooseShortcutFolder": "Choose where to create the shortcut",
     "shortcutCreated": "Shortcut created:{0}",
-    "steamOverlay": "Steam overlay"
+    "steamOverlay": "Steam overlay",
+    "serverRefreshTimeout": "Server list refresh timed out.",
+    "clusterRefreshTimeout": "Cluster refresh timed out."
   },
   "firstLaunchWindow": {
     "title": "Obelisk Launcher Setup",
@@ -427,5 +433,40 @@
     "userManaged": "user-installed runner",
     "stockProton": "stock Valve Proton",
     "wineFallback": "Wine fallback (no Proton found)"
+  },
+  "customUI": {
+    "general": "General",
+    "gameAse": "ARK: Survival Evolved (ASE)",
+    "gameAsa": "ARK: Survival Ascended (ASA)",
+    "globalSettings": "General settings",
+    "aseSettings": "ASE settings",
+    "asaSettings": "ASA settings",
+    "linuxUpdateManually": "Automatic launcher updates are currently packaged for Windows only. On Linux, install the latest release manually.",
+    "gameSwitchPending": "Game switching is in progress. Please try again shortly.",
+    "gameSwitchFailed": "Switching games failed. The previous game configuration has been restored.",
+    "launcherUpdateNotice": "An Obelisk Launcher update is available.",
+    "launchParametersSaved": "Launch parameters have been saved.",
+    "noChangelog": "There are no release notes for this version.",
+    "copied": "Copied",
+    "openLink": "Open link",
+    "waitingForJobData": "Waiting for download job data…",
+    "perSecond": "s",
+    "remainingTime": "ETA",
+    "downloadTimeout": "Downloading files from Steam timed out. Your downloaded files have not been deleted. Check the connection and choose Retry.",
+    "steamChunkFailed": "A game file chunk could not be downloaded from Steam. Check the connection and choose Retry.",
+    "downloadErrorGeneric": "The operation could not be completed. Error codes: type {0}, primary {1}, auxiliary {2}.",
+    "modRemoved": "Removed {0} from installed mods.",
+    "dlcUpdaterLegacy": "Installing or updating DLC still requires the legacy updater window.",
+    "dlcValidationLegacy": "Validating DLC still requires the legacy updater window.",
+    "duplicateLauncher": "Another instance of Obelisk Launcher is already running.",
+    "versionUnavailable": "Version not available yet",
+    "preparingDownloadSize": "Preparing download size…",
+    "preparingFileList": "Preparing file list…",
+    "preparingProgressData": "Preparing progress data…",
+    "ark": "ARK",
+    "launcherMissingFile": "The launcher could not download {0}. Open the download page, place the file in the launcher data folder, and restart the launcher.",
+    "openDownloadPage": "Open download page",
+    "openDataFolder": "Open data folder",
+    "killGame": "Kill"
   }
 }

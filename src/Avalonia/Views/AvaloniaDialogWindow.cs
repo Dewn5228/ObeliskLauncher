@@ -17,6 +17,7 @@ sealed class AvaloniaDialogWindow : Window
         MinWidth = 420;
         CanResize = false;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        ArabicUiDirection.Apply(this);
 
         var actions = new StackPanel
         {
@@ -34,7 +35,7 @@ sealed class AvaloniaDialogWindow : Window
 
         if (linkUrl is not null)
         {
-            var openLinkButton = new Button { Content = linkLabel ?? "Open link" };
+            var openLinkButton = new Button { Content = linkLabel ?? Locale.Get("customUI.openLink") };
             openLinkButton.Click += (_, _) => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(linkUrl) { UseShellExecute = true });
             actions.Children.Add(openLinkButton);
         }

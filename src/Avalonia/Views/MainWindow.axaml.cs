@@ -19,6 +19,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        ArabicUiDirection.Apply(this);
         Opened += OpenedHandler;
         Closing += ClosingHandler;
     }
@@ -118,7 +119,10 @@ public partial class MainWindow : Window
 
             playScreen.LauncherLanguageIndex = comboBox.SelectedIndex;
             if (DataContext is MainWindowViewModel viewModel)
+            {
                 viewModel.RefreshLocale();
+                ArabicUiDirection.Apply(this);
+            }
         }
     }
 
@@ -332,7 +336,7 @@ public partial class MainWindow : Window
 
             screen.Activate();
             viewModel.RefreshNavigation();
-            Messages.Show("common.warning", "Game switch failed; previous game configuration was restored.");
+            Messages.Show("common.warning", Locale.Get("customUI.gameSwitchFailed"));
             return;
         }
 

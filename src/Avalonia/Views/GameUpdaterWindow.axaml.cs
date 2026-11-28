@@ -11,6 +11,7 @@ public partial class GameUpdaterWindow : Window
     public GameUpdaterWindow()
     {
         InitializeComponent();
+        ArabicUiDirection.Apply(this);
     }
 
     internal GameUpdaterWindow(bool validate)

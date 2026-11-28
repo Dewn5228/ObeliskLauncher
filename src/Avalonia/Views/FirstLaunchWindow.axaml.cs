@@ -22,6 +22,7 @@ public partial class FirstLaunchWindow : Window
     public FirstLaunchWindow()
     {
         InitializeComponent();
+        ArabicUiDirection.Apply(this);
 
         ApplyDetectedInstallDefaults();
 
@@ -224,7 +225,7 @@ public partial class FirstLaunchWindow : Window
         block.Foreground = new SolidColorBrush(Color.Parse(color));
     }
 
-    void UpdateRequiredSpaceText() => RequiredSpaceText.Text = $"{Locale.Get("gameOptionsTab.requiredDiskSpace")}: {FirstLaunchWorkflow.GetRequiredGigabytes(_preAquatica)} GB";
+    void UpdateRequiredSpaceText() => RequiredSpaceText.Text = $"{Locale.Get("gameOptionsTab.requiredDiskSpace")}: {FirstLaunchWorkflow.GetRequiredGigabytes(_preAquatica)}\u00A0{Locale.Get("common.bytes.gb")}";
 
     void ApplyDetectedInstallDefaults()
     {

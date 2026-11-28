@@ -31,7 +31,7 @@ static class DlcWorkflow
         return new($"{dlc.Name}: {GetStatusText(dlc.CurrentStatus)}", dlc.CurrentStatus == DLC.Status.NotInstalled ? 1 : 2);
     }
 
-    public static DlcActionResult GetInstallNotYetMigratedMessage() => new("DLC install/update still depends on the old updater window and has not been ported to Avalonia yet.", 0);
+    public static DlcActionResult GetInstallNotYetMigratedMessage() => new(Locale.Get("customUI.dlcUpdaterLegacy"), 0);
 
-    public static DlcActionResult GetValidateNotYetMigratedMessage() => new("DLC validation still depends on the old updater window and has not been ported to Avalonia yet.", 0);
+    public static DlcActionResult GetValidateNotYetMigratedMessage() => new(Locale.Get("customUI.dlcValidationLegacy"), 0);
 }

@@ -41,7 +41,8 @@
       "mb": "MB",
       "gb": "GB"
     },
-    "updating": "正在更新…"
+    "updating": "正在更新…",
+    "download": "下载"
   },
   "time": {
     "second": "秒",
@@ -163,7 +164,9 @@
     "adlerHashMismatch": "文件哈希不匹配——文件可能在列表生成后被修改。",
     "failedToLoadWorkshopModList": "加载创意工坊模组列表失败。",
     "readyToInstall": "{0} 已准备好安装。",
-    "alreadyInstalled": "{0} 已经安装。"
+    "alreadyInstalled": "{0} 已经安装。",
+    "modLookupTimeout": "模组查询超时，请重试。",
+    "workshopSearchTimeout": "Steam 创意工坊搜索超时，请重试。"
   },
   "serversTab": {
     "tabTitle": "服务器",
@@ -242,7 +245,8 @@
     "deleteLauncherSettings": "删除启动器设置",
     "deleteLauncherSettingsPrompt": "是否永久删除所有启动器设置？",
     "downloadFailed": "下载失败：",
-    "steamClientBootstrapFailed": "tek-steamclient 引导程序启动失败"
+    "steamClientBootstrapFailed": "tek-steamclient 引导程序启动失败",
+    "gamePathChangePrompt": "更改游戏文件夹可能会影响你的文件或下载。是否继续？"
   },
   "version": {
     "launcherVersion": "启动器版本",
@@ -366,7 +370,9 @@
     "createShortcut": "创建快捷方式",
     "chooseShortcutFolder": "选择快捷方式的创建位置",
     "shortcutCreated": "快捷方式已创建：{0}",
-    "steamOverlay": "Steam 覆盖层"
+    "steamOverlay": "Steam 覆盖层",
+    "clusterRefreshTimeout": "集群刷新超时。",
+    "serverRefreshTimeout": "服务器列表刷新超时。"
   },
   "firstLaunchWindow": {
     "title": "TEK 启动器安装",
@@ -375,7 +381,7 @@
     "useExistingArk": "使用现有的 ARK 安装",
     "installNewFolder": "将 ARK 安装到新文件夹",
     "selectExistingFolder": "选择现有的 ARK 文件夹",
-    "selectFolderDescription": "所选文件夹必须包含 ShooterGame/Binaries/Win64/{0}。",
+    "selectFolderDescription": "请选择包含 {1} 的游戏根文件夹（正在查找 {0}）。不要选择 Win64 文件夹本身。",
     "placeholderPathToArk": "/ARK/的/路径",
     "selectFolderToContinue": "选择一个文件夹以继续。",
     "continue": "继续",
@@ -427,5 +433,40 @@
     "userManaged": "用户安装的运行器",
     "stockProton": "Valve 官方 Proton",
     "wineFallback": "Wine 回退（未找到 Proton）"
+  },
+  "customUI": {
+    "ark": "ARK",
+    "asaSettings": "ASA 设置",
+    "aseSettings": "ASE 设置",
+    "copied": "已复制",
+    "dlcUpdaterLegacy": "安装或更新 DLC 仍需要使用旧版更新窗口。",
+    "dlcValidationLegacy": "验证 DLC 仍需要使用旧版更新窗口。",
+    "downloadErrorGeneric": "操作未能完成。错误代码：类型 {0}，主要 {1}，辅助 {2}。",
+    "downloadTimeout": "从 Steam 下载文件超时。已下载的文件未被删除。请检查网络连接并选择“重试”。",
+    "duplicateLauncher": "Obelisk Launcher 的另一个实例已在运行。",
+    "gameAsa": "ARK: Survival Ascended (ASA)",
+    "gameAse": "ARK: Survival Evolved (ASE)",
+    "gameSwitchFailed": "切换游戏失败，已恢复之前的游戏配置。",
+    "gameSwitchPending": "正在切换游戏，请稍后再试。",
+    "general": "常规",
+    "globalSettings": "常规设置",
+    "killGame": "强制结束",
+    "launchParametersSaved": "启动参数已保存。",
+    "launcherMissingFile": "启动器无法下载 {0}。请打开下载页面，将文件放入启动器数据文件夹，然后重新启动启动器。",
+    "launcherUpdateNotice": "Obelisk Launcher 有可用更新。",
+    "linuxUpdateManually": "启动器的自动更新目前仅适用于 Windows。在 Linux 上请手动安装最新版本。",
+    "modRemoved": "已从已安装模组中移除 {0}。",
+    "noChangelog": "此版本没有发行说明。",
+    "openDataFolder": "打开数据文件夹",
+    "openDownloadPage": "打开下载页面",
+    "openLink": "打开链接",
+    "perSecond": "秒",
+    "preparingDownloadSize": "正在准备下载大小…",
+    "preparingFileList": "正在准备文件列表…",
+    "preparingProgressData": "正在准备进度数据…",
+    "remainingTime": "剩余时间",
+    "steamChunkFailed": "无法从 Steam 下载游戏文件分块。请检查网络连接并选择“重试”。",
+    "versionUnavailable": "版本尚不可用",
+    "waitingForJobData": "正在等待下载任务数据…"
   }
 }

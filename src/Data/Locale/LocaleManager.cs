@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -11,7 +12,7 @@ static class Locale
 {
     const string DefaultLanguage = "en";
     private const string Section = ".";
-    private static readonly string[] AllLanguages = ["en", "es", "fr", "nl", "pt", "el", "ru", "zh"];
+    private static readonly string[] AllLanguages = ["en", "es", "fr", "nl", "pt", "el", "ru", "zh", "ar"];
     private static readonly Dictionary<string, string> FlatStrings = new(StringComparer.OrdinalIgnoreCase);
     public static event Action? LanguageChanged;
     public static int CurrentIndex { get; private set; }
@@ -24,30 +25,37 @@ static class Locale
         return $"?{key}?";
     }
 
+    // Use invariant numbers and a non-breaking space so that a value stays attached
+    // to its localized unit in Arabic without changing the numeric order.
     public static string BytesToString(long bytes)
     {
-        return bytes switch
-        {
-            >= 1073741824 => $"{bytes / 1073741824.0:0.##} {Get("common.bytes.gb")}",
-            >= 1048576 => $"{bytes / 1048576.0:0.#} {Get("common.bytes.mb")}",
-            _ => $"{bytes / 1024.0:0} {Get("common.bytes.kb")}"
-        };
+        string value = BytesToString(bytes, out string unit);
+        return value + "\u00A0" + unit;
     }
 
     public static string BytesToString(long bytes, out string unit)
     {
+        double scaled;
+        string format;
         if (bytes >= 1073741824)
         {
+            scaled = bytes / 1073741824.0;
+            format = "0.##";
             unit = Get("common.bytes.gb");
-            return (bytes / 1073741824.0).ToString("0.##");
         }
-        if (bytes >= 1048576)
+        else if (bytes >= 1048576)
         {
+            scaled = bytes / 1048576.0;
+            format = "0.#";
             unit = Get("common.bytes.mb");
-            return (bytes / 1048576.0).ToString("0.#");
         }
-        unit = Get("common.bytes.kb");
-        return (bytes / 1024.0).ToString("0");
+        else
+        {
+            scaled = bytes / 1024.0;
+            format = "0";
+            unit = Get("common.bytes.kb");
+        }
+        return scaled.ToString(format, CurrentLanguage == "ar" ? CultureInfo.InvariantCulture : CultureInfo.CurrentCulture);
     }
 
     public static string SecondsToString(long seconds)
@@ -121,6 +129,25 @@ static class Locale
     private static bool LoadLanguage(string code)
     {
         FlatStrings.Clear();
+
+        if (!TryReadLanguage(DefaultLanguage, FlatStrings))
+            return false;
+
+        if (code.Equals(DefaultLanguage, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        var localized = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (!TryReadLanguage(code, localized))
+            return false;
+
+        foreach (var entry in localized)
+            FlatStrings[entry.Key] = entry.Value;
+
+        return true;
+    }
+
+    private static bool TryReadLanguage(string code, Dictionary<string, string> target)
+    {
         try
         {
             using Stream stm = LauncherResources.OpenRead("locales/" + code + ".json");
@@ -129,7 +156,7 @@ static class Locale
             if (root is not JsonObject obj)
                 return false;
             foreach (var kv in Flatten(obj))
-                FlatStrings[kv.Key] = kv.Value!.ToString()!;
+                target[kv.Key] = kv.Value!.ToString()!;
             return true;
         }
         catch

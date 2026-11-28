@@ -11,6 +11,7 @@ public partial class LauncherUpdateWindow : Window
     public LauncherUpdateWindow()
     {
         InitializeComponent();
+        ArabicUiDirection.Apply(this);
     }
 
     internal LauncherUpdateWindow(Window owner)

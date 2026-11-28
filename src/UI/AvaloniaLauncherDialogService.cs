@@ -16,8 +16,8 @@ sealed class AvaloniaLauncherDialogService : ILauncherDialogService
 
     public void ShowDownloadErr(string name, string url)
     {
-        string message = $"The launcher was unable to download {name}. Open the download page and place the file into the launcher data folder before restarting the launcher.";
-        ShowDialog(new AvaloniaDialogWindow(Locale.Get("common.error"), message, false, "Open download page", url, "Open data folder", () =>
+        string message = string.Format(Locale.Get("customUI.launcherMissingFile"), name);
+        ShowDialog(new AvaloniaDialogWindow(Locale.Get("common.error"), message, false, Locale.Get("customUI.openDownloadPage"), url, Locale.Get("customUI.openDataFolder"), () =>
         {
             try
             {
